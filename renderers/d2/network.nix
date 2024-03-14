@@ -1,8 +1,7 @@
 {
   pkgs,
-  # deadnix: skip
-  renderer ? "graphviz",
   nixosConfigurations,
+  ...
 }: let
   inherit
     (pkgs.lib)
