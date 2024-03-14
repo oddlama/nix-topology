@@ -76,6 +76,6 @@
 
   d2ForNodes = mapAttrs' (_: node: nameValuePair node.config.topology.id (toD2 node)) nodesById;
 in
-  pkgs.writeText "topology.d2" ''
+  pkgs.writeText "network.d2" ''
     ${concatLines (map (x: d2ForNodes.${x}) (attrNames rootNodes))}
   ''
