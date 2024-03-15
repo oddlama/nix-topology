@@ -1,9 +1,8 @@
 {
   lib,
-  config,
   pkgs,
   ...
-}: let
+} @ args: let
   inherit
     (lib)
     mkOption
@@ -20,9 +19,6 @@ in {
 
   config.renderers.d2.output = pkgs.runCommand "build-d2-topology" {} ''
     mkdir -p $out
-    cp ${import ./network.nix {
-      inherit pkgs;
-      inherit (config) nixosConfigurations;
-    }} $out/network.d2
+    cp ${import ./network.nix args} $out/network.d2
   '';
 }
