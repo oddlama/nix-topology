@@ -6,17 +6,32 @@
   inherit
     (lib)
     attrNames
+    concatLists
     filterAttrs
+    flip
+    getAttrFromPath
     literalExpression
+    mapAttrsToList
     mkDefault
     mkIf
+    mkMerge
     mkOption
     types
     ;
 
   availableRenderers = attrNames (filterAttrs (_: v: v == "directory") (builtins.readDir ./renderers));
 in {
-  imports = map (x: ./renderers/${x}) (attrNames (builtins.readDir ./renderers));
+  imports =
+    map (x: ./renderers/${x}) (attrNames (builtins.readDir ./renderers))
+    ++ flip map (attrNames (builtins.readDir ../options)) (x:
+      import ../options/${x} (
+        module:
+          module
+          // {
+            # Set the correct filename for diagnostics
+            _file = ../options/${x};
+          }
+      ));
 
   options = {
     nixosConfigurations = mkOption {
@@ -41,9 +56,22 @@ in {
     };
   };
 
-  config = {
+  config = let
+    # Aggregates all values for an option from each host
+    aggregate = optionPath:
+      mkMerge (
+        concatLists (flip mapAttrsToList config.nixosConfigurations (
+          name: cfg:
+            builtins.addErrorContext "while aggregating topology definitions from self.nixosConfigurations.${name} into toplevel topology:" (
+              getAttrFromPath (["options" "topology"] ++ optionPath ++ ["definitions"]) cfg
+            )
+        ))
+      );
+  in {
     output =
       mkIf (config.renderer != null)
       (mkDefault config.renderers.${config.renderer}.output);
+
+    nodes = aggregate ["nodes"];
   };
 }

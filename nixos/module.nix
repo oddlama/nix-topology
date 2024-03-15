@@ -5,17 +5,33 @@
 }: let
   inherit
     (lib)
+    attrNames
     flip
-    filterAttrs
-    mapAttrs
-    mapAttrs'
-    mapAttrsToList
-    mkMerge
+    mkAliasOptionModule
     mkOption
-    nameValuePair
     types
     ;
 in {
+  imports =
+    [
+      # Allow simple alias to set/get attributes of this node
+      (mkAliasOptionModule ["topology" "self"] ["topology" "nodes" config.topology.id])
+    ]
+    ++ flip map (attrNames (builtins.readDir ../options)) (x:
+      import ../options/${x} (
+        module:
+          module
+          // {
+            # Move options to subpath
+            options.topology = module.options or {};
+            # Set the correct filename for diagnostics
+            _file = ../options/${x};
+            # The config should only be applied on the toplevel topology module,
+            # not for each nixos node.
+            config = {};
+          }
+      ));
+
   options.topology = {
     id = mkOption {
       description = ''
@@ -24,134 +40,57 @@ in {
         unique or don't reflect the name you use to refer to that node.
       '';
       default = config.networking.hostName;
-      # TODO ensure unique across the board
       type = types.str;
-    };
-
-    type = mkOption {
-      description = "TODO";
-      default = "normal";
-      type = types.enum ["normal" "microvm" "nixos-container"];
-    };
-
-    guests = mkOption {
-      description = "TODO guests ids (topology.node.<name>.id) ensure exists";
-      default = [];
-      type = types.listOf types.str;
-    };
-
-    disks = mkOption {
-      default = {};
-      type = types.attrsOf (types.submodule (submod: {
-        options = {
-          name = mkOption {
-            description = "The name of this disk";
-            default = submod.config._module.args.name;
-            readOnly = true;
-            type = types.str;
-          };
-        };
-      }));
-    };
-
-    interfaces = mkOption {
-      description = "TODO";
-      default = {};
-      type = types.attrsOf (types.submodule (submod: {
-        options = {
-          name = mkOption {
-            description = "The name of this interface";
-            type = types.str;
-            readOnly = true;
-            default = submod.config._module.args.name;
-          };
-
-          mac = mkOption {
-            description = "The MAC address of this interface, if known.";
-            default = null;
-            type = types.nullOr types.str;
-          };
-
-          addresses = mkOption {
-            description = "The configured address(es), or a descriptive string (like DHCP).";
-            type = types.listOf types.str;
-          };
-
-          network = mkOption {
-            description = ''
-              The global name of the attached/spanned network.
-              If this is given, this interface can be shown in the network graph.
-            '';
-            default = null;
-            type = types.nullOr types.str;
-          };
-        };
-      }));
-    };
-
-    firewallRules = mkOption {
-      description = "TODO";
-      default = {};
-      type = types.attrsOf (types.submodule (submod: {
-        options = {
-          name = mkOption {
-            description = "The name of this firewall rule";
-            type = types.str;
-            readOnly = true;
-            default = submod.config._module.args.name;
-          };
-
-          contents = mkOption {
-            description = "A human readable summary of this rule's effects";
-            type = types.lines;
-          };
-        };
-      }));
     };
   };
 
-  config.topology = mkMerge [
-    {
-      ################### TODO user config! #################
-      id = config.node.name;
-      ################### END user config   #################
+  config.topology = {
+    # Ensure a node exists for this host
+    nodes.${config.topology.id} = {};
+  };
 
-      guests =
-        flip mapAttrsToList (config.microvm.vms or {})
-        (_: vmCfg: vmCfg.config.config.topology.id);
-      # TODO: container
+  #config.topology = mkMerge [
+  #  {
+  #    ################### TODO user config! #################
+  #    id = config.node.name;
+  #    ################### END user config   #################
 
-      disks =
-        flip mapAttrs (config.disko.devices.disk or {})
-        (_: _: {});
-      # TODO: zfs pools from disko / fileSystems
-      # TODO: microvm shares
-      # TODO: container shares
-      # TODO: OCI containers shares
+  #    guests =
+  #      flip mapAttrsToList (config.microvm.vms or {})
+  #      (_: vmCfg: vmCfg.config.config.topology.id);
+  #    # TODO: container
 
-      interfaces = let
-        isNetwork = netDef: (netDef.matchConfig != {}) && (netDef.address != [] || netDef.DHCP != null);
-        macsByName = mapAttrs' (flip nameValuePair) (config.networking.renameInterfacesByMac or {});
-        netNameFor = netName: netDef:
-          netDef.matchConfig.Name
-          or (
-            if netDef ? matchConfig.MACAddress && macsByName ? ${netDef.matchConfig.MACAddress}
-            then macsByName.${netDef.matchConfig.MACAddress}
-            else lib.trace "Could not derive network name for systemd network ${netName} on host ${config.node.name}, using unit name as fallback." netName
-          );
-        netMACFor = netDef: netDef.matchConfig.MACAddress or null;
-        networks = filterAttrs (_: isNetwork) (config.systemd.network.networks or {});
-      in
-        flip mapAttrs' networks (netName: netDef:
-          nameValuePair (netNameFor netName netDef) {
-            mac = netMACFor netDef;
-            addresses =
-              if netDef.address != []
-              then netDef.address
-              else ["DHCP"];
-          });
+  #    disks =
+  #      flip mapAttrs (config.disko.devices.disk or {})
+  #      (_: _: {});
+  #    # TODO: zfs pools from disko / fileSystems
+  #    # TODO: microvm shares
+  #    # TODO: container shares
+  #    # TODO: OCI containers shares
 
-      # TODO: for each nftable zone show open ports
-    }
-  ];
+  #    interfaces = let
+  #      isNetwork = netDef: (netDef.matchConfig != {}) && (netDef.address != [] || netDef.DHCP != null);
+  #      macsByName = mapAttrs' (flip nameValuePair) (config.networking.renameInterfacesByMac or {});
+  #      netNameFor = netName: netDef:
+  #        netDef.matchConfig.Name
+  #        or (
+  #          if netDef ? matchConfig.MACAddress && macsByName ? ${netDef.matchConfig.MACAddress}
+  #          then macsByName.${netDef.matchConfig.MACAddress}
+  #          else lib.trace "Could not derive network name for systemd network ${netName} on host ${config.node.name}, using unit name as fallback." netName
+  #        );
+  #      netMACFor = netDef: netDef.matchConfig.MACAddress or null;
+  #      networks = filterAttrs (_: isNetwork) (config.systemd.network.networks or {});
+  #    in
+  #      flip mapAttrs' networks (netName: netDef:
+  #        nameValuePair (netNameFor netName netDef) {
+  #          mac = netMACFor netDef;
+  #          addresses =
+  #            if netDef.address != []
+  #            then netDef.address
+  #            else ["DHCP"];
+  #        });
+
+  #    # TODO: for each nftable zone show open ports
+  #  }
+  #];
 }

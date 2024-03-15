@@ -4,9 +4,9 @@ inputs: {
 }:
 inputs.nixpkgs.lib.evalModules {
   prefix = ["topology"];
-  modules = [./modules] ++ modules;
+  modules = [./topology] ++ modules;
   specialArgs = {
-    modulesPath = builtins.toString ./modules;
+    modulesPath = builtins.toString ./topology;
     inherit pkgs;
   };
 }
