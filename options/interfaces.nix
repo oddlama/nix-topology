@@ -31,6 +31,7 @@ in
                 virtual = mkOption {
                   description = "Whether this is a virtual interface.";
                   type = types.bool;
+                  default = false;
                 };
 
                 mac = mkOption {
@@ -39,16 +40,17 @@ in
                   type = types.nullOr types.str;
                 };
 
-                #addresses = mkOption {
-                #  description = "The configured address(es), or a descriptive string (like DHCP).";
-                #  type = types.listOf types.str;
-                #};
+                addresses = mkOption {
+                  description = "The configured address(es), or a descriptive string (like DHCP).";
+                  default = [];
+                  type = types.listOf types.str;
+                };
 
-                #gateway = mkOption {
-                #  description = "The configured gateway, if any";
-                #  type = types.nullOr types.str;
-                #  default = null;
-                #};
+                gateways = mkOption {
+                  description = "The configured gateways, if any.";
+                  default = [];
+                  type = types.listOf types.str;
+                };
 
                 network = mkOption {
                   description = "The id of the network to which this interface belongs, if any.";

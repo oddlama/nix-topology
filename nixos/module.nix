@@ -49,6 +49,6 @@ in {
 
   config.topology = {
     # Ensure a node exists for this host
-    nodes.${config.topology.id} = {};
+    nodes.${config.topology.id}.type = "nixos";
   };
 }
