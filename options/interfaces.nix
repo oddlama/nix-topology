@@ -89,7 +89,7 @@ in
             interface:
               [
                 {
-                  assertion = config.networks ? ${interface.network};
+                  assertion = interface.network != null -> config.networks ? ${interface.network};
                   message = "topology: nodes.${node.id}.interfaces.${interface.id} refers to an unknown network '${interface.network}'";
                 }
               ]

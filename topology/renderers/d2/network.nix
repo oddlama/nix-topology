@@ -8,6 +8,7 @@
     (lib)
     attrValues
     concatLines
+    optionalString
     ;
 
   #toD2 = _nodeName: node: ''
@@ -29,25 +30,34 @@
   #'';
 
   netToD2 = net: ''
-    ${net.id}: |md
-    # ${net.name}
-    ${net.cidrv4}
-    ${net.cidrv6}
-    |
+    ${net.id}: ${net.name} {
+      info: |md
+      ${net.cidrv4}
+      ${net.cidrv6}
+      |
+    }
   '';
 
-  nodeInterfaceToD2 = node: interface: ''
-    ${node.id}.${interface.id}: |md
-    ## ${interface.id}
-    |
-
-    ${node.id}.${interface.id} -> ${interface.network}
-  '';
+  nodeInterfaceToD2 = node: interface:
+    ''
+      ${node.id}.${interface.id}: ${interface.id} {
+        info: |md
+        ${toString interface.mac}
+        ${toString interface.addresses}
+        ${toString interface.gateways}
+        |
+      }
+    ''
+    + optionalString (interface.network != null) ''
+      ${node.id}.${interface.id} -- ${interface.network}
+    '';
+  # TODO: deduplicate first
+  #+ concatLines (flip map interface.physicalConnections (x: ''
+  #  ${node.id}.${interface.id} -- ${x.node}.${x.interface}
+  #''));
 
   nodeToD2 = node: ''
-    ${node.id}: |md
-    # ${node.name}
-    |
+    ${node.id}: ${node.name} {}
 
     ${concatLines (map (nodeInterfaceToD2 node) (attrValues node.interfaces))}
   '';

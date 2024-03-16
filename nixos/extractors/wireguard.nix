@@ -73,7 +73,7 @@ in {
             network = networkId wgName;
             virtual = true;
             physicalConnections = flip map connectedPeers (peer: {
-              node = peer;
+              node = inputs.self.nodes.${peer}.config.topology.id;
               interface = (wgCfgOf peer).linkName;
             });
           };
