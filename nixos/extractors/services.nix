@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }: let
   inherit
@@ -12,7 +11,8 @@ in {
   topology.self.services = {
     vaultwarden = mkIf config.services.vaultwarden.enable {
       name = "Vaultwarden";
-      icon = "${pkgs.vaultwarden.webvault}/share/vaultwarden/vault/images/safari-pinned-tab.svg";
+      info = "https://pw.example.com";
+      details.listen.text = "[::]:3000";
     };
   };
 }

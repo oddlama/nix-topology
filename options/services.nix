@@ -14,7 +14,7 @@ in
       type = types.attrsOf (types.submodule {
         options = {
           services = mkOption {
-            description = "TODO";
+            description = "Defines a service that is running on this node.";
             default = {};
             type = types.attrsOf (types.submodule (submod: {
               options = {
@@ -36,16 +36,34 @@ in
                   default = null;
                 };
 
-                url = mkOption {
-                  description = "The URL under which the service is reachable, if any.";
-                  type = types.nullOr types.str;
-                  default = null;
+                info = mkOption {
+                  description = "Additional high-profile information about this service, usually the url or listen address. Most likely shown directly below the name.";
+                  type = types.lines;
                 };
 
-                listenAddresses = mkOption {
-                  description = "The addresses on which this service listens.";
-                  type = types.nullOr types.str;
-                  default = null;
+                details = mkOption {
+                  description = "Additional detail sections that should be shown to the user.";
+                  type = types.attrsOf (types.submodule (detailSubmod: {
+                    options = {
+                      name = mkOption {
+                        description = "The name of this section";
+                        type = types.str;
+                        readOnly = true;
+                        default = detailSubmod.config._module.args.name;
+                      };
+
+                      order = mkOption {
+                        description = "The order determines how sections are ordered. Lower numbers first, default is 100.";
+                        type = types.int;
+                        default = 100;
+                      };
+
+                      text = mkOption {
+                        description = "The additional information to display";
+                        type = types.lines;
+                      };
+                    };
+                  }));
                 };
               };
             }));

@@ -12,8 +12,7 @@ in
   f {
     options.networks = mkOption {
       default = {};
-      description = ''
-      '';
+      description = "Defines logical networks that are present in your topology.";
       type = types.attrsOf (types.submodule (networkSubmod: {
         options = {
           id = mkOption {

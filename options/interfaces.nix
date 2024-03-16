@@ -40,6 +40,18 @@ in
                   type = types.nullOr types.str;
                 };
 
+                type = mkOption {
+                  description = "The type of this interface";
+                  default = "ethernet";
+                  type = types.str;
+                };
+
+                icon = mkOption {
+                  description = "The icon for this interface. If null, an icon will be selected from `icons.interfaces` based on the specified type.";
+                  default = null;
+                  type = types.nullOr types.path;
+                };
+
                 addresses = mkOption {
                   description = "The configured address(es), or a descriptive string (like DHCP).";
                   default = [];

@@ -9,10 +9,12 @@
     attrValues
     concatLists
     flip
+    listToAttrs
     mapAttrsToList
     mkDefault
     mkIf
     mkMerge
+    nameValuePair
     optional
     ;
 in {
@@ -25,6 +27,7 @@ in {
             optional (netdev ? netdevConfig.Name) {
               ${netdev.netdevConfig.Name} = {
                 virtual = mkDefault true;
+                type = mkIf (netdev ? netdevConfig.Kind) netdev.netdevConfig.Kind;
               };
             }
         )
@@ -34,9 +37,11 @@ in {
         flip mapAttrsToList config.systemd.network.networks (
           _unit: network: let
             # FIXME: TODO renameInterfacesByMac is not a standard option!
+            macToName = listToAttrs (mapAttrsToList (k: v: nameValuePair v k) config.networking.renameInterfacesByMac);
+
             nameFromMac =
-              optional (network ? matchConfig.MACAddress && config.networking.renameInterfacesByMac ? ${network.matchConfig.MACAddress})
-              config.networking.renameInterfacesByMac.${network.matchConfig.MACAddress};
+              optional (network ? matchConfig.MACAddress && macToName ? ${network.matchConfig.MACAddress})
+              macToName.${network.matchConfig.MACAddress};
 
             nameFromNetdev =
               optional (

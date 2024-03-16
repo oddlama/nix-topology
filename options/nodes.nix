@@ -14,6 +14,8 @@ in
     options.nodes = mkOption {
       default = {};
       description = ''
+        Defines nodes that are shown in the topology graph.
+        Nodes usually correspond to nixos hosts or other devices in your network.
       '';
       type = types.attrsOf (types.submodule (nodeSubmod: {
         options = {
