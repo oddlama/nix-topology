@@ -18,8 +18,8 @@ in
             default = {};
             type = types.attrsOf (types.submodule (submod: {
               options = {
-                name = mkOption {
-                  description = "The name of this firewall rule";
+                id = mkOption {
+                  description = "The id of this firewall rule";
                   type = types.str;
                   readOnly = true;
                   default = submod.config._module.args.name;

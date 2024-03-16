@@ -17,6 +17,9 @@ in {
       # Allow simple alias to set/get attributes of this node
       (mkAliasOptionModule ["topology" "self"] ["topology" "nodes" config.topology.id])
     ]
+    # Include extractors
+    ++ map (x: ./extractors/${x}) (attrNames (builtins.readDir ./extractors))
+    # Include common topology options
     ++ flip map (attrNames (builtins.readDir ../options)) (x:
       import ../options/${x} (
         module:
@@ -48,49 +51,4 @@ in {
     # Ensure a node exists for this host
     nodes.${config.topology.id} = {};
   };
-
-  #config.topology = mkMerge [
-  #  {
-  #    ################### TODO user config! #################
-  #    id = config.node.name;
-  #    ################### END user config   #################
-
-  #    guests =
-  #      flip mapAttrsToList (config.microvm.vms or {})
-  #      (_: vmCfg: vmCfg.config.config.topology.id);
-  #    # TODO: container
-
-  #    disks =
-  #      flip mapAttrs (config.disko.devices.disk or {})
-  #      (_: _: {});
-  #    # TODO: zfs pools from disko / fileSystems
-  #    # TODO: microvm shares
-  #    # TODO: container shares
-  #    # TODO: OCI containers shares
-
-  #    interfaces = let
-  #      isNetwork = netDef: (netDef.matchConfig != {}) && (netDef.address != [] || netDef.DHCP != null);
-  #      macsByName = mapAttrs' (flip nameValuePair) (config.networking.renameInterfacesByMac or {});
-  #      netNameFor = netName: netDef:
-  #        netDef.matchConfig.Name
-  #        or (
-  #          if netDef ? matchConfig.MACAddress && macsByName ? ${netDef.matchConfig.MACAddress}
-  #          then macsByName.${netDef.matchConfig.MACAddress}
-  #          else lib.trace "Could not derive network name for systemd network ${netName} on host ${config.node.name}, using unit name as fallback." netName
-  #        );
-  #      netMACFor = netDef: netDef.matchConfig.MACAddress or null;
-  #      networks = filterAttrs (_: isNetwork) (config.systemd.network.networks or {});
-  #    in
-  #      flip mapAttrs' networks (netName: netDef:
-  #        nameValuePair (netNameFor netName netDef) {
-  #          mac = netMACFor netDef;
-  #          addresses =
-  #            if netDef.address != []
-  #            then netDef.address
-  #            else ["DHCP"];
-  #        });
-
-  #    # TODO: for each nftable zone show open ports
-  #  }
-  #];
 }

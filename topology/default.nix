@@ -7,6 +7,8 @@
     (lib)
     attrNames
     concatLists
+    concatStringsSep
+    filter
     filterAttrs
     flip
     getAttrFromPath
@@ -54,6 +56,35 @@ in {
       readOnly = true;
       defaultText = literalExpression ''config.renderers.${config.renderer}.output'';
     };
+
+    assertions = mkOption {
+      internal = true;
+      default = [];
+      example = [
+        {
+          assertion = false;
+          message = "you can't enable this for that reason";
+        }
+      ];
+      description = lib.mdDoc ''
+        This option allows modules to express conditions that must
+        hold for the evaluation of the topology configuration to
+        succeed, along with associated error messages for the user.
+      '';
+      type = types.listOf (types.submodule {
+        options = {
+          assertion = mkOption {
+            description = "The thing to assert.";
+            type = types.bool;
+          };
+
+          message = mkOption {
+            description = "The error message.";
+            type = types.str;
+          };
+        };
+      });
+    };
   };
 
   config = let
@@ -68,10 +99,14 @@ in {
         ))
       );
   in {
-    output =
-      mkIf (config.renderer != null)
-      (mkDefault config.renderers.${config.renderer}.output);
+    output = let
+      failedAssertions = map (x: x.message) (filter (x: !x.assertion) config.assertions);
+    in
+      if failedAssertions != []
+      then throw "\nFailed assertions:\n${concatStringsSep "\n" (map (x: "- ${x}") failedAssertions)}"
+      else mkIf (config.renderer != null) (mkDefault config.renderers.${config.renderer}.output);
 
     nodes = aggregate ["nodes"];
+    networks = aggregate ["networks"];
   };
 }

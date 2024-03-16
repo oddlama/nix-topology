@@ -17,8 +17,8 @@ in
             default = {};
             type = types.attrsOf (types.submodule (submod: {
               options = {
-                name = mkOption {
-                  description = "The name of this disk";
+                id = mkOption {
+                  description = "The id of this disk";
                   default = submod.config._module.args.name;
                   readOnly = true;
                   type = types.str;
