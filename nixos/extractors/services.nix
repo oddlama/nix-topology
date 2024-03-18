@@ -14,7 +14,7 @@ in {
     openssh = mkIf config.services.openssh.enable {
       hidden = mkDefault true; # Causes a lot of much clutter
       name = "OpenSSH";
-      icon = "openssh";
+      icon = "services.openssh";
       info = "port: ${concatStringsSep ", " (map toString config.services.openssh.ports)}";
     };
 
@@ -25,7 +25,7 @@ in {
     in
       mkIf config.services.vaultwarden.enable {
         name = "Vaultwarden";
-        icon = "vaultwarden";
+        icon = "services.vaultwarden";
         info = mkIf (domain != null) domain;
         details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
       };

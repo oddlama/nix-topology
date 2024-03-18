@@ -9,6 +9,7 @@ f: {
     flatten
     flip
     mkDefault
+    mkIf
     mkOption
     types
     ;
@@ -48,8 +49,9 @@ in
                 };
 
                 icon = mkOption {
-                  description = "The icon for this interface. Must be a valid entry in icons.interfaces. If null, an icon will be selected based on the type.";
-                  type = types.nullOr types.str;
+                  description = "The icon representing this interface's type. Must be a path to an image or a valid icon name (<category>.<name>). By default an icon will be selected based on the type.";
+                  type = types.nullOr (types.either types.path types.str);
+                  default = null;
                 };
 
                 addresses = mkOption {
@@ -90,14 +92,9 @@ in
               };
 
               config = {
-                icon = mkDefault (
-                  {
-                    ethernet = "ethernet";
-                    wireguard = "wireguard";
-                    wifi = "wifi";
-                  }
-                  .${submod.config.type}
-                  or null
+                # Set the default icon, if an icon exists with a matching name
+                icon = mkIf (config.topology.isMainModule && config.icons.interfaces ? ${submod.config.type}) (
+                  mkDefault ("interfaces." + submod.config.type)
                 );
               };
             }));
@@ -116,10 +113,8 @@ in
                   assertion = interface.network != null -> config.networks ? ${interface.network};
                   message = "topology: nodes.${node.id}.interfaces.${interface.id} refers to an unknown network '${interface.network}'";
                 }
-                {
-                  assertion = interface.icon != null -> config.icons.interfaces ? ${interface.icon};
-                  message = "topology: nodes.${node.id}.interfaces.${interface.id} refers to an unknown icon icons.interfaces.${interface.icon}";
-                }
+                (config.lib.assertions.iconValid
+                  interface.icon "nodes.${node.id}.interfaces.${interface.id}")
               ]
               ++ flip map interface.physicalConnections (
                 physicalConnection: {

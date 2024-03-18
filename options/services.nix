@@ -8,6 +8,8 @@ f: {
     attrValues
     flatten
     flip
+    mkDefault
+    mkIf
     mkOption
     types
     ;
@@ -40,8 +42,8 @@ in
                 };
 
                 icon = mkOption {
-                  description = "The icon for this service. Must be a valid entry in icons.services.";
-                  type = types.nullOr types.str;
+                  description = "The icon for this service. Must be a path to an image or a valid icon name (<category>.<name>).";
+                  type = types.nullOr (types.either types.path types.str);
                   default = null;
                 };
 
@@ -77,6 +79,13 @@ in
                   }));
                 };
               };
+
+              config = {
+                # Set the default icon, if an icon exists with a matching name
+                icon = mkIf (config.topology.isMainModule && config.icons.services ? ${submod.config.id}) (
+                  mkDefault ("services." + submod.config.id)
+                );
+              };
             }));
           };
         };
@@ -88,10 +97,8 @@ in
         node:
           flip map (attrValues node.services) (
             service: [
-              {
-                assertion = service.icon != null -> config.icons.services ? ${service.icon};
-                message = "topology: nodes.${node.id}.services.${service.id} refers to an unknown icon icons.services.${service.icon}";
-              }
+              (config.lib.assertions.iconValid
+                service.icon "nodes.${node.id}.services.${service.id}")
             ]
           )
       ));

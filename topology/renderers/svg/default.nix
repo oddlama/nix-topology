@@ -34,11 +34,6 @@
     '';
   in "${drv}/${name}.svg";
 
-  getIcon = registry: iconName:
-    if iconName == null
-    then null
-    else config.icons.${registry}.${iconName}.file or null;
-
   html = rec {
     mkImage = twAttrs: file:
       if file == null
@@ -110,7 +105,7 @@
           <div tw="flex flex-row items-center my-2">
             <div tw="flex flex-row flex-none bg-[${color}] w-4 h-1"></div>
             <div tw="flex flex-row flex-none items-center bg-[${color}] text-[#101419] rounded-lg px-2 py-1 w-46 h-8 mr-4">
-              ${mkImage "w-6 h-6 mr-2" (getIcon "interfaces" interface.icon)}
+              ${mkImage "w-6 h-6 mr-2" (config.lib.icons.get interface.icon)}
               <span tw="font-bold">${interface.id}</span>
             </div>
             <span>addrs: ${toString interface.addresses}</span>
@@ -140,7 +135,7 @@
       ''
         <div tw="flex flex-col mx-4 mt-4 bg-[#21262e] rounded-lg p-2">
           <div tw="flex flex-row items-center">
-            ${mkImage "w-16 h-16 mr-4 rounded-lg" (getIcon "services" service.icon)}
+            ${mkImage "w-16 h-16 mr-4 rounded-lg" (config.lib.icons.get service.icon)}
             <div tw="flex flex-col grow">
               <h1 tw="text-xl font-bold m-0">${service.name}</h1>
               ${optionalString (service.info != "") ''<p tw="text-base m-0">${service.info}</p>''}
@@ -158,7 +153,7 @@
         <div tw="flex flex-row mx-6 my-2">
           <h2 tw="grow text-4xl font-bold">${node.name}</h2>
           <div tw="flex grow"></div>
-          <h2 tw="text-4xl">${node.type}</h2>
+          <h2 tw="text-4xl">${node.deviceType}</h2>
         </div>
       '';
 

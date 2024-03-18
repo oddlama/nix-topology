@@ -5,7 +5,12 @@ f: {
 }: let
   inherit
     (lib)
+    attrValues
+    flatten
+    flip
     literalExpression
+    mkDefault
+    mkIf
     mkOption
     types
     ;
@@ -33,14 +38,26 @@ in
             defaultText = literalExpression ''"<name>"'';
           };
 
+          icon = mkOption {
+            description = "The icon representing this node. Usually shown next to the name. Must be a path to an image or a valid icon name (<category>.<name>).";
+            type = types.nullOr (types.either types.path types.str);
+            default = null;
+          };
+
           # FIXME: TODO emoji / icon
           # FIXME: TODO hardware description "Odroid H3"
           # FIXME: TODO hardware image
 
           # FIXME: TODO are these good types? how about nixos vs router vs ...
-          type = mkOption {
+          deviceType = mkOption {
             description = "TODO";
             type = types.enum ["nixos" "microvm" "nixos-container"];
+          };
+
+          deviceIcon = mkOption {
+            description = "The icon representing this node's type. Must be a path to an image or a valid icon name (<category>.<name>). By default an icon will be selected based on the deviceType.";
+            type = types.nullOr (types.either types.path types.str);
+            default = null;
           };
 
           parent = mkOption {
@@ -49,6 +66,24 @@ in
             type = types.nullOr types.str;
           };
         };
+
+        config = {
+          # Set the default icon, if an icon exists with a matching name
+          deviceIcon = mkIf (config.topology.isMainModule && config.icons.devices ? ${nodeSubmod.config.deviceType}) (
+            mkDefault ("interfaces." + nodeSubmod.config.deviceType)
+          );
+        };
       }));
+    };
+
+    config = {
+      assertions = flatten (
+        flip map (attrValues config.nodes) (
+          node: [
+            (config.lib.assertions.iconValid
+              node.deviceIcon "nodes.${node.id}.deviceIcon")
+          ]
+        )
+      );
     };
   }

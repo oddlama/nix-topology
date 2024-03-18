@@ -45,10 +45,18 @@ in {
       default = config.networking.hostName;
       type = types.str;
     };
+
+    isMainModule = mkOption {
+      description = "Whether this is the toplevel topology module.";
+      readOnly = true;
+      internal = true;
+      default = false;
+      type = types.bool;
+    };
   };
 
   config.topology = {
     # Ensure a node exists for this host
-    nodes.${config.topology.id}.type = "nixos";
+    nodes.${config.topology.id}.deviceType = "nixos";
   };
 }

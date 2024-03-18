@@ -93,6 +93,14 @@ in {
         };
       });
     };
+
+    topology.isMainModule = mkOption {
+      description = "Whether this is the toplevel topology module.";
+      readOnly = true;
+      internal = true;
+      default = true;
+      type = types.bool;
+    };
   };
 
   config = let
