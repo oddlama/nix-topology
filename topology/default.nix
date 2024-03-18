@@ -57,6 +57,14 @@ in {
       defaultText = literalExpression ''config.renderers.${config.renderer}.output'';
     };
 
+    lib = lib.mkOption {
+      default = {};
+      type = lib.types.attrsOf lib.types.attrs;
+      description = lib.mdDoc ''
+        This option allows modules to define helper functions, constants, etc.
+      '';
+    };
+
     assertions = mkOption {
       internal = true;
       default = [];

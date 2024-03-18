@@ -35,7 +35,7 @@ in
 
                 hidden = mkOption {
                   description = "Whether this service should be hidden from graphs";
-                  default = true;
+                  default = false;
                   type = types.bool;
                 };
 
