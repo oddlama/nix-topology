@@ -8,6 +8,7 @@ f: {
     attrValues
     flatten
     flip
+    mkDefault
     mkOption
     types
     ;
@@ -47,9 +48,8 @@ in
                 };
 
                 icon = mkOption {
-                  description = "The icon for this interface. If null, an icon will be selected from `icons.interfaces` based on the specified type.";
-                  default = null;
-                  type = types.nullOr types.path;
+                  description = "The icon for this interface. Must be a valid entry in icons.interfaces. If null, an icon will be selected based on the type.";
+                  type = types.nullOr types.str;
                 };
 
                 addresses = mkOption {
@@ -88,6 +88,18 @@ in
                   });
                 };
               };
+
+              config = {
+                icon = mkDefault (
+                  {
+                    ethernet = "ethernet";
+                    wireguard = "wireguard";
+                    wifi = "wifi";
+                  }
+                  .${submod.config.type}
+                  or null
+                );
+              };
             }));
           };
         };
@@ -103,6 +115,10 @@ in
                 {
                   assertion = interface.network != null -> config.networks ? ${interface.network};
                   message = "topology: nodes.${node.id}.interfaces.${interface.id} refers to an unknown network '${interface.network}'";
+                }
+                {
+                  assertion = interface.icon != null -> config.icons.interfaces ? ${interface.icon};
+                  message = "topology: nodes.${node.id}.interfaces.${interface.id} refers to an unknown icon icons.interfaces.${interface.icon}";
                 }
               ]
               ++ flip map interface.physicalConnections (

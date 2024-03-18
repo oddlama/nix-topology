@@ -5,6 +5,9 @@ f: {
 }: let
   inherit
     (lib)
+    attrValues
+    flatten
+    flip
     mkOption
     types
     ;
@@ -30,19 +33,27 @@ in
                   type = types.str;
                 };
 
+                hidden = mkOption {
+                  description = "Whether this service should be hidden from graphs";
+                  default = true;
+                  type = types.bool;
+                };
+
                 icon = mkOption {
-                  description = "The icon for this service";
-                  type = types.nullOr types.path;
+                  description = "The icon for this service. Must be a valid entry in icons.services.";
+                  type = types.nullOr types.str;
                   default = null;
                 };
 
                 info = mkOption {
                   description = "Additional high-profile information about this service, usually the url or listen address. Most likely shown directly below the name.";
+                  default = "";
                   type = types.lines;
                 };
 
                 details = mkOption {
                   description = "Additional detail sections that should be shown to the user.";
+                  default = {};
                   type = types.attrsOf (types.submodule (detailSubmod: {
                     options = {
                       name = mkOption {
@@ -70,5 +81,19 @@ in
           };
         };
       });
+    };
+
+    config = {
+      assertions = flatten (flip map (attrValues config.nodes) (
+        node:
+          flip map (attrValues node.services) (
+            service: [
+              {
+                assertion = service.icon != null -> config.icons.services ? ${service.icon};
+                message = "topology: nodes.${node.id}.services.${service.id} refers to an unknown icon icons.services.${service.icon}";
+              }
+            ]
+          )
+      ));
     };
   }
