@@ -8,6 +8,7 @@
     (lib)
     attrValues
     concatLines
+    optionalString
     ;
 
   netToD2 = net: ''

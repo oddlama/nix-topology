@@ -52,6 +52,8 @@
       ''
       else builtins.throw "Unsupported icon file type: ${file}";
 
+    mkImageMaybe = twAttrs: file: optionalString (file != null) (mkImage twAttrs file);
+
     mkSpacer = name:
     /*
     html
@@ -150,10 +152,12 @@
       html
       */
       ''
-        <div tw="flex flex-row mx-6 my-2">
+        <div tw="flex flex-row mx-6 mt-2 items-center">
+          ${mkImageMaybe "w-12 h-12 mr-3" (config.lib.icons.get node.icon)}
           <h2 tw="grow text-4xl font-bold">${node.name}</h2>
           <div tw="flex grow"></div>
           <h2 tw="text-4xl">${node.deviceType}</h2>
+          ${mkImageMaybe "w-16 h-16 ml-3" (config.lib.icons.get node.deviceIcon)}
         </div>
       '';
 
@@ -182,6 +186,7 @@
 
           ${optionalString (services != []) (mkSpacer "Services")}
           ${concatLines (map mkService services)}
+          ${optionalString (services != []) spacingMt2}
 
           <div tw="flex mb-2"></div>
         '';

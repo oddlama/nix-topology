@@ -48,7 +48,6 @@ in
           # FIXME: TODO hardware description "Odroid H3"
           # FIXME: TODO hardware image
 
-          # FIXME: TODO are these good types? how about nixos vs router vs ...
           deviceType = mkOption {
             description = "TODO";
             type = types.enum ["nixos" "microvm" "nixos-container"];
@@ -70,7 +69,7 @@ in
         config = {
           # Set the default icon, if an icon exists with a matching name
           deviceIcon = mkIf (config.topology.isMainModule && config.icons.devices ? ${nodeSubmod.config.deviceType}) (
-            mkDefault ("interfaces." + nodeSubmod.config.deviceType)
+            mkDefault ("devices." + nodeSubmod.config.deviceType)
           );
         };
       }));
@@ -80,6 +79,8 @@ in
       assertions = flatten (
         flip map (attrValues config.nodes) (
           node: [
+            (config.lib.assertions.iconValid
+              node.icon "nodes.${node.id}.icon")
             (config.lib.assertions.iconValid
               node.deviceIcon "nodes.${node.id}.deviceIcon")
           ]
