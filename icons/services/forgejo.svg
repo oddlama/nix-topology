@@ -1,1 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212 212"><style>circle,path{fill:none;stroke:#000;stroke-width:15}path{stroke-width:25}.orange{stroke:#f60}.red{stroke:#d40000}</style><g transform="translate(6 6)"><path d="M58 168V70a50 50 0 0 1 50-50h20" class="orange"/><path d="M58 168v-30a50 50 0 0 1 50-50h20" class="red"/><circle cx="142" cy="20" r="18" class="orange"/><circle cx="142" cy="88" r="18" class="red"/><circle cx="58" cy="180" r="18" class="red"/></g></svg>
+<svg viewBox="0 0 212 212" xmlns="http://www.w3.org/2000/svg">
+  <path d="M 69.303 165.414 L 69.303 79.788 C 69.303 55.66 88.862 36.101 112.99 36.101 L 130.465 36.101" style="fill: none; stroke: rgb(255, 102, 0); stroke-width: 25px;"/>
+  <path d="M 69.303 165.414 L 69.303 139.202 C 69.303 115.074 88.862 95.515 112.99 95.515 L 130.465 95.515" style="fill: none; stroke-width: 25px; stroke: rgb(212, 0, 0);"/>
+  <circle cx="142.697" cy="36.101" r="15.727" style="fill: none; stroke: rgb(255, 102, 0); stroke-width: 15px;"/>
+  <circle cx="142.697" cy="95.515" r="15.727" style="fill: none; stroke-width: 15px; stroke: rgb(212, 0, 0);"/>
+  <circle cx="69.303" cy="175.899" r="15.727" style="fill: none; stroke: rgb(212, 0, 0); stroke-width: 15px;"/>
+</svg>

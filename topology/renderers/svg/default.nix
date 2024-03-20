@@ -48,7 +48,7 @@
       else if hasSuffix ".png" file
       # FIXME: TODO png, jpg, ...
       then ''
-        <img tw="${twAttrs}" src="data:image/png;base64,${"TODO"}/>"
+        <img tw="object-contain ${twAttrs}" src="data:image/png;base64,${"TODO"}/>"
       ''
       else builtins.throw "Unsupported icon file type: ${file}";
 
@@ -160,15 +160,6 @@
           ${mkImageMaybe "w-16 h-16 ml-3" (config.lib.icons.get node.deviceIcon)}
         </div>
       '';
-
-      mkInfoCardTitle = node:
-        mkRootCard "rounded-t-xl"
-        /*
-        html
-        */
-        ''
-          ${mkTitle node}
-        '';
 
       mkInfoCardFull = node: let
         services = filter (x: !x.hidden) (attrValues node.services);
