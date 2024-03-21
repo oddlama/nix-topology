@@ -6,13 +6,15 @@
 }: let
   inherit
     (lib)
+    any
     attrValues
     concatLines
+    flip
     optionalString
     ;
 
   netToD2 = net: ''
-    ${net.id}: ${net.name} {
+    net_${net.id}: ${net.name} {
       info: |md
       ${net.cidrv4}
       ${net.cidrv6}
@@ -21,25 +23,24 @@
   '';
 
   nodeInterfaceToD2 = node: interface:
-    ''
-      ${node.id}.${interface.id}: ${interface.id} {
-        info: |md
-        ${toString interface.mac}
-        ${toString interface.addresses}
-        ${toString interface.gateways}
-        |
-      }
-    ''
-    + optionalString (interface.network != null) ''
-      ${node.id}.${interface.id} -- ${interface.network}
-    '';
-  # TODO: deduplicate first
-  #+ concatLines (flip map interface.physicalConnections (x: ''
-  #  ${node.id}.${interface.id} -- ${x.node}.${x.interface}
-  #''));
+    concatLines (flip map interface.physicalConnections (x:
+      optionalString (
+        (!any (y: y.node == node.id && y.interface == interface.id) config.nodes.${x.node}.interfaces.${x.interface}.physicalConnections)
+        || (node.id < x.node)
+      )
+      ''
+        node_${node.id} -- node_${x.node}: "" {
+          source-arrowhead.label: ${interface.id}
+          target-arrowhead.label: ${x.interface}
+        }
+      ''));
 
   nodeToD2 = node: ''
-    ${node.id}: ${node.name} {}
+    node_${node.id}: "" {
+      shape: image
+      width: 680
+      icon: ${config.lib.renderers.svg.node.mkInfoCardNetwork node}
+    }
 
     ${concatLines (map (nodeInterfaceToD2 node) (attrValues node.interfaces))}
   '';

@@ -97,7 +97,7 @@
       mkInterface = interface: let
         color =
           if interface.virtual
-          then "#242931"
+          then "#7a899f"
           else "#70a5eb";
       in
         /*
@@ -135,7 +135,7 @@
       html
       */
       ''
-        <div tw="flex flex-col mx-4 mt-4 bg-[#21262e] rounded-lg p-2">
+        <div tw="flex flex-col mx-4 mt-4 rounded-lg p-2">
           <div tw="flex flex-row items-center">
             ${mkImage "w-16 h-16 mr-4 rounded-lg" (config.lib.icons.get service.icon)}
             <div tw="flex flex-col grow">
@@ -153,13 +153,25 @@
       */
       ''
         <div tw="flex flex-row mx-6 mt-2 items-center">
-          ${mkImageMaybe "w-12 h-12 mr-3" (config.lib.icons.get node.icon)}
+          ${mkImageMaybe "w-12 h-12 mr-4" (config.lib.icons.get node.icon)}
           <h2 tw="grow text-4xl font-bold">${node.name}</h2>
           <div tw="flex grow"></div>
           <h2 tw="text-4xl">${node.deviceType}</h2>
-          ${mkImageMaybe "w-16 h-16 ml-3" (config.lib.icons.get node.deviceIcon)}
+          ${mkImageMaybe "w-16 h-16 ml-4" (config.lib.icons.get node.deviceIcon)}
         </div>
       '';
+
+      mkInfoCardNetwork = node:
+        mkRootCard "rounded-xl"
+        /*
+        html
+        */
+        ''
+          ${mkTitle node}
+
+          ${concatLines (map mkInterface (attrValues node.interfaces))}
+          ${optionalString (node.interfaces != {}) spacingMt2}
+        '';
 
       mkInfoCardFull = node: let
         services = filter (x: !x.hidden) (attrValues node.services);
@@ -171,11 +183,9 @@
         ''
           ${mkTitle node}
 
-          ${optionalString (node.interfaces != {}) (mkSpacer "Interfaces" + spacingMt2)}
           ${concatLines (map mkInterface (attrValues node.interfaces))}
           ${optionalString (node.interfaces != {}) spacingMt2}
 
-          ${optionalString (services != []) (mkSpacer "Services")}
           ${concatLines (map mkService services)}
           ${optionalString (services != []) spacingMt2}
 
@@ -196,7 +206,8 @@ in {
 
   config = {
     lib.renderers.svg.node = {
-      mkInfoCardFull = node: renderHtmlToSvg (html.node.mkInfoCardFull node) node.name;
+      mkInfoCardNetwork = node: renderHtmlToSvg (html.node.mkInfoCardNetwork node) "card-network-${node.name}";
+      mkInfoCardFull = node: renderHtmlToSvg (html.node.mkInfoCardFull node) "card-node-${node.name}";
     };
 
     renderers.svg.output = pkgs.runCommand "topology-svgs" {} ''

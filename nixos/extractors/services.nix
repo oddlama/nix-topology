@@ -7,10 +7,13 @@
     (lib)
     concatStringsSep
     mkDefault
+    mkEnableOption
     mkIf
     ;
 in {
-  topology.self.services = {
+  options.topology.extractors.services.enable = mkEnableOption "topology service extractor" // {default = true;};
+
+  config.topology.self.services = mkIf config.topology.extractors.services.enable {
     adguardhome = mkIf config.services.adguardhome.enable {
       name = "AdGuard Home";
       icon = "services.adguardhome";

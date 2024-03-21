@@ -12,13 +12,16 @@
     listToAttrs
     mapAttrsToList
     mkDefault
+    mkEnableOption
     mkIf
     mkMerge
     nameValuePair
     optional
     ;
 in {
-  config = mkIf config.systemd.network.enable {
+  options.topology.extractors.systemd-network.enable = mkEnableOption "topology systemd-network extractor" // {default = true;};
+
+  config = mkIf (config.topology.extractors.systemd-network.enable && config.systemd.network.enable) {
     topology.self.interfaces = mkMerge (
       # Create interfaces based on systemd.network.netdevs
       concatLists (

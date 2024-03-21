@@ -9,6 +9,7 @@
     flip
     mapAttrsToList
     mkDefault
+    mkEnableOption
     mkIf
     mkMerge
     filter
@@ -22,7 +23,9 @@
 
   networkId = wgName: "wireguard-${wgName}";
 in {
-  config = mkIf (config ? wireguard) {
+  options.topology.extractors.wireguard.enable = mkEnableOption "topology wireguard extractor" // {default = true;};
+
+  config = mkIf (config.topology.extractors.wireguard.enable && config ? wireguard) {
     # Create networks (this will be duplicated by each node,
     # but it doesn't matter and will be merged anyway)
     topology.networks = mkMerge (
