@@ -1,3 +1,13 @@
+# TODO:
+# - disks (from disko) + render
+# - hardware info (image small top and image big bottom and full (no card), maybe just image and render position)
+# - render router and other devices (card with interfaces, card with just image)
+# - render nodes with guests, guests in short form
+# - nginx proxy pass render, with upstream support
+# - more service info
+# - impermanence render?
+# - stable pseudorandom colors from palette with no-reuse until necessary
+# - search todo and do
 {
   config,
   lib,
@@ -19,18 +29,25 @@
     types
     ;
 
-  htmlToSvgCommand = inFile: outFile: ''
+  fileBase64 = file: let
+    out = pkgs.runCommand "base64" {} ''
+      ${pkgs.coreutils}/bin/base64 -w0 < ${file} > $out
+    '';
+  in "${out}";
+
+  htmlToSvgCommand = inFile: outFile: args: ''
     ${lib.getExe pkgs.html-to-svg} \
       --font ${pkgs.jetbrains-mono}/share/fonts/truetype/JetBrainsMono-Regular.ttf \
       --font-bold ${pkgs.jetbrains-mono}/share/fonts/truetype/JetBrainsMono-Bold.ttf \
-      --width 680 \
+      --width ${toString (args.width or "auto")} \
+      --height ${toString (args.height or "auto")} \
       ${inFile} ${outFile}
   '';
 
-  renderHtmlToSvg = html: name: let
+  renderHtmlToSvg = card: name: let
     drv = pkgs.runCommand "generate-svg-${name}" {} ''
       mkdir -p $out
-      ${htmlToSvgCommand (pkgs.writeText "${name}.html" html) "$out/${name}.svg"}
+      ${htmlToSvgCommand (pkgs.writeText "${name}.html" card.html) "$out/${name}.svg" card}
     '';
   in "${drv}/${name}.svg";
 
@@ -46,13 +63,13 @@
         content = head (splitString "</svg>" withoutPrefix);
       in ''<svg tw="${twAttrs}" ${content}</svg>''
       else if hasSuffix ".png" file
-      # FIXME: TODO png, jpg, ...
-      then ''
-        <img tw="object-contain ${twAttrs}" src="data:image/png;base64,${"TODO"}/>"
-      ''
+      then ''<img tw="object-contain ${twAttrs}" src="data:image/png;base64,${builtins.readFile fileBase64 file}/>"''
+      else if hasSuffix ".jpg" file || hasSuffix ".jpeg" file
+      then ''<img tw="object-contain ${twAttrs}" src="data:image/jpeg;base64,${builtins.readFile fileBase64 file}/>"''
       else builtins.throw "Unsupported icon file type: ${file}";
 
-    mkImageMaybe = twAttrs: file: optionalString (file != null) (mkImage twAttrs file);
+    mkImageMaybeIf = cond: twAttrs: file: optionalString (cond && file != null) (mkImage twAttrs file);
+    mkImageMaybe = mkImageMaybeIf true;
 
     mkSpacer = name:
     /*
@@ -68,26 +85,19 @@
       </div>
     '';
 
-    mkRootContainer = contents:
+    mkRootContainer = twAttrs: contents:
     /*
     html
     */
     ''
       <div tw="flex flex-col w-full h-full items-center">
+      <div tw="flex flex-col w-full h-full text-[#e3e6eb] font-mono ${twAttrs}" style="font-family: 'JetBrains Mono'">
       ${contents}
+      </div>
       </div>
     '';
 
-    mkRootCard = twAttrs: contents:
-      mkRootContainer
-      /*
-      html
-      */
-      ''
-        <div tw="flex flex-col w-full h-full bg-[#101419] text-[#e3e6eb] font-mono ${twAttrs}" style="font-family: 'JetBrains Mono'">
-        ${contents}
-        </div>
-      '';
+    mkCardContainer = mkRootContainer "bg-[#101419] rounded-xl";
 
     spacingMt2 = ''
       <div tw="flex mt-2"></div>
@@ -161,36 +171,73 @@
         </div>
       '';
 
-      mkInfoCardNetwork = node:
-        mkRootCard "rounded-xl"
-        /*
-        html
-        */
-        ''
-          ${mkTitle node}
+      mkNetCard = node: {
+        width = 680;
+        html =
+          mkCardContainer
+          /*
+          html
+          */
+          ''
+            ${mkTitle node}
 
-          ${concatLines (map mkInterface (attrValues node.interfaces))}
-          ${optionalString (node.interfaces != {}) spacingMt2}
-        '';
+            ${concatLines (map mkInterface (attrValues node.interfaces))}
+            ${optionalString (node.interfaces != {}) spacingMt2}
 
-      mkInfoCardFull = node: let
+            ${mkImageMaybe "w-full h-24" node.hardware.image}
+          '';
+      };
+
+      mkCard = node: let
         services = filter (x: !x.hidden) (attrValues node.services);
-      in
-        mkRootCard "rounded-xl"
-        /*
-        html
-        */
-        ''
-          ${mkTitle node}
+      in {
+        width = 680;
+        html =
+          mkCardContainer
+          /*
+          html
+          */
+          ''
+            ${mkTitle node}
 
-          ${concatLines (map mkInterface (attrValues node.interfaces))}
-          ${optionalString (node.interfaces != {}) spacingMt2}
+            ${concatLines (map mkInterface (attrValues node.interfaces))}
+            ${optionalString (node.interfaces != {}) spacingMt2}
 
-          ${concatLines (map mkService services)}
-          ${optionalString (services != []) spacingMt2}
+            ${concatLines (map mkService services)}
+            ${optionalString (services != []) spacingMt2}
 
-          <div tw="flex mb-2"></div>
-        '';
+            ${mkImageMaybe "w-full h-24" node.hardware.image}
+          '';
+      };
+
+      mkImageWithName = node: {
+        html = let
+          deviceIconImage = config.lib.icons.get node.deviceIcon;
+        in
+          mkRootContainer ""
+          /*
+          html
+          */
+          ''
+            <div tw="flex flex-row mx-6 mt-2 items-center">
+              ${mkImageMaybe "w-12 h-12 mr-4" (config.lib.icons.get node.icon)}
+              <h2 tw="grow text-4xl font-bold">${node.name}</h2>
+              <div tw="flex grow"></div>
+              <h2 tw="text-4xl">${node.deviceType}</h2>
+              ${mkImageMaybeIf (node.hardware.image != null -> deviceIconImage != node.hardware.image) "w-16 h-16 ml-4" deviceIconImage}
+            </div>
+
+            ${mkImageMaybe "w-full h-24" node.hardware.image}
+          '';
+      };
+
+      mkPreferredRender = node:
+        (
+          if node.preferredRenderType == "image" && node.hardware.image != null
+          then mkImageWithName
+          else mkCard
+        )
+        node;
     };
   };
 in {
@@ -206,18 +253,16 @@ in {
 
   config = {
     lib.renderers.svg.node = {
-      mkInfoCardNetwork = node: renderHtmlToSvg (html.node.mkInfoCardNetwork node) "card-network-${node.name}";
-      mkInfoCardFull = node: renderHtmlToSvg (html.node.mkInfoCardFull node) "card-node-${node.name}";
+      mkNetCard = node: renderHtmlToSvg (html.node.mkNetCard node) "card-network-${node.id}";
+      mkCard = node: renderHtmlToSvg (html.node.mkCard node) "card-node-${node.id}";
+      mkPreferredRender = node: renderHtmlToSvg (html.node.mkPreferredRender node) "preferred-render-node-${node.id}";
     };
 
     renderers.svg.output = pkgs.runCommand "topology-svgs" {} ''
       mkdir -p $out/nodes
-      ${concatLines (flip map (attrValues config.nodes) (
-        node:
-          htmlToSvgCommand (
-            pkgs.writeText "node-${node.name}.html" (html.node.mkInfoCardFull node)
-          ) "$out/nodes/${node.name}.svg"
-      ))}
+      ${concatLines (flip map (attrValues config.nodes) (node: ''
+        cp ${config.lib.renderers.svg.node.mkPreferredRender node} $out/nodes/${node.id}.svg
+      ''))}
     '';
   };
 }

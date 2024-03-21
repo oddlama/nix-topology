@@ -6,11 +6,13 @@ f: {
   inherit
     (lib)
     attrValues
+    elem
     flatten
     flip
     literalExpression
     mkDefault
     mkIf
+    mkMerge
     mkOption
     types
     ;
@@ -38,19 +40,33 @@ in
             defaultText = literalExpression ''"<name>"'';
           };
 
+          hardware = {
+            description = mkOption {
+              description = "A description of this node's hardware. Usually the device name or lost of the most important components.";
+              type = types.lines;
+              default = "";
+            };
+
+            image = mkOption {
+              description = "An image representing this node, usually shown larger than an icon.";
+              type = types.nullOr types.path;
+              default = null;
+            };
+          };
+
           icon = mkOption {
             description = "The icon representing this node. Usually shown next to the name. Must be a path to an image or a valid icon name (<category>.<name>).";
             type = types.nullOr (types.either types.path types.str);
             default = null;
           };
 
-          # FIXME: TODO emoji / icon
-          # FIXME: TODO hardware description "Odroid H3"
-          # FIXME: TODO hardware image
-
           deviceType = mkOption {
-            description = "TODO";
-            type = types.enum ["nixos" "microvm" "nixos-container"];
+            description = ''
+              The device type of the node. This can be set to anything, but some special
+              values exist that will automatically set some other defaults, most notably
+              the deviceIcon and preferredRenderType.
+            '';
+            type = types.either (types.enum ["nixos" "router" "switch" "device"]) types.str;
           };
 
           deviceIcon = mkOption {
@@ -64,14 +80,37 @@ in
             default = null;
             type = types.nullOr types.str;
           };
+
+          preferredRenderType = mkOption {
+            description = ''
+              An optional hint to the renderer to specify whether this node should preferrably
+              rendered as a full card, or just as an image with name. If there is no hardware
+              image, this will usually still render a small card.
+            '';
+            type = types.enum ["card" "image"];
+            default = "card";
+            defaultText = ''"card" # defaults to card but is also derived from the deviceType if possible.'';
+          };
         };
 
-        config = {
-          # Set the default icon, if an icon exists with a matching name
-          deviceIcon = mkIf (config.topology.isMainModule && config.icons.devices ? ${nodeSubmod.config.deviceType}) (
-            mkDefault ("devices." + nodeSubmod.config.deviceType)
-          );
-        };
+        config = let
+          nodeCfg = nodeSubmod.config;
+        in
+          mkIf config.topology.isMainModule (mkMerge [
+            # Set the default icon, if an icon exists with a matching name
+            {
+              deviceIcon = mkIf (config.icons.devices ? ${nodeCfg.deviceType}) (
+                mkDefault ("devices." + nodeCfg.deviceType)
+              );
+            }
+
+            # If the device type is generic device, try to render as an image
+            # and set the default image to the deviceIcon.
+            (mkIf (elem nodeCfg.deviceType ["router" "switch" "device"]) {
+              preferredRenderType = mkDefault "image";
+              hardware.image = mkDefault (config.lib.icons.get nodeCfg.deviceIcon);
+            })
+          ]);
       }));
     };
 
