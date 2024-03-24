@@ -104,11 +104,9 @@ in
               );
             }
 
-            # If the device type is generic device, try to render as an image
-            # and set the default image to the deviceIcon.
+            # If the device type is not a full nixos node, try to render it as an image with name.
             (mkIf (elem nodeCfg.deviceType ["router" "switch" "device"]) {
               preferredRenderType = mkDefault "image";
-              hardware.image = mkDefault (config.lib.icons.get nodeCfg.deviceIcon);
             })
           ]);
       }));

@@ -39,7 +39,7 @@
     node_${node.id}: "" {
       shape: image
       width: 680
-      icon: ${config.lib.renderers.svg.node.mkInfoCardNetwork node}
+      icon: ${config.lib.renderers.svg.node.mkPreferredRender node}
     }
 
     ${concatLines (map (nodeInterfaceToD2 node) (attrValues node.interfaces))}

@@ -45,9 +45,9 @@ in {
     };
 
     renderer = mkOption {
-      description = "Which renderer to use for the default output. Availble options: ${toString availableRenderers}";
+      description = "Which renderer to use for the default output. Available options: ${toString availableRenderers}";
       type = types.nullOr (types.enum availableRenderers);
-      default = "d2";
+      default = "elk";
     };
 
     output = mkOption {

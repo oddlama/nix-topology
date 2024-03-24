@@ -45,11 +45,10 @@
   '';
 
   renderHtmlToSvg = card: name: let
-    drv = pkgs.runCommand "generate-svg-${name}" {} ''
-      mkdir -p $out
-      ${htmlToSvgCommand (pkgs.writeText "${name}.html" card.html) "$out/${name}.svg" card}
+    out = pkgs.runCommand "${name}.svg" {} ''
+      ${htmlToSvgCommand (pkgs.writeText "${name}.html" card.html) "$out" card}
     '';
-  in "${drv}/${name}.svg";
+  in "${out}";
 
   html = rec {
     mkImage = twAttrs: file:
@@ -63,9 +62,9 @@
         content = head (splitString "</svg>" withoutPrefix);
       in ''<svg tw="${twAttrs}" ${content}</svg>''
       else if hasSuffix ".png" file
-      then ''<img tw="object-contain ${twAttrs}" src="data:image/png;base64,${builtins.readFile fileBase64 file}/>"''
+      then ''<img tw="object-contain ${twAttrs}" src="data:image/png;base64,${builtins.readFile (fileBase64 file)}"/>''
       else if hasSuffix ".jpg" file || hasSuffix ".jpeg" file
-      then ''<img tw="object-contain ${twAttrs}" src="data:image/jpeg;base64,${builtins.readFile fileBase64 file}/>"''
+      then ''<img tw="object-contain ${twAttrs}" src="data:image/jpeg;base64,${builtins.readFile (fileBase64 file)}"/>''
       else builtins.throw "Unsupported icon file type: ${file}";
 
     mkImageMaybeIf = cond: twAttrs: file: optionalString (cond && file != null) (mkImage twAttrs file);
@@ -164,9 +163,8 @@
       ''
         <div tw="flex flex-row mx-6 mt-2 items-center">
           ${mkImageMaybe "w-12 h-12 mr-4" (config.lib.icons.get node.icon)}
-          <h2 tw="grow text-4xl font-bold">${node.name}</h2>
-          <div tw="flex grow"></div>
-          <h2 tw="text-4xl">${node.deviceType}</h2>
+          <h2 tw="text-4xl font-bold">${node.name}</h2>
+          <div tw="flex grow min-w-8"></div>
           ${mkImageMaybe "w-16 h-16 ml-4" (config.lib.icons.get node.deviceIcon)}
         </div>
       '';
@@ -214,20 +212,22 @@
         html = let
           deviceIconImage = config.lib.icons.get node.deviceIcon;
         in
-          mkRootContainer ""
+          mkRootContainer "items-center"
           /*
           html
           */
           ''
             <div tw="flex flex-row mx-6 mt-2 items-center">
-              ${mkImageMaybe "w-12 h-12 mr-4" (config.lib.icons.get node.icon)}
-              <h2 tw="grow text-4xl font-bold">${node.name}</h2>
-              <div tw="flex grow"></div>
-              <h2 tw="text-4xl">${node.deviceType}</h2>
-              ${mkImageMaybeIf (node.hardware.image != null -> deviceIconImage != node.hardware.image) "w-16 h-16 ml-4" deviceIconImage}
+              ${mkImageMaybe "w-12 h-12" (config.lib.icons.get node.icon)}
+              <h2 tw="text-4xl font-bold">${node.name}</h2>
+              ${optionalString (node.hardware.image != null -> deviceIconImage != node.hardware.image)
+              ''
+                <div tw="flex grow min-w-8"></div>
+                ${mkImageMaybe "w-16 h-16" deviceIconImage}
+              ''}
             </div>
 
-            ${mkImageMaybe "w-full h-24" node.hardware.image}
+            ${mkImageMaybe "h-24" node.hardware.image}
           '';
       };
 
