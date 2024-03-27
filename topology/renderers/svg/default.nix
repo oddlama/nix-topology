@@ -8,6 +8,8 @@
 # - impermanence render?
 # - stable pseudorandom colors from palette with no-reuse until necessary
 # - search todo and do
+# - podman / docker harvesting
+# - adjust device icon based on guest type
 {
   config,
   lib,
@@ -119,7 +121,7 @@
               ${mkImage "w-6 h-6 mr-2" (config.lib.icons.get interface.icon)}
               <span tw="font-bold">${interface.id}</span>
             </div>
-            <span>addrs: ${toString interface.addresses}</span>
+            <span>${toString interface.addresses}</span>
           </div>
         '';
 
@@ -129,8 +131,8 @@
       */
       ''
         <div tw="flex flex-row mt-1">
-          <span tw="flex flex-none w-20 font-bold pl-1">${detail.name}</span>
-          <span tw="flex grow">${detail.text}</span>
+          <span tw="flex text-sm flex-none w-22 font-bold pl-1">${detail.name}</span>
+          <span tw="flex text-sm grow">${detail.text}</span>
         </div>
       '';
 
@@ -144,15 +146,31 @@
       html
       */
       ''
-        <div tw="flex flex-col mx-4 mt-4 rounded-lg p-2">
+        <div tw="flex flex-col mx-4 mt-2 rounded-lg p-2">
           <div tw="flex flex-row items-center">
-            ${mkImage "w-16 h-16 mr-4 rounded-lg" (config.lib.icons.get service.icon)}
+            ${mkImage "w-12 h-12 mr-4 rounded-lg" (config.lib.icons.get service.icon)}
             <div tw="flex flex-col grow">
-              <h1 tw="text-xl font-bold m-0">${service.name}</h1>
-              ${optionalString (service.info != "") ''<p tw="text-base m-0">${service.info}</p>''}
+              <h1 tw="text-lg font-bold m-0">${service.name}</h1>
+              ${optionalString (service.info != "") ''<p tw="text-sm m-0">${service.info}</p>''}
             </div>
           </div>
           ${serviceDetails service}
+        </div>
+      '';
+
+      mkGuest = guest:
+      /*
+      html
+      */
+      ''
+        <div tw="flex flex-col mx-4 mt-2 rounded-lg p-2">
+          <div tw="flex flex-row items-center">
+            ${mkImageMaybe "w-12 h-12 mr-4" (config.lib.icons.get guest.deviceIcon)}
+            <div tw="flex flex-col grow">
+              <h1 tw="text-lg font-bold m-0">${guest.name}</h1>
+              <p tw="text-sm m-0">${guest.guestType}</p>
+            </div>
+          </div>
         </div>
       '';
 
@@ -162,15 +180,15 @@
       */
       ''
         <div tw="flex flex-row mx-6 mt-2 items-center">
-          ${mkImageMaybe "w-12 h-12 mr-4" (config.lib.icons.get node.icon)}
-          <h2 tw="text-4xl font-bold">${node.name}</h2>
+          ${mkImageMaybe "w-8 h-8 mr-4" (config.lib.icons.get node.icon)}
+          <h2 tw="text-2xl font-bold">${node.name}</h2>
           <div tw="flex grow min-w-8"></div>
-          ${mkImageMaybe "w-16 h-16 ml-4" (config.lib.icons.get node.deviceIcon)}
+          ${mkImageMaybe "w-12 h-12 ml-4" (config.lib.icons.get node.deviceIcon)}
         </div>
       '';
 
       mkNetCard = node: {
-        width = 680;
+        width = 480;
         html =
           mkCardContainer
           /*
@@ -188,8 +206,9 @@
 
       mkCard = node: let
         services = filter (x: !x.hidden) (attrValues node.services);
+        guests = filter (x: x.parent == node.id) (attrValues config.nodes);
       in {
-        width = 680;
+        width = 480;
         html =
           mkCardContainer
           /*
@@ -200,6 +219,9 @@
 
             ${concatLines (map mkInterface (attrValues node.interfaces))}
             ${optionalString (node.interfaces != {}) spacingMt2}
+
+            ${concatLines (map mkGuest guests)}
+            ${optionalString (guests != []) spacingMt2}
 
             ${concatLines (map mkService services)}
             ${optionalString (services != []) spacingMt2}
@@ -219,7 +241,7 @@
           ''
             <div tw="flex flex-row mx-6 mt-2 items-center">
               ${mkImageMaybe "w-12 h-12" (config.lib.icons.get node.icon)}
-              <h2 tw="text-4xl font-bold">${node.name}</h2>
+              <h2 tw="text-2xl font-bold">${node.name}</h2>
               ${optionalString (node.hardware.image != null -> deviceIconImage != node.hardware.image)
               ''
                 <div tw="flex grow min-w-8"></div>

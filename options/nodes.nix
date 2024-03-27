@@ -69,6 +69,12 @@ in
             type = types.either (types.enum ["nixos" "router" "switch" "device"]) types.str;
           };
 
+          guestType = mkOption {
+            description = "If the device is a guest of another device, this will tell the type of guest it is.";
+            default = null;
+            type = types.nullOr (types.either (types.enum ["microvm" "nixos-container"]) types.str);
+          };
+
           deviceIcon = mkOption {
             description = "The icon representing this node's type. Must be a path to an image or a valid icon name (<category>.<name>). By default an icon will be selected based on the deviceType.";
             type = types.nullOr (types.either types.path types.str);
