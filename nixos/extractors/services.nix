@@ -60,7 +60,7 @@ in {
     };
 
     openssh = mkIf config.services.openssh.enable {
-      hidden = mkDefault true; # Causes a lot of much clutter
+      hidden = mkDefault true; # Causes a lot of clutter
       name = "OpenSSH";
       icon = "services.openssh";
       info = "port: ${concatStringsSep ", " (map toString config.services.openssh.ports)}";

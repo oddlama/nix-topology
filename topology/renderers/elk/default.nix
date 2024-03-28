@@ -19,6 +19,7 @@
     mapAttrsToList
     mkOption
     optional
+    optionals
     optionalAttrs
     recursiveUpdate
     types
@@ -60,28 +61,39 @@
     };
   };
 
+  idForInterface = node: interfaceId:
+    if (node.preferredRenderType == "card")
+    then "children.node:${node.id}.ports.interface:${interfaceId}"
+    else "children.node:${node.id}";
+
   nodeInterfaceToElk = node: interface:
     [
-      {
+      (optionalAttrs (node.preferredRenderType == "card") {
         children."node:${node.id}".ports."interface:${interface.id}" = {
-          properties = {
-            "port.side" = "WEST";
-          };
+          properties."port.side" = "WEST";
+          #x = 0;
+          #y = 82 + 42 * lib.lists.findFirstIndex (x: x == interface.id) 0 (builtins.attrNames node.interfaces); # FIXME: just pass index along in function call
           width = 8;
           height = 8;
+          # TODO: FIXME: not shown currently in svg
+          # labels.name = {
+          #   text = interface.id;
+          #   width = 33.0;
+          #   height = 15.0;
+          # };
         };
-      }
+      })
     ]
-    ++ flip map interface.physicalConnections (x:
+    ++ optionals (!interface.virtual) (flip map interface.physicalConnections (x:
       optionalAttrs (
         (!any (y: y.node == node.id && y.interface == interface.id) config.nodes.${x.node}.interfaces.${x.interface}.physicalConnections)
         || (node.id < x.node)
       ) {
         edges."node:${node.id}.ports.interface:${interface.id}-to-node:${x.node}.ports.interface:${x.interface}" = {
-          sources = ["children.node:${node.id}.ports.interface:${interface.id}"];
-          targets = ["children.node:${x.node}.ports.interface:${x.interface}"];
+          sources = [(idForInterface node interface.id)];
+          targets = [(idForInterface config.nodes.${x.node} x.interface)];
         };
-      });
+      }));
 
   nodeToElk = node:
     [
@@ -91,23 +103,21 @@
             file = config.lib.renderers.svg.node.mkPreferredRender node;
             scale = 0.8;
           };
-          properties = {
-            "portConstraints" = "FIXED_SIDE";
-          };
+          properties."portConstraints" = "FIXED_SIDE";
         };
       }
     ]
     ++ optional (node.parent != null) {
       children."node:${node.parent}".ports.guests = {
-        properties = {
-          "port.side" = "EAST";
-        };
+        properties."port.side" = "EAST";
         width = 8;
         height = 8;
       };
       edges."node:${node.parent}.ports.guests-to-node:${node.id}" = {
         sources = ["children.node:${node.parent}.ports.guests"];
         targets = ["children.node:${node.id}"];
+        style.stroke-dasharray = "10,8";
+        style.stroke-linecap = "round";
       };
     }
     ++ map (nodeInterfaceToElk node) (attrValues node.interfaces);
@@ -128,10 +138,23 @@ in {
           layoutOptions = {
             "org.eclipse.elk.algorithm" = "layered";
             "org.eclipse.elk.edgeRouting" = "ORTHOGONAL";
+            "org.eclipse.elk.direction" = "RIGHT";
             "org.eclipse.elk.layered.crossingMinimization.strategy" = true;
             "org.eclipse.elk.layered.nodePlacement.strategy" = "NETWORK_SIMPLEX";
             "org.eclipse.elk.layered.spacing.edgeNodeBetweenLayers" = 40;
-            "org.eclipse.elk.direction" = "RIGHT";
+            "org.eclipse.elk.layered.spacing.edgeEdgeBetweenLayers" = 25;
+            "org.eclipse.elk.spacing.edgeEdge" = 50;
+            "org.eclipse.elk.spacing.edgeNode" = 50;
+          };
+        }
+
+        # Add service overview
+        {
+          children.services-overview = {
+            svg = {
+              file = config.lib.renderers.svg.services.mkOverview;
+              scale = 0.8;
+            };
           };
         }
       ]

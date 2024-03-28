@@ -10,6 +10,7 @@
 # - search todo and do
 # - podman / docker harvesting
 # - adjust device icon based on guest type
+# - nixos-container extractor
 {
   config,
   lib,
@@ -116,8 +117,7 @@
         */
         ''
           <div tw="flex flex-row items-center my-2">
-            <div tw="flex flex-row flex-none bg-[${color}] w-4 h-1"></div>
-            <div tw="flex flex-row flex-none items-center bg-[${color}] text-[#101419] rounded-lg px-2 py-1 w-46 h-8 mr-4">
+            <div tw="flex flex-row flex-none items-center bg-[${color}] text-[#101419] rounded-lg px-2 py-1 w-46 h-8 mx-4">
               ${mkImage "w-6 h-6 mr-2" (config.lib.icons.get interface.icon)}
               <span tw="font-bold">${interface.id}</span>
             </div>
@@ -141,7 +141,11 @@
         # FIXME: order not respected
         + concatLines ((map serviceDetail) (attrValues service.details));
 
-      mkService = service:
+      mkService = {
+        additionalInfo ? "",
+        includeDetails ? true,
+        ...
+      }: service:
       /*
       html
       */
@@ -152,9 +156,10 @@
             <div tw="flex flex-col grow">
               <h1 tw="text-lg font-bold m-0">${service.name}</h1>
               ${optionalString (service.info != "") ''<p tw="text-sm m-0">${service.info}</p>''}
+              ${additionalInfo}
             </div>
           </div>
-          ${serviceDetails service}
+          ${optionalString includeDetails (serviceDetails service)}
         </div>
       '';
 
@@ -223,7 +228,7 @@
             ${concatLines (map mkGuest guests)}
             ${optionalString (guests != []) spacingMt2}
 
-            ${concatLines (map mkService services)}
+            ${concatLines (map (mkService {}) services)}
             ${optionalString (services != []) spacingMt2}
 
             ${mkImageMaybe "w-full h-24" node.hardware.image}
@@ -240,12 +245,12 @@
           */
           ''
             <div tw="flex flex-row mx-6 mt-2 items-center">
-              ${mkImageMaybe "w-12 h-12" (config.lib.icons.get node.icon)}
+              ${mkImageMaybe "w-8 h-8" (config.lib.icons.get node.icon)}
               <h2 tw="text-2xl font-bold">${node.name}</h2>
               ${optionalString (node.hardware.image != null -> deviceIconImage != node.hardware.image)
               ''
-                <div tw="flex grow min-w-8"></div>
-                ${mkImageMaybe "w-16 h-16" deviceIconImage}
+                <div tw="flex grow min-w-4"></div>
+                ${mkImageMaybe "w-12 h-12" deviceIconImage}
               ''}
             </div>
 
@@ -261,6 +266,36 @@
         )
         node;
     };
+
+    services.mkOverview = {
+      width = 480;
+      html =
+        mkCardContainer
+        /*
+        html
+        */
+        ''
+          <div tw="flex flex-row mx-6 mt-2 items-center">
+            <h2 tw="text-2xl font-bold">Services Overview</h2>
+          </div>
+
+          ${concatLines (flip map (attrValues config.nodes) (
+            node: let
+              services = filter (x: !x.hidden) (attrValues node.services);
+            in
+              concatLines (
+                flip map services (
+                  html.node.mkService {
+                    additionalInfo = ''<p tw="text-sm text-[#7a899f] m-0">${node.name}</p>'';
+                    includeDetails = false;
+                  }
+                )
+              )
+          ))}
+
+          ${spacingMt2}
+        '';
+    };
   };
 in {
   options.renderers.svg = {
@@ -274,10 +309,14 @@ in {
   };
 
   config = {
-    lib.renderers.svg.node = {
-      mkNetCard = node: renderHtmlToSvg (html.node.mkNetCard node) "card-network-${node.id}";
-      mkCard = node: renderHtmlToSvg (html.node.mkCard node) "card-node-${node.id}";
-      mkPreferredRender = node: renderHtmlToSvg (html.node.mkPreferredRender node) "preferred-render-node-${node.id}";
+    lib.renderers.svg = {
+      services.mkOverview = renderHtmlToSvg html.services.mkOverview "services-overview";
+
+      node = {
+        mkNetCard = node: renderHtmlToSvg (html.node.mkNetCard node) "card-network-${node.id}";
+        mkCard = node: renderHtmlToSvg (html.node.mkCard node) "card-node-${node.id}";
+        mkPreferredRender = node: renderHtmlToSvg (html.node.mkPreferredRender node) "preferred-render-node-${node.id}";
+      };
     };
 
     renderers.svg.output = pkgs.runCommand "topology-svgs" {} ''

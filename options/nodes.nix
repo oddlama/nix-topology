@@ -66,7 +66,7 @@ in
               values exist that will automatically set some other defaults, most notably
               the deviceIcon and preferredRenderType.
             '';
-            type = types.either (types.enum ["nixos" "router" "switch" "device"]) types.str;
+            type = types.either (types.enum ["nixos" "internet" "router" "switch" "device"]) types.str;
           };
 
           guestType = mkOption {
@@ -111,7 +111,7 @@ in
             }
 
             # If the device type is not a full nixos node, try to render it as an image with name.
-            (mkIf (elem nodeCfg.deviceType ["router" "switch" "device"]) {
+            (mkIf (elem nodeCfg.deviceType ["internet" "router" "switch" "device"]) {
               preferredRenderType = mkDefault "image";
             })
           ]);
