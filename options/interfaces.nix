@@ -11,6 +11,7 @@ f: {
     mkDefault
     mkIf
     mkOption
+    optional
     types
     ;
 in
@@ -121,6 +122,20 @@ in
                   assertion = config.nodes ? ${physicalConnection.node} && config.nodes.${physicalConnection.node}.interfaces ? ${physicalConnection.interface};
                   message = "topology: nodes.${node.id}.interfaces.${interface.id}.physicalConnections refers to an unknown node/interface nodes.${physicalConnection.node}.interfaces.${physicalConnection.interface}";
                 }
+              )
+          )
+      ));
+
+      warnings = flatten (flip map (attrValues config.nodes) (
+        node:
+          flip map (attrValues node.interfaces) (
+            interface:
+              flip map interface.physicalConnections (
+                physicalConnection: let
+                  otherNetwork = config.nodes.${physicalConnection.node}.interfaces.${physicalConnection.interface}.network or null;
+                in
+                  optional (interface.network != null && otherNetwork != null && interface.network != otherNetwork)
+                  "topology: The interface nodes.${node.id}.interfaces.${interface.id} is associated with the network (${interface.network}), but also has a physicalConnection to nodes.${physicalConnection.node}.interfaces.${physicalConnection.interface} which is associated to a different network (${otherNetwork})"
               )
           )
       ));

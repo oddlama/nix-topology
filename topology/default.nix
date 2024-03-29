@@ -6,6 +6,7 @@
   inherit
     (lib)
     attrNames
+    concatLines
     concatLists
     concatStringsSep
     filter
@@ -19,6 +20,7 @@
     mkMerge
     mkOption
     types
+    warnIf
     ;
 
   availableRenderers = attrNames (filterAttrs (_: v: v == "directory") (builtins.readDir ./renderers));
@@ -94,6 +96,17 @@ in {
       });
     };
 
+    warnings = mkOption {
+      internal = true;
+      default = [];
+      example = ["This is deprecated for that reason"];
+      description = lib.mdDoc ''
+        This option allows modules to show warnings to users during
+        the evaluation of the topology configuration.
+      '';
+      type = types.listOf types.str;
+    };
+
     topology.isMainModule = mkOption {
       description = "Whether this is the toplevel topology module.";
       readOnly = true;
@@ -120,7 +133,10 @@ in {
     in
       if failedAssertions != []
       then throw "\nFailed assertions:\n${concatStringsSep "\n" (map (x: "- ${x}") failedAssertions)}"
-      else mkIf (config.renderer != null) (mkDefault config.renderers.${config.renderer}.output);
+      else
+        warnIf (config.warnings != [])
+        (concatLines (["The following warnings were raised during evaluation:"] ++ config.warnings))
+        (mkIf (config.renderer != null) (mkDefault config.renderers.${config.renderer}.output));
 
     nodes = aggregate ["nodes"];
     networks = aggregate ["networks"];

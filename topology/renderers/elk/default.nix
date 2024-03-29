@@ -66,7 +66,7 @@
 
   mkLabel = text: scale: extraStyle: {
     height = scale * 12;
-    width = scale * 7.3 * (stringLength text);
+    width = scale * 7.2 * (stringLength text);
     inherit text;
     style =
       {
