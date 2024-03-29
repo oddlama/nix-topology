@@ -5,6 +5,9 @@ f: {
 }: let
   inherit
     (lib)
+    attrValues
+    flatten
+    flip
     mkOption
     types
     ;
@@ -26,6 +29,12 @@ in
             description = "The name of this network";
             type = types.str;
             default = "Unnamed network '${networkSubmod.config.id}'";
+          };
+
+          icon = mkOption {
+            description = "The icon representing this network. Must be a path to an image or a valid icon name (<category>.<name>).";
+            type = types.nullOr (types.either types.path types.str);
+            default = null;
           };
 
           color = mkOption {
@@ -52,5 +61,16 @@ in
           # FIXME: nat to [other networks] (happening on node XY)
         };
       }));
+    };
+
+    config = {
+      assertions = flatten (
+        flip map (attrValues config.networks) (
+          network: [
+            (config.lib.assertions.iconValid
+              network.icon "networks.${network.id}.icon")
+          ]
+        )
+      );
     };
   }

@@ -55,74 +55,145 @@
         else value
     );
 
-  netToElk = net: {
-    children."net:${net.id}" = {
-      width = 50;
-      height = 50;
-    };
+  mkEdge = from: to: extra: {
+    edges."${from}__${to}" =
+      {
+        sources = [from];
+        targets = [to];
+      }
+      // extra;
   };
 
-  idForInterface = node: interfaceId:
-    if (node.preferredRenderType == "card")
-    then "children.node:${node.id}.ports.interface:${interfaceId}"
-    else "children.node:${node.id}";
+  mkLabel = text: scale: extraStyle: {
+    height = scale * 12;
+    width = scale * 7.3 * (stringLength text);
+    inherit text;
+    style =
+      {
+        style = "font: ${toString (scale * 12)}px JetBrains Mono;";
+      }
+      // extraStyle;
+  };
+
+  netToElk = net: [
+    {
+      children.network.children."net:${net.id}" = {
+        svg = {
+          file = config.lib.renderers.svg.net.mkCard net;
+          scale = 0.8;
+        };
+        properties."portLabels.placement" = "OUTSIDE";
+      };
+    }
+  ];
+
+  idForInterface = node: interfaceId: "children.node:${node.id}.ports.interface:${interfaceId}";
 
   nodeInterfaceToElk = node: interface:
     [
-      (optionalAttrs (node.preferredRenderType == "card") {
+      # Interface for node in main view
+      {
         children."node:${node.id}".ports."interface:${interface.id}" = {
-          properties."port.side" = "WEST";
+          properties = optionalAttrs (node.preferredRenderType == "card") {
+            "port.side" = "WEST";
+          };
           width = 8;
           height = 8;
           style.stroke = "#70a5eb";
           style.fill = "#74bee9";
-          labels.name = {
-            height = 12;
-            width = 7.5 * (stringLength interface.id);
-            text = interface.id;
-          };
+          labels =
+            {
+              "00-name" = mkLabel interface.id 1 {};
+            }
+            // optionalAttrs (interface.mac != null) {
+              "50-mac" = mkLabel interface.mac 1 {fill = "#70a5eb";};
+            };
         };
-      })
+      }
+      # Interface for node in network-centric view
+      {
+        children.network.children."node:${node.id}".ports."interface:${interface.id}" = {
+          width = 8;
+          height = 8;
+          style.stroke = "#70a5eb";
+          style.fill = "#74bee9";
+          labels =
+            {
+              "00-name" = mkLabel interface.id 1 {};
+            }
+            // optionalAttrs (interface.mac != null) {
+              "50-mac" = mkLabel interface.mac 1 {fill = "#70a5eb";};
+            }
+            // optionalAttrs (interface.addresses != []) {
+              "60-addrs" = mkLabel (toString interface.addresses) 1 {fill = "#f9a872";};
+            };
+        };
+      }
+
+      # Edge in network-centric view
+      (optionalAttrs (interface.network != null) (
+        mkEdge ("children.network." + idForInterface node interface.id) "children.network.children.net:${interface.network}" {}
+      ))
     ]
-    ++ optionals (!interface.virtual) (flip map interface.physicalConnections (x:
-      optionalAttrs (
-        (!any (y: y.node == node.id && y.interface == interface.id) config.nodes.${x.node}.interfaces.${x.interface}.physicalConnections)
-        || (node.id < x.node)
-      ) {
-        edges."node:${node.id}.ports.interface:${interface.id}-to-node:${x.node}.ports.interface:${x.interface}" = {
-          sources = [(idForInterface node interface.id)];
-          targets = [(idForInterface config.nodes.${x.node} x.interface)];
-        };
-      }));
+    ++ optionals (!interface.virtual) (flip map interface.physicalConnections (
+      conn:
+        optionalAttrs (
+          (!any (y: y.node == node.id && y.interface == interface.id) config.nodes.${conn.node}.interfaces.${conn.interface}.physicalConnections)
+          || (node.id < conn.node)
+        ) (
+          # Edge in main view
+          mkEdge
+          (idForInterface node interface.id)
+          (idForInterface config.nodes.${conn.node} conn.interface)
+          {}
+        )
+    ));
 
   nodeToElk = node:
     [
+      # Add node to main view
       {
         children."node:${node.id}" = {
           svg = {
             file = config.lib.renderers.svg.node.mkPreferredRender node;
             scale = 0.8;
           };
-          properties."portConstraints" = "FIXED_SIDE";
+          properties =
+            {
+              "portLabels.placement" = "OUTSIDE";
+            }
+            // optionalAttrs (node.preferredRenderType == "card") {
+              "portConstraints" = "FIXED_SIDE";
+            };
+        };
+      }
+      # Add node to network-centric view
+      {
+        children.network.children."node:${node.id}" = {
+          svg = {
+            file = config.lib.renderers.svg.node.mkImageWithName node;
+            scale = 0.8;
+          };
           properties."portLabels.placement" = "OUTSIDE";
         };
       }
     ]
-    ++ optional (node.parent != null) {
-      children."node:${node.parent}".ports.guests = {
-        properties."port.side" = "EAST";
-        width = 8;
-        height = 8;
-        style.stroke = "#49d18d";
-        style.fill = "#78dba9";
-      };
-      edges."node:${node.parent}.ports.guests-to-node:${node.id}" = {
-        sources = ["children.node:${node.parent}.ports.guests"];
-        targets = ["children.node:${node.id}"];
+    ++ optional (node.parent != null) (
+      {
+        children."node:${node.parent}".ports.guests = {
+          properties."port.side" = "EAST";
+          width = 8;
+          height = 8;
+          style.stroke = "#49d18d";
+          style.fill = "#78dba9";
+          labels."00-name" = mkLabel "guests" 1 {};
+        };
+      }
+      // mkEdge "children.node:${node.parent}.ports.guests" "children.node:${node.id}" {
         style.stroke-dasharray = "10,8";
         style.stroke-linecap = "round";
-      };
-    }
+      }
+    )
     ++ map (nodeInterfaceToElk node) (attrValues node.interfaces);
 in {
   options.renderers.elk = {
@@ -148,6 +219,19 @@ in {
             "org.eclipse.elk.layered.spacing.edgeEdgeBetweenLayers" = 25;
             "org.eclipse.elk.spacing.edgeEdge" = 50;
             "org.eclipse.elk.spacing.edgeNode" = 50;
+          };
+        }
+
+        # Add network-centric section
+        {
+          children.network = {
+            style = {
+              stroke = "#101419";
+              stroke-width = 2;
+              fill = "#080a0d";
+              rx = 12;
+            };
+            labels."00-name" = mkLabel "Network View" 1 {};
           };
         }
 

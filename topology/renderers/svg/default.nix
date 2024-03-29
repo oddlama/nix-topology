@@ -1,4 +1,13 @@
 # TODO:
+# - systemd extractor remove cidr mask
+# - address port label render make newline capable (multiple port labels)
+# - mac address show!
+# - split network layout or make rectpacking of childs
+# - NAT indication
+# - bottom hw image distorted in card view (move to top anyway)
+# - embed font
+# - network overview card (list all networks with name and cidr, legend style)
+# - colors!
 # - ip labels on edges
 # - network centric view
 # - better layout for interfaces in svg
@@ -106,6 +115,28 @@
       <div tw="flex mt-2"></div>
     '';
 
+    net = rec {
+      mkCard = net: {
+        width = 480;
+        html =
+          mkCardContainer
+          /*
+          html
+          */
+          ''
+            <div tw="flex flex-row mx-6 mt-2 items-center">
+              ${mkImageMaybe "w-8 h-8 mr-4" (config.lib.icons.get net.icon)}
+              <h2 tw="text-2xl font-bold">${net.name}</h2>
+              <div tw="flex grow min-w-8"></div>
+              <div tw="flex flex-none bg-[#ff0000] w-12 h-12 ml-4 rounded-lg"></div>
+            </div>
+            <div tw="flex flex-col mx-6 my-2 grow">
+            ${optionalString (net.cidrv4 != null) ''<div tw="flex flex-row"><span tw="text-lg m-0"><b>CIDRv4</b></span><span tw="text-lg m-0 ml-4">${net.cidrv4}</span></div>''}
+            ${optionalString (net.cidrv6 != null) ''<div tw="flex flex-row"><span tw="text-lg m-0"><b>CIDRv6</b></span><span tw="text-lg m-0 ml-4">${net.cidrv6}</span></div>''}
+          '';
+      };
+    };
+
     node = rec {
       mkInterface = interface: let
         color =
@@ -192,23 +223,6 @@
           ${mkImageMaybe "w-12 h-12 ml-4" (config.lib.icons.get node.deviceIcon)}
         </div>
       '';
-
-      mkNetCard = node: {
-        width = 480;
-        html =
-          mkCardContainer
-          /*
-          html
-          */
-          ''
-            ${mkTitle node}
-
-            ${concatLines (map mkInterface (attrValues node.interfaces))}
-            ${optionalString (node.interfaces != {}) spacingMt2}
-
-            ${mkImageMaybe "w-full h-24" node.hardware.image}
-          '';
-      };
 
       mkCard = node: let
         services = filter (x: !x.hidden) (attrValues node.services);
@@ -314,8 +328,10 @@ in {
       # FIXME: networks.mkOverview = renderHtmlToSvg html.networks.mkOverview "networks-overview";
       services.mkOverview = renderHtmlToSvg html.services.mkOverview "services-overview";
 
+      net.mkCard = net: renderHtmlToSvg (html.net.mkCard net) "card-net-${net.id}";
+
       node = {
-        mkNetCard = node: renderHtmlToSvg (html.node.mkNetCard node) "card-network-${node.id}";
+        mkImageWithName = node: renderHtmlToSvg (html.node.mkImageWithName node) "image-with-name-${node.id}";
         mkCard = node: renderHtmlToSvg (html.node.mkCard node) "card-node-${node.id}";
         mkPreferredRender = node: renderHtmlToSvg (html.node.mkPreferredRender node) "preferred-render-node-${node.id}";
       };

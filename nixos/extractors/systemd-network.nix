@@ -60,6 +60,7 @@ in {
             optional (interfaceName != null) {
               ${interfaceName} = {
                 mac = network.matchConfig.MACAddress or null;
+                # TODO: FIXME: remove cidr mask
                 addresses = network.address ++ (network.networkConfig.Address or []);
                 gateways = network.gateway ++ (network.networkConfig.Gateway or []);
               };

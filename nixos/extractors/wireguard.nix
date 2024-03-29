@@ -35,6 +35,7 @@ in {
         in {
           ${networkId wgName} = {
             name = mkDefault "Wireguard network '${wgName}'";
+            icon = "interfaces.wireguard";
             cidrv4 = headOrNull (filter lib.net.ip.isv4 networkCidrs);
             cidrv6 = headOrNull (filter lib.net.ip.isv6 networkCidrs);
           };

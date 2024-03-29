@@ -42,8 +42,8 @@ in
 
           hardware = {
             description = mkOption {
-              description = "A description of this node's hardware. Usually the device name or lost of the most important components.";
-              type = types.lines;
+              description = "A description of this node's hardware. Usually the model name or a description the most important components.";
+              type = types.str;
               default = "";
             };
 
