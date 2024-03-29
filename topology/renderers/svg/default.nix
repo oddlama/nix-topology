@@ -1,15 +1,16 @@
 # TODO:
+# - ip labels on edges
+# - network centric view
+# - better layout for interfaces in svg
+# - sevice infos
 # - disks (from disko) + render
 # - hardware info (image small top and image big bottom and full (no card), maybe just image and render position)
-# - render router and other devices (card with interfaces, card with just image)
-# - render nodes with guests, guests in short form
-# - nginx proxy pass render, with upstream support
 # - more service info
 # - impermanence render?
+# - nixos nftables firewall render?
 # - stable pseudorandom colors from palette with no-reuse until necessary
 # - search todo and do
 # - podman / docker harvesting
-# - adjust device icon based on guest type
 # - nixos-container extractor
 {
   config,
@@ -310,6 +311,7 @@ in {
 
   config = {
     lib.renderers.svg = {
+      # FIXME: networks.mkOverview = renderHtmlToSvg html.networks.mkOverview "networks-overview";
       services.mkOverview = renderHtmlToSvg html.services.mkOverview "services-overview";
 
       node = {

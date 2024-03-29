@@ -19,9 +19,10 @@
     mapAttrsToList
     mkOption
     optional
-    optionals
     optionalAttrs
+    optionals
     recursiveUpdate
+    stringLength
     types
     ;
 
@@ -71,16 +72,15 @@
       (optionalAttrs (node.preferredRenderType == "card") {
         children."node:${node.id}".ports."interface:${interface.id}" = {
           properties."port.side" = "WEST";
-          #x = 0;
-          #y = 82 + 42 * lib.lists.findFirstIndex (x: x == interface.id) 0 (builtins.attrNames node.interfaces); # FIXME: just pass index along in function call
           width = 8;
           height = 8;
-          # TODO: FIXME: not shown currently in svg
-          # labels.name = {
-          #   text = interface.id;
-          #   width = 33.0;
-          #   height = 15.0;
-          # };
+          style.stroke = "#70a5eb";
+          style.fill = "#74bee9";
+          labels.name = {
+            height = 12;
+            width = 7.5 * (stringLength interface.id);
+            text = interface.id;
+          };
         };
       })
     ]
@@ -104,6 +104,7 @@
             scale = 0.8;
           };
           properties."portConstraints" = "FIXED_SIDE";
+          properties."portLabels.placement" = "OUTSIDE";
         };
       }
     ]
@@ -112,6 +113,8 @@
         properties."port.side" = "EAST";
         width = 8;
         height = 8;
+        style.stroke = "#49d18d";
+        style.fill = "#78dba9";
       };
       edges."node:${node.parent}.ports.guests-to-node:${node.id}" = {
         sources = ["children.node:${node.parent}.ports.guests"];
