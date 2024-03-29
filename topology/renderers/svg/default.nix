@@ -1,11 +1,12 @@
 # TODO:
+# - stack interfaces horizontally, information is now on the ports anyway.
 # - systemd extractor remove cidr mask
 # - address port label render make newline capable (multiple port labels)
 # - mac address show!
 # - split network layout or make rectpacking of childs
 # - NAT indication
 # - bottom hw image distorted in card view (move to top anyway)
-# - embed font
+# - embed font globally, try removing satori embed?
 # - network overview card (list all networks with name and cidr, legend style)
 # - colors!
 # - ip labels on edges
@@ -115,20 +116,25 @@
       <div tw="flex mt-2"></div>
     '';
 
-    net = rec {
+    net = {
       mkCard = net: {
         width = 480;
-        html =
+        html = let
+          netColor =
+            if net.color != null
+            then net.color
+            else "#b6beca";
+        in
           mkCardContainer
           /*
           html
           */
           ''
             <div tw="flex flex-row mx-6 mt-2 items-center">
-              ${mkImageMaybe "w-8 h-8 mr-4" (config.lib.icons.get net.icon)}
+              <div tw="flex flex-none bg-[${netColor}] w-8 h-8 mr-4 rounded-lg"></div>
               <h2 tw="text-2xl font-bold">${net.name}</h2>
               <div tw="flex grow min-w-8"></div>
-              <div tw="flex flex-none bg-[#ff0000] w-12 h-12 ml-4 rounded-lg"></div>
+              ${mkImageMaybe "w-12 h-12 ml-4" (config.lib.icons.get net.icon)}
             </div>
             <div tw="flex flex-col mx-6 my-2 grow">
             ${optionalString (net.cidrv4 != null) ''<div tw="flex flex-row"><span tw="text-lg m-0"><b>CIDRv4</b></span><span tw="text-lg m-0 ml-4">${net.cidrv4}</span></div>''}

@@ -40,6 +40,10 @@ in
           color = mkOption {
             description = "The color of this network";
             default = "random";
+            apply = x:
+              if x == "random"
+              then "#ff00ff" # FIXME: TODO: lookuptable linear probing hashing into palette
+              else x;
             type = types.either (types.strMatching "^#[0-9a-f]{6}$") (types.enum ["random"]);
           };
 

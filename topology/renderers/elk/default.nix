@@ -99,24 +99,30 @@
           };
           width = 8;
           height = 8;
-          style.stroke = "#70a5eb";
-          style.fill = "#74bee9";
+          style.stroke = "#485263"; # FIXME: TODO color based on attached network color (autoshade)?
+          style.fill = "#b6beca";
           labels =
             {
               "00-name" = mkLabel interface.id 1 {};
             }
             // optionalAttrs (interface.mac != null) {
               "50-mac" = mkLabel interface.mac 1 {fill = "#70a5eb";};
+            }
+            // optionalAttrs (interface.addresses != []) {
+              "60-addrs" = mkLabel (toString interface.addresses) 1 {fill = "#f9a872";};
             };
         };
       }
       # Interface for node in network-centric view
       {
         children.network.children."node:${node.id}".ports."interface:${interface.id}" = {
+          # FIXME: TODO: deduplicate, same as above
+          # FIXME: TODO: deduplicate, same as above
+          # FIXME: TODO: deduplicate, same as above
           width = 8;
           height = 8;
-          style.stroke = "#70a5eb";
-          style.fill = "#74bee9";
+          style.stroke = "#485263"; # FIXME: TODO color based on attached network color (autoshade)?
+          style.fill = "#b6beca";
           labels =
             {
               "00-name" = mkLabel interface.id 1 {};
@@ -132,7 +138,9 @@
 
       # Edge in network-centric view
       (optionalAttrs (interface.network != null) (
-        mkEdge ("children.network." + idForInterface node interface.id) "children.network.children.net:${interface.network}" {}
+        mkEdge ("children.network." + idForInterface node interface.id) "children.network.children.net:${interface.network}" {
+          style.stroke = config.networks.${interface.network}.color;
+        }
       ))
     ]
     ++ optionals (!interface.virtual) (flip map interface.physicalConnections (
@@ -145,7 +153,12 @@
           mkEdge
           (idForInterface node interface.id)
           (idForInterface config.nodes.${conn.node} conn.interface)
-          {}
+          {
+            # FIXME: in interface definition ensure that the two ends of physical connections don't have different networks (output warning only)
+            style = optionalAttrs (interface.network != null) {
+              stroke = config.networks.${interface.network}.color;
+            };
+          }
         )
     ));
 
