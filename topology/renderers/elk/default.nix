@@ -54,14 +54,17 @@
         else value
     );
 
-  mkEdge = from: to: extra: {
-    edges."${from}__${to}" =
-      {
-        sources = [from];
-        targets = [to];
-      }
-      // extra;
-  };
+  mkEdge = from: to: reverse: extra:
+    if reverse
+    then mkEdge to from false extra
+    else {
+      edges."${from}__${to}" =
+        {
+          sources = [from];
+          targets = [to];
+        }
+        // extra;
+    };
 
   mkPort = recursiveUpdate {
     width = 8;
@@ -80,6 +83,32 @@
       }
       // extraStyle;
   };
+
+  pathStyleFromNetworkStyle = style:
+    {
+      solid = {
+        stroke = style.primaryColor;
+      };
+      dashed =
+        {
+          stroke = style.primaryColor;
+          stroke-dasharray = "10,8";
+          stroke-linecap = "round";
+        }
+        // optionalAttrs (style.secondaryColor != null) {
+          background = style.secondaryColor;
+        };
+      dotted =
+        {
+          stroke = style.primaryColor;
+          stroke-dasharray = "2,6";
+          stroke-linecap = "round";
+        }
+        // optionalAttrs (style.secondaryColor != null) {
+          background = style.secondaryColor;
+        };
+    }
+    .${style.pattern};
 
   netToElk = net: [
     {
@@ -100,15 +129,18 @@
   idForInterface = node: interfaceId: "children.node:${node.id}.ports.interface:${interfaceId}";
 
   nodeInterfaceToElk = node: interface: let
+    netStyle = optionalAttrs (interface.network != null) {
+      fill = config.networks.${interface.network}.style.primaryColor;
+    };
     interfaceLabels =
       {
         "00-name" = mkLabel interface.id 1 {};
       }
       // optionalAttrs (interface.mac != null) {
-        "50-mac" = mkLabel interface.mac 1 {fill = "#70a5eb";};
+        "50-mac" = mkLabel interface.mac 1 netStyle;
       }
       // optionalAttrs (interface.addresses != []) {
-        "60-addrs" = mkLabel (toString interface.addresses) 1 {fill = "#f9a872";};
+        "60-addrs" = mkLabel (toString interface.addresses) 1 netStyle;
       };
   in
     [
@@ -131,8 +163,8 @@
 
       # Edge in network-centric view
       (optionalAttrs (interface.network != null) (
-        mkEdge ("children.network." + idForInterface node interface.id) "children.network.children.net:${interface.network}.ports.default" {
-          style.stroke = config.networks.${interface.network}.color;
+        mkEdge ("children.network." + idForInterface node interface.id) "children.network.children.net:${interface.network}.ports.default" false {
+          style = pathStyleFromNetworkStyle config.networks.${interface.network}.style;
         }
       ))
     ]
@@ -149,10 +181,11 @@
             mkEdge
             (idForInterface node interface.id)
             (idForInterface config.nodes.${conn.node} conn.interface)
+            conn.renderer.reverse
             {
-              style = optionalAttrs (interface.network != null) {
-                stroke = config.networks.${interface.network}.color;
-              };
+              style = optionalAttrs (interface.network != null) (
+                pathStyleFromNetworkStyle config.networks.${interface.network}.style
+              );
             }
           )
         )
@@ -196,7 +229,7 @@
           labels."00-name" = mkLabel "guests" 1 {};
         };
       }
-      // mkEdge "children.node:${node.parent}.ports.guests" "children.node:${node.id}" {
+      // mkEdge "children.node:${node.parent}.ports.guests" "children.node:${node.id}" false {
         style.stroke-dasharray = "10,8";
         style.stroke-linecap = "round";
       }

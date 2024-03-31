@@ -6,8 +6,6 @@ f: {
 }: let
   inherit
     (lib)
-    all
-    assertMsg
     attrNames
     attrValues
     concatLines
@@ -18,51 +16,26 @@ f: {
     flatten
     flip
     foldl'
-    isAttrs
     length
     mapAttrsToList
     mkDefault
     mkIf
     mkOption
-    mkOptionType
     optional
     optionalAttrs
     recursiveUpdate
     reverseList
-    showOption
     types
     unique
     warnIf
     ;
 
-  # Checks whether the value is a lazy value without causing
-  # it's value to be evaluated
-  isLazyValue = x: isAttrs x && x ? _lazyValue;
-  # Constructs a lazy value holding the given value.
-  lazyValue = value: {_lazyValue = value;};
-
-  # Represents a lazy value of the given type, which
-  # holds the actual value as an attrset like { _lazyValue = <actual value>; }.
-  # This allows the option to be defined and filtered from a defintion
-  # list without evaluating the value.
-  lazyValueOf = type:
-    mkOptionType rec {
-      name = "lazyValueOf ${type.name}";
-      inherit (type) description descriptionClass emptyValue getSubOptions getSubModules;
-      check = isLazyValue;
-      merge = loc: defs:
-        assert assertMsg
-        (all (x: type.check x._lazyValue) defs)
-        "The option `${showOption loc}` is defined with a lazy value holding an invalid type";
-          types.mergeOneOption loc defs;
-      substSubModules = m: types.uniq (type.substSubModules m);
-      functor = (types.defaultFunctor name) // {wrapped = type;};
-      nestedTypes.elemType = type;
-    };
-
-  # Represents a value or lazy value of the given type that will
-  # automatically be coerced to the given type when merged.
-  lazyOf = type: types.coercedTo (lazyValueOf type) (x: x._lazyValue) type;
+  inherit
+    (import ../topology/lazy.nix lib)
+    isLazyValue
+    lazyOf
+    lazyValue
+    ;
 
   allNodes = attrNames config.nodes;
   allInterfacesOf = node: attrNames config.nodes.${node}.interfaces;
@@ -322,6 +295,12 @@ in
                       interface = mkOption {
                         description = "The other node's interface id.";
                         type = types.str;
+                      };
+
+                      renderer.reverse = mkOption {
+                        description = "Whether to reverse the edge. Can be useful to affect node positioning if the layouter is directional.";
+                        type = types.bool;
+                        default = false;
                       };
                     };
                   });

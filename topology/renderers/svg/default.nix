@@ -113,10 +113,18 @@
       mkCard = net: {
         width = 480;
         html = let
-          netColor =
-            if net.color != null
-            then net.color
-            else "#b6beca";
+          netStylePreview = let
+            secondaryColor =
+              if net.style.secondaryColor == null
+              then "#00000000"
+              else net.style.secondaryColor;
+          in
+            {
+              solid = ''<div tw="flex flex-none bg-[${net.style.primaryColor}] w-8 h-4 mr-4 rounded-md"></div>'';
+              dashed = ''<div tw="flex flex-none w-8 h-4 mr-4 rounded-md" style="backgroundImage: linear-gradient(90deg, ${net.style.primaryColor} 0%, ${net.style.primaryColor} 50%, ${secondaryColor} 50.01%, ${secondaryColor} 100%);"></div>'';
+              dotted = ''<div tw="flex flex-none w-8 h-4 mr-4 rounded-md" style="backgroundImage: radial-gradient(circle, ${net.style.primaryColor} 30%, ${secondaryColor} 30.01%);"></div>'';
+            }
+            .${net.style.pattern};
         in
           mkCardContainer
           /*
@@ -124,7 +132,7 @@
           */
           ''
             <div tw="flex flex-row mx-6 mt-2 items-center">
-              <div tw="flex flex-none bg-[${netColor}] w-8 h-8 mr-4 rounded-lg"></div>
+              ${netStylePreview}
               <h2 tw="text-2xl font-bold">${net.name}</h2>
               <div tw="flex grow min-w-8"></div>
               ${mkImageMaybe "w-12 h-12 ml-4" (config.lib.icons.get net.icon)}
