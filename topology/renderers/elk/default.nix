@@ -20,7 +20,6 @@
     mkOption
     optional
     optionalAttrs
-    optionals
     recursiveUpdate
     stringLength
     types
@@ -64,6 +63,13 @@
       // extra;
   };
 
+  mkPort = recursiveUpdate {
+    width = 8;
+    height = 8;
+    style.stroke = "#485263";
+    style.fill = "#b6beca";
+  };
+
   mkLabel = text: scale: extraStyle: {
     height = scale * 12;
     width = scale * 7.2 * (stringLength text);
@@ -83,82 +89,72 @@
           scale = 0.8;
         };
         properties."portLabels.placement" = "OUTSIDE";
+
+        ports.default = mkPort {
+          labels."00-name" = mkLabel "*" 1 {};
+        };
       };
     }
   ];
 
   idForInterface = node: interfaceId: "children.node:${node.id}.ports.interface:${interfaceId}";
 
-  nodeInterfaceToElk = node: interface:
+  nodeInterfaceToElk = node: interface: let
+    interfaceLabels =
+      {
+        "00-name" = mkLabel interface.id 1 {};
+      }
+      // optionalAttrs (interface.mac != null) {
+        "50-mac" = mkLabel interface.mac 1 {fill = "#70a5eb";};
+      }
+      // optionalAttrs (interface.addresses != []) {
+        "60-addrs" = mkLabel (toString interface.addresses) 1 {fill = "#f9a872";};
+      };
+  in
     [
       # Interface for node in main view
       {
-        children."node:${node.id}".ports."interface:${interface.id}" = {
-          properties = optionalAttrs (node.preferredRenderType == "card") {
+        children."node:${node.id}".ports."interface:${interface.id}" = mkPort {
+          properties = optionalAttrs (node.renderer.preferredType == "card") {
             "port.side" = "WEST";
           };
-          width = 8;
-          height = 8;
-          style.stroke = "#485263"; # FIXME: TODO color based on attached network color (autoshade)?
-          style.fill = "#b6beca";
-          labels =
-            {
-              "00-name" = mkLabel interface.id 1 {};
-            }
-            // optionalAttrs (interface.mac != null) {
-              "50-mac" = mkLabel interface.mac 1 {fill = "#70a5eb";};
-            }
-            // optionalAttrs (interface.addresses != []) {
-              "60-addrs" = mkLabel (toString interface.addresses) 1 {fill = "#f9a872";};
-            };
+          labels = interfaceLabels;
         };
       }
+
       # Interface for node in network-centric view
       {
-        children.network.children."node:${node.id}".ports."interface:${interface.id}" = {
-          # FIXME: TODO: deduplicate, same as above
-          # FIXME: TODO: deduplicate, same as above
-          # FIXME: TODO: deduplicate, same as above
-          width = 8;
-          height = 8;
-          style.stroke = "#485263"; # FIXME: TODO color based on attached network color (autoshade)?
-          style.fill = "#b6beca";
-          labels =
-            {
-              "00-name" = mkLabel interface.id 1 {};
-            }
-            // optionalAttrs (interface.mac != null) {
-              "50-mac" = mkLabel interface.mac 1 {fill = "#70a5eb";};
-            }
-            // optionalAttrs (interface.addresses != []) {
-              "60-addrs" = mkLabel (toString interface.addresses) 1 {fill = "#f9a872";};
-            };
+        children.network.children."node:${node.id}".ports."interface:${interface.id}" = mkPort {
+          labels = interfaceLabels;
         };
       }
 
       # Edge in network-centric view
       (optionalAttrs (interface.network != null) (
-        mkEdge ("children.network." + idForInterface node interface.id) "children.network.children.net:${interface.network}" {
+        mkEdge ("children.network." + idForInterface node interface.id) "children.network.children.net:${interface.network}.ports.default" {
           style.stroke = config.networks.${interface.network}.color;
         }
       ))
     ]
-    ++ optionals (!interface.virtual) (flip map interface.physicalConnections (
-      conn:
+    ++ flatten (flip map interface.physicalConnections (
+      conn: let
+        otherInterface = config.nodes.${conn.node}.interfaces.${conn.interface};
+      in
         optionalAttrs (
-          (!any (y: y.node == node.id && y.interface == interface.id) config.nodes.${conn.node}.interfaces.${conn.interface}.physicalConnections)
+          (!any (y: y.node == node.id && y.interface == interface.id) otherInterface.physicalConnections)
           || (node.id < conn.node)
         ) (
-          # Edge in main view
-          mkEdge
-          (idForInterface node interface.id)
-          (idForInterface config.nodes.${conn.node} conn.interface)
-          {
-            # FIXME: in interface definition ensure that the two ends of physical connections don't have different networks (output warning only)
-            style = optionalAttrs (interface.network != null) {
-              stroke = config.networks.${interface.network}.color;
-            };
-          }
+          optional (!interface.renderer.hidePhysicalConnections && !otherInterface.renderer.hidePhysicalConnections) (
+            # Edge in main view
+            mkEdge
+            (idForInterface node interface.id)
+            (idForInterface config.nodes.${conn.node} conn.interface)
+            {
+              style = optionalAttrs (interface.network != null) {
+                stroke = config.networks.${interface.network}.color;
+              };
+            }
+          )
         )
     ));
 
@@ -175,7 +171,7 @@
             {
               "portLabels.placement" = "OUTSIDE";
             }
-            // optionalAttrs (node.preferredRenderType == "card") {
+            // optionalAttrs (node.renderer.preferredType == "card") {
               "portConstraints" = "FIXED_SIDE";
             };
         };
@@ -193,10 +189,8 @@
     ]
     ++ optional (node.parent != null) (
       {
-        children."node:${node.parent}".ports.guests = {
+        children."node:${node.parent}".ports.guests = mkPort {
           properties."port.side" = "EAST";
-          width = 8;
-          height = 8;
           style.stroke = "#49d18d";
           style.fill = "#78dba9";
           labels."00-name" = mkLabel "guests" 1 {};

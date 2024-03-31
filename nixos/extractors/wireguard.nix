@@ -13,7 +13,6 @@
     mkIf
     mkMerge
     filter
-    optionals
     ;
 
   headOrNull = xs:
@@ -49,18 +48,12 @@ in {
         wgName: wgCfg: let
           inherit
             (lib.wireguard inputs wgName)
-            participatingClientNodes
             participatingServerNodes
             wgCfgOf
             ;
 
           isServer = wgCfg.server.host != null;
           filterSelf = filter (x: x != config.node.name);
-
-          # All nodes that use our node as the via into the wireguard network
-          ourClientNodes =
-            optionals isServer
-            (filter (n: (wgCfgOf n).client.via == config.node.name) participatingClientNodes);
 
           # The list of peers that are "physically" connected in the wireguard network,
           # meaning they communicate directly with each other.
@@ -69,13 +62,12 @@ in {
             then
               # Other servers in the same network
               filterSelf participatingServerNodes
-              # Our clients
-              ++ ourClientNodes
             else [wgCfg.client.via];
         in {
           ${wgCfg.linkName} = {
             network = networkId wgName;
             virtual = true;
+            renderer.hidePhysicalConnections = true;
             physicalConnections = flip map connectedPeers (peer: {
               node = inputs.self.nodes.${peer}.config.topology.id;
               interface = (wgCfgOf peer).linkName;

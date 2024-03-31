@@ -1,27 +1,20 @@
 # TODO:
-# - stack interfaces horizontally, information is now on the ports anyway.
-# - systemd extractor remove cidr mask
 # - address port label render make newline capable (multiple port labels)
-# - mac address show!
-# - split network layout or make rectpacking of childs
 # - NAT indication
-# - bottom hw image distorted in card view (move to top anyway)
 # - embed font globally, try removing satori embed?
 # - network overview card (list all networks with name and cidr, legend style)
-# - colors!
-# - ip labels on edges
-# - network centric view
-# - better layout for interfaces in svg
-# - sevice infos
-# - disks (from disko) + render
+# - stable pseudorandom colors from palette with no-reuse until necessary
+# - network centric view as standalone
+# - split network layout or make rectpacking of childs
 # - hardware info (image small top and image big bottom and full (no card), maybe just image and render position)
 # - more service info
+# - disks (from disko) + render
 # - impermanence render?
 # - nixos nftables firewall render?
-# - stable pseudorandom colors from palette with no-reuse until necessary
-# - search todo and do
 # - podman / docker harvesting
+# - systemd extractor remove cidr mask
 # - nixos-container extractor
+# - search todo and do
 {
   config,
   lib,
@@ -144,24 +137,16 @@
     };
 
     node = rec {
-      mkInterface = interface: let
-        color =
-          if interface.virtual
-          then "#7a899f"
-          else "#70a5eb";
-      in
-        /*
-        html
-        */
-        ''
-          <div tw="flex flex-row items-center my-2">
-            <div tw="flex flex-row flex-none items-center bg-[${color}] text-[#101419] rounded-lg px-2 py-1 w-46 h-8 mx-4">
-              ${mkImage "w-6 h-6 mr-2" (config.lib.icons.get interface.icon)}
-              <span tw="font-bold">${interface.id}</span>
-            </div>
-            <span>${toString interface.addresses}</span>
-          </div>
-        '';
+      mkInterface = interface:
+      /*
+      html
+      */
+      ''
+        <div tw="flex flex-col flex-none items-center border-[#21262e] border-2 rounded-lg px-2 py-1 m-1">
+          ${mkImage "w-8 h-8 m-1" (config.lib.icons.get interface.icon)}
+          <span tw="font-bold text-xs">${interface.id}</span>
+        </div>
+      '';
 
       serviceDetail = detail:
       /*
@@ -217,19 +202,6 @@
         </div>
       '';
 
-      mkTitle = node:
-      /*
-      html
-      */
-      ''
-        <div tw="flex flex-row mx-6 mt-2 items-center">
-          ${mkImageMaybe "w-8 h-8 mr-4" (config.lib.icons.get node.icon)}
-          <h2 tw="text-2xl font-bold">${node.name}</h2>
-          <div tw="flex grow min-w-8"></div>
-          ${mkImageMaybe "w-12 h-12 ml-4" (config.lib.icons.get node.deviceIcon)}
-        </div>
-      '';
-
       mkCard = node: let
         services = filter (x: !x.hidden) (attrValues node.services);
         guests = filter (x: x.parent == node.id) (attrValues config.nodes);
@@ -241,18 +213,25 @@
           html
           */
           ''
-            ${mkTitle node}
+            <div tw="flex flex-row mx-6 mt-2 items-center">
+              ${mkImageMaybe "w-8 h-8 mr-4" (config.lib.icons.get node.icon)}
+              <div tw="flex flex-col min-h-18 justify-center">
+                <span tw="text-2xl font-bold">${node.name}</span>
+                ${optionalString (node.hardware.info != null) ''<span tw="text-xs">${node.hardware.info}</span>''}
+              </div>
+              <div tw="flex grow min-w-8"></div>
+              ${mkImageMaybe "w-12 h-12 ml-4" (config.lib.icons.get node.deviceIcon)}
+            </div>
 
+            ${optionalString (node.interfaces != {}) ''<div tw="flex flex-row flex-wrap items-center my-2 mx-3">''}
             ${concatLines (map mkInterface (attrValues node.interfaces))}
-            ${optionalString (node.interfaces != {}) spacingMt2}
+            ${optionalString (node.interfaces != {}) ''</div>''}
 
             ${concatLines (map mkGuest guests)}
             ${optionalString (guests != []) spacingMt2}
 
             ${concatLines (map (mkService {}) services)}
             ${optionalString (services != []) spacingMt2}
-
-            ${mkImageMaybe "w-full h-24" node.hardware.image}
           '';
       };
 
@@ -267,21 +246,26 @@
           ''
             <div tw="flex flex-row mx-6 mt-2 items-center">
               ${mkImageMaybe "w-8 h-8" (config.lib.icons.get node.icon)}
-              <h2 tw="text-2xl font-bold">${node.name}</h2>
-              ${optionalString (node.hardware.image != null -> deviceIconImage != node.hardware.image)
+              <div tw="flex flex-col min-h-18 justify-center">
+                <span tw="text-2xl font-bold">${node.name}</span>
+                ${optionalString (node.hardware.info != null) ''<span tw="text-xs">${node.hardware.info}</span>''}
+              </div>
+              ${optionalString (deviceIconImage != null && node.hardware.image != null -> deviceIconImage != node.hardware.image)
               ''
                 <div tw="flex grow min-w-4"></div>
                 ${mkImageMaybe "w-12 h-12" deviceIconImage}
               ''}
             </div>
 
-            ${mkImageMaybe "h-24" node.hardware.image}
+            <div tw="flex flex-row w-full justify-center">
+              ${mkImageMaybe "h-24" node.hardware.image}
+            </div>
           '';
       };
 
       mkPreferredRender = node:
         (
-          if node.preferredRenderType == "image" && node.hardware.image != null
+          if node.renderer.preferredType == "image" && node.hardware.image != null
           then mkImageWithName
           else mkCard
         )
