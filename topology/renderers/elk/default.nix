@@ -253,6 +253,7 @@ in {
             "org.eclipse.elk.algorithm" = "layered";
             "org.eclipse.elk.edgeRouting" = "ORTHOGONAL";
             "org.eclipse.elk.direction" = "RIGHT";
+            "org.eclipse.elk.layered.allowNonFlowPortsToSwitchSides" = true;
             "org.eclipse.elk.layered.crossingMinimization.strategy" = true;
             "org.eclipse.elk.layered.nodePlacement.strategy" = "NETWORK_SIMPLEX";
             "org.eclipse.elk.layered.spacing.edgeNodeBetweenLayers" = 40;
@@ -280,6 +281,16 @@ in {
           children.services-overview = {
             svg = {
               file = config.lib.renderers.svg.services.mkOverview;
+              scale = 0.8;
+            };
+          };
+        }
+
+        # Add network overview
+        {
+          children.network-overview = {
+            svg = {
+              file = config.lib.renderers.svg.net.mkOverview;
               scale = 0.8;
             };
           };

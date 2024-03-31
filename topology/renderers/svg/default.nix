@@ -3,10 +3,8 @@
 # - NAT indication
 # - embed font globally, try removing satori embed?
 # - network overview card (list all networks with name and cidr, legend style)
-# - stable pseudorandom colors from palette with no-reuse until necessary
 # - network centric view as standalone
 # - split network layout or make rectpacking of childs
-# - hardware info (image small top and image big bottom and full (no card), maybe just image and render position)
 # - more service info
 # - disks (from disko) + render
 # - impermanence render?
@@ -110,36 +108,71 @@
     '';
 
     net = {
+      netStylePreview = net: twAttrs: let
+        secondaryColor =
+          if net.style.secondaryColor == null
+          then "#00000000"
+          else net.style.secondaryColor;
+      in
+        {
+          solid = ''<div tw="flex flex-none ${twAttrs} bg-[${net.style.primaryColor}] rounded-md"></div>'';
+          dashed = ''<div tw="flex flex-none ${twAttrs} rounded-md" style="backgroundImage: linear-gradient(90deg, ${net.style.primaryColor} 0%, ${net.style.primaryColor} 50%, ${secondaryColor} 50.01%, ${secondaryColor} 100%);"></div>'';
+          dotted = ''<div tw="flex flex-none ${twAttrs} rounded-md" style="backgroundImage: radial-gradient(circle, ${net.style.primaryColor} 30%, ${secondaryColor} 30.01%);"></div>'';
+        }
+        .${net.style.pattern};
+
       mkCard = net: {
         width = 480;
-        html = let
-          netStylePreview = let
-            secondaryColor =
-              if net.style.secondaryColor == null
-              then "#00000000"
-              else net.style.secondaryColor;
-          in
-            {
-              solid = ''<div tw="flex flex-none bg-[${net.style.primaryColor}] w-8 h-4 mr-4 rounded-md"></div>'';
-              dashed = ''<div tw="flex flex-none w-8 h-4 mr-4 rounded-md" style="backgroundImage: linear-gradient(90deg, ${net.style.primaryColor} 0%, ${net.style.primaryColor} 50%, ${secondaryColor} 50.01%, ${secondaryColor} 100%);"></div>'';
-              dotted = ''<div tw="flex flex-none w-8 h-4 mr-4 rounded-md" style="backgroundImage: radial-gradient(circle, ${net.style.primaryColor} 30%, ${secondaryColor} 30.01%);"></div>'';
-            }
-            .${net.style.pattern};
-        in
+        html =
           mkCardContainer
           /*
           html
           */
           ''
             <div tw="flex flex-row mx-6 mt-2 items-center">
-              ${netStylePreview}
+              ${html.net.netStylePreview net "w-8 h-4 mr-4"}
               <h2 tw="text-2xl font-bold">${net.name}</h2>
               <div tw="flex grow min-w-8"></div>
               ${mkImageMaybe "w-12 h-12 ml-4" (config.lib.icons.get net.icon)}
             </div>
             <div tw="flex flex-col mx-6 my-2 grow">
-            ${optionalString (net.cidrv4 != null) ''<div tw="flex flex-row"><span tw="text-lg m-0"><b>CIDRv4</b></span><span tw="text-lg m-0 ml-4">${net.cidrv4}</span></div>''}
-            ${optionalString (net.cidrv6 != null) ''<div tw="flex flex-row"><span tw="text-lg m-0"><b>CIDRv6</b></span><span tw="text-lg m-0 ml-4">${net.cidrv6}</span></div>''}
+            ${optionalString (net.cidrv4 != null) ''<div tw="flex flex-row"><span tw="text-lg m-0"><b>CIDRv4</b></span><span tw="text-lg text-[${net.style.primaryColor}] m-0 ml-4">${net.cidrv4}</span></div>''}
+            ${optionalString (net.cidrv6 != null) ''<div tw="flex flex-row"><span tw="text-lg m-0"><b>CIDRv6</b></span><span tw="text-lg text-[${net.style.primaryColor}] m-0 ml-4">${net.cidrv6}</span></div>''}
+          '';
+      };
+
+      mkOverview = {
+        width = 480;
+        html =
+          mkCardContainer
+          /*
+          html
+          */
+          ''
+            <div tw="flex flex-row mx-6 mt-2 items-center">
+              <h2 tw="text-2xl font-bold">Networks Overview</h2>
+            </div>
+
+            ${concatLines (flip map (attrValues config.networks) (
+              net:
+              /*
+              html
+              */
+              ''
+                <div tw="flex flex-col mx-4 mt-2 rounded-lg p-2">
+                  <div tw="flex flex-row items-center">
+                    ${html.net.netStylePreview net "w-12 h-6 mr-4"}
+                    <div tw="flex flex-col grow">
+                      <h1 tw="text-lg font-bold m-0">${net.name}</h1>
+                      ${optionalString (net.cidrv4 != null) ''<div tw="flex flex-row"><span tw="text-md m-0"><b>CIDRv4</b></span><span tw="text-md text-[${net.style.primaryColor}] m-0 ml-4">${net.cidrv4}</span></div>''}
+                      ${optionalString (net.cidrv6 != null) ''<div tw="flex flex-row"><span tw="text-md m-0"><b>CIDRv6</b></span><span tw="text-md text-[${net.style.primaryColor}] m-0 ml-4">${net.cidrv6}</span></div>''}
+                    </div>
+                  </div>
+                </div>
+              ''
+            ))}
+
+            ${spacingMt2}
           '';
       };
     };
@@ -323,10 +356,10 @@ in {
 
   config = {
     lib.renderers.svg = {
-      # FIXME: networks.mkOverview = renderHtmlToSvg html.networks.mkOverview "networks-overview";
       services.mkOverview = renderHtmlToSvg html.services.mkOverview "services-overview";
 
       net.mkCard = net: renderHtmlToSvg (html.net.mkCard net) "card-net-${net.id}";
+      net.mkOverview = renderHtmlToSvg html.net.mkOverview "networks-overview";
 
       node = {
         mkImageWithName = node: renderHtmlToSvg (html.node.mkImageWithName node) "image-with-name-${node.id}";
