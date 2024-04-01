@@ -1,0 +1,4 @@
+result
+result-*
+treefmt.toml
+.pre-commit-config.yaml

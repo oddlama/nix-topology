@@ -1,8 +1,8 @@
-inputs: {
-  pkgs,
+{
+  pkgs ? import <nixpkgs> {},
   modules ? [],
 }:
-inputs.nixpkgs.lib.evalModules {
+pkgs.lib.evalModules {
   prefix = ["topology"];
   modules = [./topology] ++ modules;
   specialArgs = {

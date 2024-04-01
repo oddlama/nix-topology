@@ -1,0 +1,17 @@
+{
+  "name": "html-to-svg",
+  "version": "1.0.0",
+  "description": "Convert satori compatible HTML to SVG",
+  "main": "main.js",
+  "type": "module",
+  "author": "oddlama <oddlama@oddlama.org>",
+  "license": "MIT",
+  "bin": {
+    "html-to-svg": "./main.js"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "satori": "^0.10.13",
+    "satori-html": "^0.3.2"
+  }
+}
