@@ -103,6 +103,10 @@ in {
     samba = mkIf config.services.samba.enable {
       name = "Samba";
       icon = "services.samba";
+      details.shares = let
+        shares = attrNames config.services.samba.shares;
+      in
+        mkIf (shares != []) {text = concatLines shares;};
     };
 
     oauth2_proxy = mkIf config.services.oauth2_proxy.enable {
