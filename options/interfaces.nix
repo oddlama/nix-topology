@@ -327,6 +327,11 @@ in
                 icon = mkIf (config.topology.isMainModule && config.icons.interfaces ? ${submod.config.type}) (
                   mkDefault ("interfaces." + submod.config.type)
                 );
+
+                # For switches: Share the network with any other interface by default
+                sharesNetworkWith = mkIf (config.topology.isMainModule && nodeSubmod.config.deviceType == "switch") (
+                  mkDefault (const true)
+                );
               };
             }));
           };
@@ -335,9 +340,6 @@ in
     };
 
     config = {
-      lib.a.a = connections;
-      lib.a.b = networkDefiningInterfaces;
-      lib.a.c = propagatedNetworks;
       assertions = flatten (flip map (attrValues config.nodes) (
         node:
           flip map (attrValues node.interfaces) (

@@ -6,14 +6,17 @@ f: {
   inherit
     (lib)
     attrValues
+    concatMap
     elem
     flatten
     flip
     literalExpression
+    mapAttrsToList
     mkDefault
     mkIf
     mkMerge
     mkOption
+    toList
     types
     ;
 in
@@ -125,6 +128,56 @@ in
     };
 
     config = {
+      lib.helpers = rec {
+        # Finally we found it, the one-and-only true cloud.
+        mkInternet = {connections ? [], ...}: {
+          name = "Internet";
+          deviceType = "internet";
+          hardware.image = ../icons/devices/cloud.svg;
+          interfaces."*".physicalConnections = toList connections;
+        };
+
+        mkConnection = node: interface: {inherit node interface;};
+        mkConnectionRev = node: interface: {
+          inherit node interface;
+          renderer.reverse = true;
+        };
+
+        mkSwitch = name: {
+          info ? null,
+          image ? null,
+          interfaceGroups ? [],
+          connections ? {},
+          ...
+        }: {
+          inherit name;
+          deviceType = "switch";
+          hardware = {
+            info = mkIf (info != null) info;
+            image = mkIf (image != null) image;
+          };
+          interfaces = mkMerge (
+            flip mapAttrsToList connections (interface: conns: {
+              ${interface}.physicalConnections = toList conns;
+            })
+            ++ flip concatMap interfaceGroups (
+              group:
+                flip map group (
+                  interface: {
+                    ${interface}.sharesNetworkWith = x: elem x group;
+                  }
+                )
+            )
+          );
+        };
+
+        mkRouter = name: args:
+          mkSwitch name args
+          // {
+            deviceType = "router";
+          };
+      };
+
       assertions = flatten (
         flip map (attrValues config.nodes) (
           node: [

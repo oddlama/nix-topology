@@ -205,7 +205,7 @@
               "portLabels.placement" = "OUTSIDE";
             }
             // optionalAttrs (node.renderer.preferredType == "card") {
-              "portConstraints" = "FIXED_SIDE";
+              # "portConstraints" = "FIXED_SIDE";
             };
         };
       }

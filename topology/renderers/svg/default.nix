@@ -1,4 +1,5 @@
 # TODO:
+# - macvtap interface type svg with small link
 # - address port label render make newline capable (multiple port labels)
 # - NAT indication
 # - embed font globally, try removing satori embed?
@@ -115,9 +116,9 @@
           else net.style.secondaryColor;
       in
         {
-          solid = ''<div tw="flex flex-none ${twAttrs} bg-[${net.style.primaryColor}] rounded-md"></div>'';
-          dashed = ''<div tw="flex flex-none ${twAttrs} rounded-md" style="backgroundImage: linear-gradient(90deg, ${net.style.primaryColor} 0%, ${net.style.primaryColor} 50%, ${secondaryColor} 50.01%, ${secondaryColor} 100%);"></div>'';
-          dotted = ''<div tw="flex flex-none ${twAttrs} rounded-md" style="backgroundImage: radial-gradient(circle, ${net.style.primaryColor} 30%, ${secondaryColor} 30.01%);"></div>'';
+          solid = ''<div tw="flex flex-none ${twAttrs} bg-[${net.style.primaryColor}]"></div>'';
+          dashed = ''<div tw="flex flex-none ${twAttrs}" style="backgroundImage: linear-gradient(90deg, ${net.style.primaryColor} 0%, ${net.style.primaryColor} 50%, ${secondaryColor} 50.01%, ${secondaryColor} 100%);"></div>'';
+          dotted = ''<div tw="flex flex-none ${twAttrs}" style="backgroundImage: radial-gradient(circle, ${net.style.primaryColor} 30%, ${secondaryColor} 30.01%);"></div>'';
         }
         .${net.style.pattern};
 
@@ -130,7 +131,7 @@
           */
           ''
             <div tw="flex flex-row mx-6 mt-2 items-center">
-              ${html.net.netStylePreview net "w-8 h-4 mr-4"}
+              ${html.net.netStylePreview net "w-12 h-4 mr-4 rounded-md"}
               <h2 tw="text-2xl font-bold">${net.name}</h2>
               <div tw="flex grow min-w-8"></div>
               ${mkImageMaybe "w-12 h-12 ml-4" (config.lib.icons.get net.icon)}
@@ -160,12 +161,12 @@
               */
               ''
                 <div tw="flex flex-col mx-4 mt-2 rounded-lg p-2">
-                  <div tw="flex flex-row items-center">
-                    ${html.net.netStylePreview net "w-12 h-6 mr-4"}
+                  <div tw="flex flex-row">
+                    ${html.net.netStylePreview net "w-12 h-4 mt-2 mr-4 rounded-md"}
                     <div tw="flex flex-col grow">
                       <h1 tw="text-lg font-bold m-0">${net.name}</h1>
-                      ${optionalString (net.cidrv4 != null) ''<div tw="flex flex-row"><span tw="text-md m-0"><b>CIDRv4</b></span><span tw="text-md text-[${net.style.primaryColor}] m-0 ml-4">${net.cidrv4}</span></div>''}
-                      ${optionalString (net.cidrv6 != null) ''<div tw="flex flex-row"><span tw="text-md m-0"><b>CIDRv6</b></span><span tw="text-md text-[${net.style.primaryColor}] m-0 ml-4">${net.cidrv6}</span></div>''}
+                      ${optionalString (net.cidrv4 != null) ''<div tw="flex flex-row"><span tw="text-md text-[#7a899f] m-0"><b>CIDRv4</b></span><span tw="text-md text-[${net.style.primaryColor}] m-0 ml-4">${net.cidrv4}</span></div>''}
+                      ${optionalString (net.cidrv6 != null) ''<div tw="flex flex-row"><span tw="text-md text-[#7a899f] m-0"><b>CIDRv6</b></span><span tw="text-md text-[${net.style.primaryColor}] m-0 ml-4">${net.cidrv6}</span></div>''}
                     </div>
                   </div>
                 </div>
