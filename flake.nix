@@ -32,15 +32,13 @@
 
       # A nixpkgs overlay that adds the parametrized builder as a package
       overlays.default = self.overlays.topology;
-      overlays.topology = _final: prev: {
-        elk-to-svg = prev.callPackage ./elk-to-svg {};
-        html-to-svg = prev.callPackage ./html-to-svg {};
-      };
+      overlays.topology = import ./pkgs/default.nix;
     }
     // flake-utils.lib.eachDefaultSystem (system: rec {
       pkgs = import nixpkgs {
         inherit system;
         overlays = [
+          self.overlays.default
           devshell.overlays.default
         ];
       };
