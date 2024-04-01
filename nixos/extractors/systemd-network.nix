@@ -8,7 +8,10 @@
     any
     attrValues
     concatLists
+    concatStringsSep
     flip
+    init
+    length
     listToAttrs
     mapAttrsToList
     mkDefault
@@ -17,7 +20,15 @@
     mkMerge
     nameValuePair
     optional
+    splitString
     ;
+
+  removeCidrMask = x: let
+    toks = splitString "/" x;
+  in
+    if length toks > 1
+    then concatStringsSep "/" (init toks)
+    else builtins.head toks;
 in {
   options.topology.extractors.systemd-network.enable = mkEnableOption "topology systemd-network extractor" // {default = true;};
 
@@ -60,8 +71,7 @@ in {
             optional (interfaceName != null) {
               ${interfaceName} = {
                 mac = network.matchConfig.MACAddress or null;
-                # TODO: FIXME: remove cidr mask
-                addresses = network.address ++ (network.networkConfig.Address or []);
+                addresses = map removeCidrMask (network.address ++ (network.networkConfig.Address or []));
                 gateways = network.gateway ++ (network.networkConfig.Gateway or []);
               };
             }
