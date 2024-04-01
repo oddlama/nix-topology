@@ -29,6 +29,8 @@ in {
         cidrv4 = subnet;
       };
 
-      topology.self.interfaces = genAttrs interfaces (const {network = netName;});
+      # Do not use topology.self.interfaces here to prevent inclusion of a mkMerge which cannot be
+      # detected by the network propagator currently.
+      topology.nodes.${config.topology.id}.interfaces = genAttrs interfaces (const {network = netName;});
     };
 }

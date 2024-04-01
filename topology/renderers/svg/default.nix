@@ -1,19 +1,3 @@
-# TODO:
-# - macvtap interface type svg with small link
-# - address port label render make newline capable (multiple port labels)
-# - NAT indication
-# - embed font globally, try removing satori embed?
-# - network overview card (list all networks with name and cidr, legend style)
-# - network centric view as standalone
-# - split network layout or make rectpacking of childs
-# - more service info
-# - disks (from disko) + render
-# - impermanence render?
-# - nixos nftables firewall render?
-# - podman / docker harvesting
-# - systemd extractor remove cidr mask
-# - nixos-container extractor
-# - search todo and do
 {
   config,
   lib,

@@ -163,7 +163,7 @@
 
       # Edge in network-centric view
       (optionalAttrs (interface.network != null) (
-        mkEdge ("children.network." + idForInterface node interface.id) "children.network.children.net:${interface.network}.ports.default" false {
+        mkEdge ("children.network." + idForInterface node interface.id) "children.network.children.net:${interface.network}.ports.default" interface.virtual {
           style = pathStyleFromNetworkStyle config.networks.${interface.network}.style;
         }
       ))
