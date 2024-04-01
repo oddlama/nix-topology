@@ -14,6 +14,7 @@
     mkDefault
     mkEnableOption
     mkIf
+    mkMerge
     optional
     replaceStrings
     ;
@@ -76,8 +77,8 @@ in {
     nginx = mkIf config.services.nginx.enable {
       name = "NGINX";
       icon = "services.nginx";
-      details.reverse = let
-        lines = flatten (flip mapAttrsToList config.services.nginx.virtualHosts (
+      details = let
+        reverseProxies = flatten (flip mapAttrsToList config.services.nginx.virtualHosts (
           server: vh:
             flip mapAttrsToList vh.locations (
               path: location: let
@@ -87,11 +88,13 @@ in {
                   then toString (attrNames config.services.nginx.upstreams.${upstreamName}.servers)
                   else location.proxyPass;
               in
-                optional (path == "/" && location.proxyPass != null) "${server} -> ${passTo}"
+                optional (path == "/" && location.proxyPass != null) {
+                  ${server} = {text = passTo;};
+                }
             )
         ));
       in
-        mkIf (lines != []) {text = concatLines lines;};
+        mkMerge reverseProxies;
     };
 
     radicale = mkIf config.services.radicale.enable {

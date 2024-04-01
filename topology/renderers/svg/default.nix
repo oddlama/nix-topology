@@ -179,9 +179,10 @@
       html
       */
       ''
-        <div tw="flex flex-row mt-1">
-          <span tw="flex text-sm flex-none w-22 font-bold pl-1">${detail.name}</span>
-          <span tw="flex text-sm grow">${detail.text}</span>
+        <div tw="flex flex-row flex-wrap mt-1">
+          <span tw="flex text-sm flex-none min-w-16 font-bold pl-1">${detail.name}</span>
+          <span tw="flex grow"></span>
+          <span tw="flex text-sm ml-4">${detail.text}</span>
         </div>
       '';
 

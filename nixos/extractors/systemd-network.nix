@@ -50,8 +50,8 @@ in {
       ++ concatLists (
         flip mapAttrsToList config.systemd.network.networks (
           _unit: network: let
-            # FIXME: TODO renameInterfacesByMac is not a standard option!
-            macToName = listToAttrs (mapAttrsToList (k: v: nameValuePair v k) config.networking.renameInterfacesByMac);
+            # FIXME: TODO renameInterfacesByMac is not a standard option! It's not an issue here but should proabaly not be used anyway.
+            macToName = listToAttrs (mapAttrsToList (k: v: nameValuePair v k) (config.networking.renameInterfacesByMac or {}));
 
             nameFromMac =
               optional (network ? matchConfig.MACAddress && macToName ? ${network.matchConfig.MACAddress})

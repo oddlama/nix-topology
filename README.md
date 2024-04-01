@@ -14,6 +14,7 @@
 - impermanence render?
 - nixos nftables firewall render?
 
+- make colors configurable
 - search todo and do
 - the network propagator based on options.nodes cannot deal with mkMerge and mkIf stuff currently
 
