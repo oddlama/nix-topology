@@ -201,7 +201,7 @@ in
       type = types.attrsOf (types.submodule (nodeSubmod: {
         options = {
           interfaces = mkOption {
-            description = "TODO";
+            description = "Collects information about a specific interface of this node.";
             default = {};
             type = types.attrsOf (types.submodule (submod: {
               options = {

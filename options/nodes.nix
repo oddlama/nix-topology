@@ -128,7 +128,7 @@ in
     };
 
     config = {
-      lib.helpers = rec {
+      lib.topology = rec {
         # Finally we found it, the one-and-only true cloud.
         mkInternet = {connections ? [], ...}: {
           name = "Internet";
