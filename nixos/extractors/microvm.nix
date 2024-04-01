@@ -10,6 +10,8 @@
     mkEnableOption
     mkIf
     mkMerge
+    mkVMOverride
+    mod
     optionalAttrs
     ;
 in {
@@ -22,6 +24,14 @@ in {
           ${vm.config.config.topology.id} = {
             guestType = "microvm";
             parent = config.topology.id;
+            hardware.info = let
+              ramGB10 = builtins.floor (10 * vm.config.config.microvm.mem / 1024);
+              ramGB =
+                if mod ramGB10 10 == 0
+                then ramGB10 / 10
+                else ramGB10 / 10.0;
+            in
+              mkVMOverride "microvm, ${toString ramGB}GB RAM";
           };
         }
     ));
