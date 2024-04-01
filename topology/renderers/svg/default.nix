@@ -272,7 +272,7 @@
           */
           ''
             <div tw="flex flex-row mx-6 mt-2 items-center">
-              ${mkImageMaybe "w-8 h-8" (config.lib.icons.get node.icon)}
+              ${mkImageMaybe "w-8 h-8 mr-4" (config.lib.icons.get node.icon)}
               <div tw="flex flex-col min-h-18 justify-center">
                 <span tw="text-2xl font-bold">${node.name}</span>
                 ${optionalString (node.hardware.info != null) ''<span tw="text-xs">${node.hardware.info}</span>''}

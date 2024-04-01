@@ -95,25 +95,36 @@
 in rec {
   diagram = mkDiagram (
     [
-      # Add service overview
+      # Add legends
       {
-        children.services-overview = {
-          svg = {
-            file = config.lib.renderers.svg.services.mkOverview;
-            scale = 0.8;
+        children.legends = {
+          style.stroke = "none";
+          style.fill = "none";
+          layoutOptions = {
+            "org.eclipse.elk.algorithm" = "layered";
+            "org.eclipse.elk.direction" = "DOWN";
+            "org.eclipse.elk.padding" = "[top=0,left=0,bottom=0,right=0]";
           };
-        };
-      }
+          children = {
+            services-overview = {
+              svg = {
+                file = config.lib.renderers.svg.services.mkOverview;
+                scale = 0.8;
+              };
+            };
 
-      # Add network overview
-      {
-        children.network-overview = {
-          svg = {
-            file = config.lib.renderers.svg.net.mkOverview;
-            scale = 0.8;
+            network-overview = {
+              svg = {
+                file = config.lib.renderers.svg.net.mkOverview;
+                scale = 0.8;
+              };
+            };
           };
         };
       }
+      (mkEdge "children.legends.children.services-overview" "children.legends.children.network-overview" false {
+        style.stroke = "none"; # invisible
+      })
     ]
     ++ flatten (map nodeToElk (attrValues config.nodes))
   );
