@@ -28,6 +28,7 @@
     optionals
     splitString
     tail
+    toList
     ;
 
   removeCidrMask = x: let
@@ -57,10 +58,17 @@ in {
       ++ flatten (
         flip mapAttrsToList config.systemd.network.networks (
           unit: network: let
+            # Some attributes like Name accept lists with a single entry
+            firstValue = x: builtins.head (toList x);
+            nameOrNull =
+              if network ? matchConfig.Name
+              then firstValue network.matchConfig.Name
+              else null;
+
             linkMacToName = listToAttrs (flatten (flip map (attrValues config.systemd.network.links) (
               linkCfg:
                 optional (linkCfg ? matchConfig.MACAddress && linkCfg ? linkConfig.Name) (
-                  nameValuePair linkCfg.matchConfig.MACAddress linkCfg.linkConfig.Name
+                  nameValuePair linkCfg.matchConfig.MACAddress (firstValue linkCfg.linkConfig.Name)
                 )
             )));
 
@@ -75,17 +83,17 @@ in {
 
             nameFromNetdev =
               optional (
-                (network ? matchConfig.Name)
+                (nameOrNull != null)
                 && flip any (attrValues config.systemd.network.netdevs) (x:
                   (x ? netdevConfig.Name)
-                  && x.netdevConfig.Name == network.matchConfig.Name)
+                  && (firstValue x.netdevConfig.Name) == nameOrNull)
               )
-              network.matchConfig.Name;
+              nameOrNull;
 
             # Fallback name is either matchConfig.Name if it doesn't contain a wildcard,
             # or the unit name if we match by mac address.
             fallbackNames =
-              optional (network ? matchConfig.Name && !hasInfix "*" network.matchConfig.Name) network.matchConfig.Name
+              optional (nameOrNull != null && !hasInfix "*" nameOrNull) nameOrNull
               ++ optional (network ? matchConfig.MACAddress) unit;
 
             interfaceName = builtins.head (nameFromMac ++ nameFromNetdev ++ fallbackNames ++ [null]);
@@ -97,7 +105,7 @@ in {
 
             macvtapTo = assignmentsFor "MACVTAP=" network.extraConfig;
             macvlanTo = assignmentsFor "MACVLAN=" network.extraConfig;
-            bridgeTo = network.bridge ++ (network.networkConfig.Bridge or []);
+            bridgeTo = network.bridge ++ (toList (network.networkConfig.Bridge or []));
             allBridges = macvtapTo ++ macvlanTo ++ bridgeTo;
           in
             optionals (interfaceName != null) (
