@@ -104,6 +104,7 @@ in rec {
             "org.eclipse.elk.algorithm" = "layered";
             "org.eclipse.elk.direction" = "DOWN";
             "org.eclipse.elk.padding" = "[top=0,left=0,bottom=0,right=0]";
+            "org.eclipse.elk.priority" = 10000; # Place first!
           };
           children = {
             services-overview = {
