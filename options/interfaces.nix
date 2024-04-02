@@ -17,6 +17,7 @@ f: {
     flatten
     flip
     foldl'
+    hasPrefix
     length
     mapAttrsToList
     mkDefault
@@ -227,7 +228,10 @@ in
 
                 type = mkOption {
                   description = "The type of this interface";
-                  default = "ethernet";
+                  default =
+                    if hasPrefix "wlp" submod.config.id || hasPrefix "wlan" submod.config.id || hasPrefix "wifi" submod.config.id
+                    then "wifi"
+                    else "ethernet";
                   type = types.str;
                 };
 
