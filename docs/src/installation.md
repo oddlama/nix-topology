@@ -23,8 +23,8 @@ defining the global module and adding the NixOS module to your systems:
      ];
    };
    ```
-5. Render your topology via `nix build .#topology.<current-system>.config.output`, the result directory will contain your svgs.
-   Note that this can be slow, depending on how many hosts you have defined. Evaluating many nixos configurations just takes some time.
+5. Render your topology via `nix build .#topology.<current-system>.config.output`, the result directory will contain your svgs (a main view and a network-centric view).
+   Note that this can take a minute, depending on how many hosts you have defined. Evaluating many nixos configurations may take some time.
 
 <details>
 <summary>Example flake.nix</summary>
