@@ -18,6 +18,7 @@
     listToAttrs
     mapAttrsToList
     mkDefault
+    recursiveUpdate
     mkEnableOption
     mkIf
     mkMerge
@@ -55,8 +56,17 @@ in {
       ++ flatten (
         flip mapAttrsToList config.systemd.network.networks (
           _unit: network: let
+            linkMacToName = listToAttrs (flatten (flip map (attrValues config.systemd.network.links) (
+              linkCfg:
+                optional (linkCfg ? matchConfig.MACAddress && linkCfg ? linkConfig.Name) (
+                  nameValuePair linkCfg.matchConfig.MACAddress linkCfg.linkConfig.Name
+                )
+            )));
+
             # FIXME: TODO renameInterfacesByMac is not a standard option! It's not an issue here but should proabaly not be used anyway.
-            macToName = listToAttrs (mapAttrsToList (k: v: nameValuePair v k) (config.networking.renameInterfacesByMac or {}));
+            extraMacToName = listToAttrs (mapAttrsToList (k: v: nameValuePair v k) (config.networking.renameInterfacesByMac or {}));
+
+            macToName = recursiveUpdate linkMacToName extraMacToName;
 
             nameFromMac =
               optional (network ? matchConfig.MACAddress && macToName ? ${network.matchConfig.MACAddress})
