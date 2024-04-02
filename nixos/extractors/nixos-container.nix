@@ -46,6 +46,56 @@ in {
           ${containerCfg.topology.id} = {
             guestType = "nixos-container";
             parent = config.topology.id;
+
+            interfaces = mkMerge (
+              flip map container.macvlans (
+                i: {
+                  ${i} = {
+                    type = "macvlan";
+                    physicalConnections = [
+                      {
+                        node = config.topology.id;
+                        interface = i;
+                        renderer.reverse = true;
+                      }
+                    ];
+                  };
+                }
+              )
+              ++ flip map container.interfaces (
+                i: {
+                  ${i} = {
+                    type = let
+                      t = config.topology.nodes.${config.topology.id}.interfaces.${i}.type or null;
+                    in
+                      mkIf (t != null) t;
+                    physicalConnections = [
+                      {
+                        node = config.topology.id;
+                        interface = i;
+                        renderer.reverse = true;
+                      }
+                    ];
+                  };
+                }
+              )
+            );
+          };
+
+          # Add interfaces to host
+          ${config.topology.id} = {
+            interfaces = mkMerge (
+              flip map container.macvlans (
+                i: {
+                  ${i} = {};
+                }
+              )
+              ++ flip map container.interfaces (
+                i: {
+                  ${i} = {};
+                }
+              )
+            );
           };
         }
     ));
