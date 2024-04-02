@@ -12,6 +12,7 @@
     filter
     flatten
     flip
+    hasInfix
     hasPrefix
     init
     length
@@ -55,7 +56,7 @@ in {
       # Add interface configuration based on systemd.network.networks
       ++ flatten (
         flip mapAttrsToList config.systemd.network.networks (
-          _unit: network: let
+          unit: network: let
             linkMacToName = listToAttrs (flatten (flip map (attrValues config.systemd.network.links) (
               linkCfg:
                 optional (linkCfg ? matchConfig.MACAddress && linkCfg ? linkConfig.Name) (
@@ -81,7 +82,13 @@ in {
               )
               network.matchConfig.Name;
 
-            interfaceName = builtins.head (nameFromMac ++ nameFromNetdev ++ [null]);
+            # Fallback name is either matchConfig.Name if it doesn't contain a wildcard,
+            # or the unit name if we match by mac address.
+            fallbackNames =
+              optional (network ? matchConfig.Name && !hasInfix "*" network.matchConfig.Name) network.matchConfig.Name
+              ++ optional (network ? matchConfig.MACAddress) unit;
+
+            interfaceName = builtins.head (nameFromMac ++ nameFromNetdev ++ fallbackNames ++ [null]);
 
             # Find out if the interface is bridged to another interface
             linesStartingWith = prefix: lines: filter (hasPrefix prefix) (splitString "\n" lines);
