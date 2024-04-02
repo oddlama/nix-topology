@@ -43,6 +43,8 @@
         ];
       };
 
+      packages.docs = pkgs.callPackage ./pkgs/docs.nix {};
+
       # `nix flake check`
       checks.pre-commit-hooks = pre-commit-hooks.lib.${system}.run {
         src = nixpkgs.lib.cleanSource ./.;
