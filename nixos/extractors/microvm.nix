@@ -26,7 +26,7 @@
 in {
   options.topology.extractors.microvm.enable = mkEnableOption "topology microvm extractor" // {default = true;};
 
-  config = mkIf (config.topology.extractors.microvm.enable && config ? microvm && config.microvm.host.enable) {
+  config = mkIf (config.topology.extractors.microvm.enable && config ? microvm.host && config.microvm.host.enable) {
     topology.dependentConfigurations = mapVms (vmCfg: optionals (vmCfg ? topology) vmCfg.topology.definitions);
     topology.nodes = mkMerge (mapVms (
       vmCfg:
@@ -46,16 +46,6 @@ in {
             interfaces = mkMerge (flip map vmCfg.microvm.interfaces (
               i:
                 {
-                  tap.${i.id} = {
-                    inherit (i) mac;
-                    physicalConnections = [
-                      {
-                        node = config.topology.id;
-                        interface = i.id;
-                        renderer.reverse = true;
-                      }
-                    ];
-                  };
                   macvtap.${i.macvtap.link} = {
                     inherit (i) mac;
                     physicalConnections = [
@@ -68,7 +58,32 @@ in {
                   };
                 }
                 .${i.type}
-                or {}
+                or {
+                  ${i.id} = {
+                    inherit (i) mac;
+                    physicalConnections = [
+                      {
+                        node = config.topology.id;
+                        interface = i.id;
+                        renderer.reverse = true;
+                      }
+                    ];
+                  };
+                }
+            ));
+          };
+
+          # Add interfaces to host
+          ${config.topology.id} = {
+            interfaces = mkMerge (flip map vmCfg.microvm.interfaces (
+              i:
+                {
+                  macvtap.${i.macvtap.link} = {};
+                }
+                .${i.type}
+                or {
+                  ${i.id} = {};
+                }
             ));
           };
         }
