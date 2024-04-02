@@ -9,7 +9,10 @@
     attrValues
     concatLists
     concatStringsSep
+    filter
+    flatten
     flip
+    hasPrefix
     init
     length
     listToAttrs
@@ -20,7 +23,9 @@
     mkMerge
     nameValuePair
     optional
+    optionals
     splitString
+    tail
     ;
 
   removeCidrMask = x: let
@@ -47,7 +52,7 @@ in {
         )
       )
       # Add interface configuration based on systemd.network.networks
-      ++ concatLists (
+      ++ flatten (
         flip mapAttrsToList config.systemd.network.networks (
           _unit: network: let
             # FIXME: TODO renameInterfacesByMac is not a standard option! It's not an issue here but should proabaly not be used anyway.
@@ -67,14 +72,34 @@ in {
               network.matchConfig.Name;
 
             interfaceName = builtins.head (nameFromMac ++ nameFromNetdev ++ [null]);
+
+            # Find out if the interface is bridged to another interface
+            linesStartingWith = prefix: lines: filter (hasPrefix prefix) (splitString "\n" lines);
+            kvValue = str: concatStringsSep "=" (tail (splitString "=" str));
+            assignmentsFor = key: lines: map kvValue (linesStartingWith key lines);
+
+            macvtapTo = assignmentsFor "MACVTAP=" network.extraConfig;
+            macvlanTo = assignmentsFor "MACVLAN=" network.extraConfig;
+            bridgeTo = network.bridge ++ (network.networkConfig.Bridge or []);
+            allBridges = macvtapTo ++ macvlanTo ++ bridgeTo;
           in
-            optional (interfaceName != null) {
-              ${interfaceName} = {
-                mac = network.matchConfig.MACAddress or null;
-                addresses = map removeCidrMask (network.address ++ (network.networkConfig.Address or []));
-                gateways = network.gateway ++ (network.networkConfig.Gateway or []);
-              };
-            }
+            optionals (interfaceName != null) (
+              [
+                {
+                  ${interfaceName} = {
+                    mac = mkIf ((network.matchConfig.MACAddress or null) != null) network.matchConfig.MACAddress;
+                    addresses = map removeCidrMask (network.address ++ (network.networkConfig.Address or []));
+                    gateways = network.gateway ++ (network.networkConfig.Gateway or []);
+                  };
+                }
+              ]
+              ++ flip map allBridges (
+                bridged: {
+                  ${interfaceName}.sharesNetworkWith = [(x: x == bridged)];
+                  ${bridged}.sharesNetworkWith = [(x: x == interfaceName)];
+                }
+              )
+            )
         )
       )
     );

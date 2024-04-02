@@ -164,7 +164,7 @@ in
               group:
                 flip map group (
                   interface: {
-                    ${interface}.sharesNetworkWith = x: elem x group;
+                    ${interface}.sharesNetworkWith = [(x: elem x group)];
                   }
                 )
             )

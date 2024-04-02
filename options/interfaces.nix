@@ -6,6 +6,7 @@ f: {
 }: let
   inherit
     (lib)
+    any
     attrNames
     attrValues
     concatLines
@@ -136,7 +137,7 @@ f: {
     # Fold over each local interface of the current node
     foldl' (
       acc: dstInterface:
-        if src.interface != dstInterface && config.nodes.${src.node}.interfaces.${src.interface}.sharesNetworkWith dstInterface
+        if src.interface != dstInterface && any (f: f dstInterface) config.nodes.${src.node}.interfaces.${src.interface}.sharesNetworkWith
         then propagateNetworks acc src.node src.interface src.node dstInterface
         else acc
     )
@@ -266,8 +267,9 @@ in
 
                 sharesNetworkWith = mkOption {
                   description = ''
-                    Defines a predicate that determines whether this interface shares its connected network with another provided local interface.
-                    The predicates takes the name of another interface and returns true if our network should be shared with the given interface.
+                    Defines a list of predicates that determine whether this interface shares its connected network with another provided local interface.
+                    The predicates take the name of another interface and returns true if our network should be shared with the given interface.
+                    It suffices if any of the predicates return true.
 
                     Sharing here means that if a network is set on this interface, it will also be set as the network for any
                     shared interface. Setting the same predicate on multiple interfaces causes them to share a network regardless
@@ -277,9 +279,8 @@ in
                     propagating the network set on one port to all other ports. Having two assigned
                     networks within one predicate group will cause a warning to be issued.
                   '';
-                  default = const false;
-                  defaultText = ''const false'';
-                  type = types.functionTo types.bool;
+                  default = [];
+                  type = types.listOf (types.functionTo types.bool);
                 };
 
                 physicalConnections = mkOption {
@@ -330,7 +331,7 @@ in
 
                 # For switches: Share the network with any other interface by default
                 sharesNetworkWith = mkIf (config.topology.isMainModule && nodeSubmod.config.deviceType == "switch") (
-                  mkDefault (const true)
+                  mkDefault [(const true)]
                 );
               };
             }));
