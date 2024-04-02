@@ -39,6 +39,7 @@ in {
 
   options = {
     nixosConfigurations = mkOption {
+      default = {};
       description = ''
         The list of nixos configurations to process for topology rendering.
         All of these must include the relevant nixos topology module.
@@ -140,5 +141,7 @@ in {
 
     nodes = aggregate ["nodes"];
     networks = aggregate ["networks"];
+
+    lib.topology = import ./helpers.nix lib;
   };
 }

@@ -87,6 +87,7 @@ in {
   config = mkMerge (
     [
       {
+        lib.topology = import ../topology/helpers.nix lib;
         # Ensure a node exists for this host
         topology.nodes.${config.topology.id}.deviceType = "nixos";
       }
