@@ -5,23 +5,31 @@
 }: let
   inherit
     (lib)
-    attrValues
     flip
+    mapAttrsToList
     mkEnableOption
     mkIf
     mkMerge
     mkVMOverride
     mod
     optionalAttrs
+    optionals
     ;
+
+  mapVms = f:
+    flip mapAttrsToList config.microvm.vms (vmName: vm:
+      f (
+        if vm.flake != null
+        then vm.flake.nixosConfigurations.${vmName}.config
+        else vm.config.config
+      ));
 in {
   options.topology.extractors.microvm.enable = mkEnableOption "topology microvm extractor" // {default = true;};
 
   config = mkIf (config.topology.extractors.microvm.enable && config ? microvm && config.microvm.host.enable) {
-    topology.nodes = mkMerge (flip map (attrValues config.microvm.vms) (
-      vm: let
-        vmCfg = vm.config.config;
-      in
+    topology.dependentConfigurations = mapVms (vmCfg: optionals (vmCfg ? topology) vmCfg.topology.definitions);
+    topology.nodes = mkMerge (mapVms (
+      vmCfg:
         optionalAttrs (vmCfg ? topology) {
           ${vmCfg.topology.id} = {
             guestType = "microvm";

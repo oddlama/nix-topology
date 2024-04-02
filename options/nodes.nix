@@ -1,6 +1,7 @@
 f: {
   lib,
   config,
+  options,
   ...
 }: let
   inherit

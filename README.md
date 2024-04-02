@@ -226,7 +226,6 @@ Yep, there's still a lot that could be added or improved.
 #### Information Gathering (Extractors)
 
 - Podman / docker harvesting
-- Nixos-container extractor
 - networking.interfaces extractor
 - Disks (from disko) + render
 - Impermanence render?
@@ -235,7 +234,7 @@ Yep, there's still a lot that could be added or improved.
 #### General
 
 - NAT indication
-- Macvtap interface type svg with small link
+- Macvtap/vlan/bridge interface type svg with small link
 - Embed font globally, try removing satori embed? I'd like to be able to select text.
 - Embed svgs in svgs. Last time I tried it made some things render incorrectly.
 - Make colors configurable

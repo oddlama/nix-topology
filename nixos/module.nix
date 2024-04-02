@@ -1,16 +1,23 @@
 {
   config,
   lib,
+  options,
   ...
 }: let
   inherit
     (lib)
     attrNames
+    flatten
     flip
+    genAttrs
     mkAliasOptionModule
+    mkMerge
     mkOption
+    optional
     types
     ;
+
+  toplevelRelevantOptions = ["nodes" "networks"];
 in {
   imports =
     [
@@ -36,6 +43,28 @@ in {
       ));
 
   options.topology = {
+    definitions = genAttrs toplevelRelevantOptions (opt:
+      mkOption {
+        internal = true;
+        readOnly = true;
+        description = ''
+          Exposes options.${opt}.definitions as a config option. This is necessary
+          so we can access the raw definitions of e.g. nixos-containers which
+          only make `.config` accessible to the outside and not `.options`.
+        '';
+        default = options.topology.${opt}.definitions;
+        type = types.unspecified;
+      });
+
+    dependentConfigurations = mkOption {
+      internal = true;
+      description = ''
+        A list of option definition values that shall be merged with this host's definitions.
+        Useful to bring in dependent configurations like nixos-containers or vm configs.
+      '';
+      type = types.listOf types.unspecified;
+    };
+
     id = mkOption {
       description = ''
         The attribute name in the given `nodes` which corresponds to this host.
@@ -55,8 +84,22 @@ in {
     };
   };
 
-  config.topology = {
-    # Ensure a node exists for this host
-    nodes.${config.topology.id}.deviceType = "nixos";
-  };
+  config = mkMerge (
+    [
+      {
+        # Ensure a node exists for this host
+        topology.nodes.${config.topology.id}.deviceType = "nixos";
+      }
+    ]
+    ++ flip map toplevelRelevantOptions (
+      opt: {
+        topology.${opt} = mkMerge (flatten (
+          flip map config.topology.dependentConfigurations (
+            cfg:
+              optional (cfg ? ${opt}) cfg.${opt}
+          )
+        ));
+      }
+    )
+  );
 }
