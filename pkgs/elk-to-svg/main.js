@@ -442,7 +442,7 @@ program
 			if (!node.edges) {
 				node.edges = [];
 			}
-			graph.edges = graph.edges.filter(edge => {
+			graph.edges = (graph.edges || []).filter(edge => {
 				if (edge.container === node.id) {
 					node.edges.push(edge);
 					return false;
