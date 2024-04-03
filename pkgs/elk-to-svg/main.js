@@ -145,7 +145,7 @@ function objectToString(obj) {
         .join(' ');
 }
 
-function renderGraph(g, scaleFactor = 1.0) {
+function renderGraph(g, options, scaleFactor = 1.0) {
     // marker-end="url(#edgeShapeMarker)"
     const edgeShape = (edge_d, edge_path) => {
 		let style = Object.assign({}, edge_d.style);
@@ -190,6 +190,9 @@ function renderGraph(g, scaleFactor = 1.0) {
 			var content = syncFs.readFileSync(node_d.svg.file, {
 				encoding: "utf8"
 			});
+			// strip <svg> tag, only take the inner stuff (chromium is too dumb for it)
+			content = content.substring(content.indexOf('>')+1)
+			content = content.substring(0, content.indexOf('</svg>'))
 			// replace mask names to be globally unique
 			content = content.replaceAll("satori", node_d.id.toString('base64url'))
 
@@ -313,7 +316,20 @@ function renderGraph(g, scaleFactor = 1.0) {
       viewBox="${g.x.toString()} ${g.y.toString()} ${g.width} ${g.height}"
       width="${g.width * scaleFactor}"
       height="${g.height * scaleFactor}">
-      <rect width="${g.width.toString()}" height="${g.height.toString()}" fill="${defaultStyles.background}"/>
+      <style>
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 400;
+		src: url(data:font/truetype;base64,${syncFs.readFileSync(options.font).toString("base64")}) format('truetype');
+      }
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 700;
+		src: url(data:font/truetype;base64,${syncFs.readFileSync(options.fontBold).toString("base64")}) format('truetype');
+      }
+      </style>
       <defs>
         <marker
           id="edgeShapeMarker"
@@ -329,6 +345,7 @@ function renderGraph(g, scaleFactor = 1.0) {
           />
         </marker>
       </defs>
+      <rect width="${g.width.toString()}" height="${g.height.toString()}" fill="${defaultStyles.background}"/>
       <g>${g.children.map(node_d => node(node_d, g)).join(" ")}</g>
       <g>${g.edges && g.edges.map(edge_d => edge(edge_d)).join(" ")}</g>
     </svg>
@@ -389,6 +406,8 @@ program
     .version("1.0.0")
     .argument("<input>", "ELK json graph")
     .argument("<output>", "output svg")
+	.option("--font <font>", "Sets the font")
+	.option("--font-bold <font>", "Sets the bold font")
     .action(async (input, output, options) => {
         const elk = new ELK()
         const graph = JSON.parse(await fs.readFile(input, {
@@ -469,7 +488,7 @@ program
 
         //console.log(JSON.stringify(layoutedGraph));
 
-        const svg = await renderGraph(layoutedGraph, 1.0);
+        const svg = await renderGraph(layoutedGraph, options, 1.0);
         const svgOpt = optimize(svg, { multipass: true }).data;
         await fs.writeFile(output, svgOpt);
     });

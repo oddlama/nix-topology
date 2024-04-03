@@ -151,7 +151,9 @@ in rec {
       echo "Rendering "${escapeShellArg name}" diagram"
       ${lib.getExe pkgs.elk-to-svg} \
         ${pkgs.writeText "${name}.elk.json" (builtins.toJSON diagram)} \
-        $out/diagram.svg
+          --font ${pkgs.jetbrains-mono}/share/fonts/truetype/JetBrainsMono-Regular.ttf \
+          --font-bold ${pkgs.jetbrains-mono}/share/fonts/truetype/JetBrainsMono-Bold.ttf \
+          $out/diagram.svg
     '')
     + "/diagram.svg";
 }

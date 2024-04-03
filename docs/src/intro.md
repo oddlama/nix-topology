@@ -24,6 +24,6 @@ implement extractors, other stuff, or generally help out if you'd like. We'd be 
 
 ## 📜 License
 
-Licensed under the MIT license ([LICENSE](LICENSE) or <https://opensource.org/licenses/MIT>).
+Licensed under the MIT license ([LICENSE](https://github.com/oddlama/nix-topology/LICENSE) or <https://opensource.org/licenses/MIT>).
 Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in this project by you, shall be licensed as above, without any additional terms or conditions.
