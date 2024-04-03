@@ -1,5 +1,5 @@
 {
-  description = "Automatically generate infrastructure and network diagrams from NixOS configurations";
+  description = "🍁 Generate infrastructure and network diagrams directly from your NixOS configurations";
 
   inputs = {
     devshell = {
@@ -24,7 +24,7 @@
     nixpkgs,
     pre-commit-hooks,
     ...
-  }:
+  } @ inputs:
     {
       # Expose NixOS module
       nixosModules.topology = ./nixos/module.nix;
@@ -43,7 +43,10 @@
         ];
       };
 
-      packages.docs = pkgs.callPackage ./pkgs/docs.nix {};
+      packages.docs = pkgs.callPackage ./pkgs/docs.nix {
+        flakeInputs = inputs;
+        flakeOutputs = self;
+      };
 
       # `nix flake check`
       checks.pre-commit-hooks = pre-commit-hooks.lib.${system}.run {

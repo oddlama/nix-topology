@@ -1,3 +1,6 @@
+[![](./examples/complex/main.svg)](./examples/complex/main.svg)
+Click to enlarge
+
 # 🍁 nix-topology
 
 With nix-topology you can automatically generate infrastructure and network
@@ -14,7 +17,7 @@ Most of the work is done by the included NixOS module which automatically collec
 - ➡️  Automatically propagates assigned networks through your connections
 - 🖨️ Allows you to add external devices like switches, routers, printers ...
 
-Have a look at the [examples](./examples) directory for some self-contained examples.
+Have a look at the examples on the left for some finished configurations and inspiration.
 
 #### Why?
 

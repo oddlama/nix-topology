@@ -21,5 +21,3 @@
 
 # Examples
 
-- [Simple](./examples/simple.md)
-- [Complex](./examples/complex.md)
