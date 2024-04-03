@@ -1,29 +1,30 @@
-[Documentation](https://oddlama.github.io/nix-topology) \| [Installation and Usage](#-installation-and-usage) \| [Architecture](#%EF%B8%8F-architecture)
+[Documentation](https://oddlama.github.io/nix-topology) \| [Installation and Usage](#-installation-and-usage)
 
-## 🗺️ nix-topology
+## 🍁 nix-topology
 
-With nix-topology you can automatically generate SVG infrastructure and network
-diagrams from your NixOS configurations, similar to the diagram above.
+With nix-topology you can automatically generate infrastructure and network
+diagrams as SVGs directly from your NixOS configurations, and get something similar to the diagram above.
 It defines a new global module system where you can specify what nodes and networks you have.
-The included NixOS module can even automatically collect information from your hosts.
+Most of the work is done by the included NixOS module which automatically collects all the information from your hosts.
 
 - 🌱 Extracts a lot of information automatically from your NixOS configuration:
-  - 🔗 Interface information from systemd-networkd
-  - 🌐 Network information from kea
+  - 🔗 Interfaces from systemd-networkd
   - 🍵 Known configured services
-  - 💻 Supports [microvm.nix](https://github.com/astro/microvm.nix), nixos-containers
+  - 🖥️ Guests from [microvm.nix](https://github.com/astro/microvm.nix)
+  - 🖥️ Guests from nixos containers
+  - 🌐 Network information from kea
 - 🗺️ Renders both a main diagram (physical connections) and a network-centric diagram
 - ➡️  Automatically propagates assigned networks through your connections
 - 🖨️ Allows you to add external devices like switches, routers, printers ...
 
-It's really simple to add rendering support for new services. You will probably encounter
-services that are not yet covered. If you'd like to help out, PRs are always welcome!
+Have a look at the [examples](./examples) directory for some self-contained examples.
 
 #### Why?
 
-Well.. I became a little envious of all the manually crafted infrastructure diagrams on [r/homelab](https://www.reddit.com/r/homelab/).
-But then I thought about all the time it takes to _manually draw and update_ one of these.
-So I just did the next best thing: Write a generator.
+I became a little envious of all the manually crafted infrastructure diagrams on [r/homelab](https://www.reddit.com/r/homelab/).
+But who's got time for that?! I'd rather spend a whole lot more time
+to create a generator that I will use once or twice in my life 🤡👍.
+Maybe it will be useful for somebody else, too.
 
 ## 📦 Installation and Usage
 
@@ -35,13 +36,28 @@ defining the global module and adding the NixOS module to your systems:
    inputs.nix-topology.url = "github:oddlama/nix-topology";
    ```
 2. Add the exposed overlay to your global pkgs definition, so the necessary tools are available for rendering
+   ```nix
+   pkgs = import nixpkgs {
+     inherit system;
+     overlays = [nix-topology.overlays.default];
+   };
+   ```
 3. Import the exposed NixOS module `nix-topology.nixosModules.default` in your host configs
+   ```nix
+   nixosConfigurations.host1 = lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        ./host1/configuration.nix
+        nix-topology.nixosModules.default
+      ];
+   };
+   ```
 4. Create the global topology by using `topology = import nix-topology { pkgs = /*...*/; };`.
    Expose this as an output in your flake so you can access it.
    ```nix
    inputs.nix-topology.url = "github:oddlama/nix-topology";
    topology = import nix-topology {
-     inherit pkgs;
+     inherit pkgs; # Only this package set must include nix-topology.overlays.default
      modules = [
        # Your own file to define global topology. Works in principle like a nixos module but uses different options.
        ./topology.nix
@@ -50,8 +66,9 @@ defining the global module and adding the NixOS module to your systems:
      ];
    };
    ```
-5. Render your topology via `nix build .#topology.<current-system>.config.output`, the result directory will contain your svgs.
-   Note that this can be slow, depending on how many hosts you have defined. Evaluating many nixos configurations just takes some time.
+5. Render your topology via `nix build .#topology.<current-system>.config.output`, the resulting directory will contain your finished svgs.
+   Note that this can take a minute, depending on how many hosts you have defined. Evaluating many nixos configurations just takes some time,
+   and the renderer sometimes struggles with handling bigger PNGs in a timely fashion.
 
 <details>
 <summary>Example flake.nix</summary>
@@ -65,11 +82,14 @@ defining the global module and adding the NixOS module to your systems:
     nix-topology.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, nix-topology, ... }: {
+  outputs = { self, flake-utils, nixpkgs, nix-topology, ... }: {
     # Example. Use your own hosts and add the module to them
     nixosConfigurations.host1 = nixpkgs.lib.nixosSystem {
-      # ...
-      modules = [ nix-topology.nixosModules.default ];
+      system = "x86_64-linux";
+      modules = [
+        ./host1/configuration.nix
+        nix-topology.nixosModules.default
+      ];
     };
   }
   // flake-utils.lib.eachDefaultSystem (system: rec {

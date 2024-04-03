@@ -1,9 +1,9 @@
-# Intro
+# 🍁 nix-topology
 
-With nix-topology you can automatically generate SVG infrastructure and network
-diagrams from your NixOS configurations, similar to the diagram above.
+With nix-topology you can automatically generate infrastructure and network
+diagrams as SVGs directly from your NixOS configurations, and get something similar to the diagram above.
 It defines a new global module system where you can specify what nodes and networks you have.
-The included NixOS module can even automatically collect information from your hosts.
+Most of the work is done by the included NixOS module which automatically collects all the information from your hosts.
 
 - 🌱 Extracts a lot of information automatically from your NixOS configuration:
   - 🔗 Interface information from systemd-networkd
@@ -14,8 +14,14 @@ The included NixOS module can even automatically collect information from your h
 - ➡️  Automatically propagates assigned networks through your connections
 - 🖨️ Allows you to add external devices like switches, routers, printers ...
 
-It's really simple to add rendering support for new services. You will probably encounter
-services that are not yet covered. If you'd like to help out, PRs are always welcome!
+Have a look at the [examples](./examples) directory for some self-contained examples.
+
+#### Why?
+
+I became a little envious of all the manually crafted infrastructure diagrams on [r/homelab](https://www.reddit.com/r/homelab/).
+But who's got time for that?! I'd rather spend a whole lot more time
+to create a generator that I will use once or twice in my life 🤡👍.
+Maybe it will be useful for somebody else, too.
 
 ## ❤️ Contributing
 

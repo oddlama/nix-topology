@@ -1,4 +1,4 @@
-# 🌱 Adding connections, networks and other devices
+# 🌱 Defining additional things
 
 After rendering for the first time, the initial diagram might look a little unstructured.
 That's simply because nix-topology will be missing some important connections that can't
@@ -70,3 +70,5 @@ there's an alias `topology.self` which aliases `topology.nodes.${config.topology
   topology.self.hardware.info = "Raspberry Pi 5";
 }
 ```
+
+Follow through the next pages for examples on defining nodes, networks and connections.

@@ -7,7 +7,10 @@
 }: let
   topologyDoc = nixosOptionsDoc {
     inherit
-      (import ../. {inherit pkgs;})
+      (import ../. {
+        inherit pkgs;
+        prefix = [];
+      })
       options
       ;
   };

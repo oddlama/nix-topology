@@ -7,7 +7,7 @@
 
 # Defining your Topology
 
-- [Adding additional things](./adding-additional-things.md)
+- [Defining additional things](./defining-additional-things.md)
   - [Useful helpers](./helpers.md)
   - [Adding Connections](./connections.md)
   - [Adding Nodes](./nodes.md)
