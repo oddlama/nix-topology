@@ -21,27 +21,6 @@ Each NixOS host automatically extracts information from your NixOS configuration
 them in a structured format that is defined by the main topology module. For an overview
 over what is available, please refer to the [available options](https://oddlama.github.io/nix-topology/topology-options.html)
 
-## 🔨 TODO
-
-Yep, there's still a lot that could be added or improved.
-
-#### Information Gathering (Extractors)
-
-- Podman / docker harvesting
-- networking.interfaces extractor
-- Disks (from disko) + render
-- Impermanence render?
-- Nixos nftables firewall render?
-
-#### General
-
-- NAT indication
-- Macvtap/vlan/bridge interface type svg with small link
-- Embed font globally, try removing satori embed? I'd like to be able to select text.
-- Embed svgs in svgs. Last time I tried it made some things render incorrectly.
-- Make colors configurable
-- The network propagator based on options.nodes cannot deal with mkMerge and mkIf stuff currently
-
 ## 🤬 Caveats
 
 There definitely are some caveats. Currently we use ELK to layout the diagram, because it really

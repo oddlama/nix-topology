@@ -186,10 +186,17 @@ function renderGraph(g, scaleFactor = 1.0) {
 
     const nodeShape = node_d => {
         if (node_d.svg) {
+			// Load svg
+			var content = syncFs.readFileSync(node_d.svg.file, {
+				encoding: "utf8"
+			});
+			// replace mask names to be globally unique
+			content = content.replaceAll("satori", node_d.id.toString('base64url'))
+
             return svg`
                 <g transform="translate(${node_d.x.toString()} ${node_d.y.toString()})">
                     <g transform="scale(${node_d.svg.scale} ${node_d.svg.scale})">
-                        <image href="${node_d.svg.file}" />
+						${content}
                     </g>
                 </g>
             `;
@@ -391,12 +398,12 @@ program
         const preprocessNode = node => {
             if (node.svg) {
                 // Load svg
-                node.svg.content = syncFs.readFileSync(node.svg.file, {
+                let content = syncFs.readFileSync(node.svg.file, {
                     encoding: "utf8"
                 });
 
                 // Fill in width and height based on node images
-                let svgContent = parseSvg(node.svg.content).children.find((x, _1, _2) => x.tagName == "svg" && x.type == "element");
+                let svgContent = parseSvg(content).children.find((x, _1, _2) => x.tagName == "svg" && x.type == "element");
                 let viewBox = svgContent.properties.viewBox.split(" ").map(x => parseInt(x, 10))
 
                 node.svg.width = svgContent.properties.width || (viewBox[2] - viewBox[0]);
@@ -463,7 +470,7 @@ program
         //console.log(JSON.stringify(layoutedGraph));
 
         const svg = await renderGraph(layoutedGraph, 1.0);
-        const svgOpt = svg; //optimize(svg, { multipass: true }).data;
+        const svgOpt = optimize(svg, { multipass: true }).data;
         await fs.writeFile(output, svgOpt);
     });
 

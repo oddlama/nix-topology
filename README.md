@@ -132,6 +132,26 @@ Or locally (e.g. `host1/configuration.nix`):
 }
 ```
 
+## 🔨 TODO
+
+Yep, there's still a lot that could be added or improved.
+
+#### Information Gathering (Extractors)
+
+- Podman / docker harvesting
+- networking.interfaces extractor
+- Disks (from disko) + render
+- Impermanence render?
+- Nixos nftables firewall render?
+
+#### General
+
+- NAT indication
+- Macvtap/vlan/bridge interface type svg with small link
+- configurable font
+- Make colors configurable
+- The network propagator based on options.nodes cannot deal with mkMerge and mkIf stuff currently
+
 ## ❤️ Contributing
 
 Contributions are whole-heartedly welcome! Please feel free to suggest new features,
