@@ -61,4 +61,10 @@ in rec {
     // {
       deviceType = "router";
     };
+
+  mkDevice = name: args:
+    mkDevice name args
+    // {
+      deviceType = "device";
+    };
 }

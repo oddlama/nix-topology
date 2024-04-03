@@ -80,3 +80,8 @@ nodes.router = mkSwitch "Router" {
   connections.wan1 = mkConnection "host1" "wan";
 };
 ```
+
+## mkDevice
+
+Exactly the same as `mkSwitch`, but sets the device type to `device` instead of `switch`,
+which has no icon to the right by default.
