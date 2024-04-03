@@ -23,3 +23,18 @@ ipv4/ipv6 address space. Then assign it to any participating interface:
 
 Some extractors (such as the kea extractor) can create networks automatically, so all you need
 to do there is to assign a friendly name.
+
+## Style
+
+All connections in a network can be styled by setting the style attribute on the network.
+You can have solid, dashed or dotted connections with one or two colors:
+
+```nix
+{
+  networks.home.style = {
+    primaryColor = "#70a5eb";
+    secondaryColor = null; # only relevant for dashed and dotted, null means transparent background
+    pattern = "solid"; # one of "solid", "dashed", "dotted"
+  };
+}
+```

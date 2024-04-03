@@ -59,6 +59,9 @@ nodes.switch1 = mkSwitch "Switch 1" {
   interfaceGroups = [["eth1" "eth2" "eth3" "eth4" "eth5"]];
   connections.eth1 = mkConnection "host1" "lan";
   connections.eth2 = [(mkConnection "host2" "wan") (mkConnection "host3" "eth0")];
+
+  # any other attributes specified here are directly forwarded to the node:
+  interfaces.eth1.network = "home";
 };
 ```
 

@@ -30,27 +30,31 @@ in rec {
     interfaceGroups ? [],
     connections ? {},
     ...
-  }: {
-    inherit name;
-    deviceType = "switch";
-    hardware = {
-      info = mkIf (info != null) info;
-      image = mkIf (image != null) image;
-    };
-    interfaces = mkMerge (
-      flip mapAttrsToList connections (interface: conns: {
-        ${interface}.physicalConnections = toList conns;
-      })
-      ++ flip concatMap interfaceGroups (
-        group:
-          flip map group (
-            interface: {
-              ${interface}.sharesNetworkWith = [(x: elem x group)];
-            }
+  } @ args:
+    mkMerge [
+      (builtins.removeAttrs args ["info" "image" "interfaceGroups" "connections"])
+      {
+        inherit name;
+        deviceType = "switch";
+        hardware = {
+          info = mkIf (info != null) info;
+          image = mkIf (image != null) image;
+        };
+        interfaces = mkMerge (
+          flip mapAttrsToList connections (interface: conns: {
+            ${interface}.physicalConnections = toList conns;
+          })
+          ++ flip concatMap interfaceGroups (
+            group:
+              flip map group (
+                interface: {
+                  ${interface}.sharesNetworkWith = [(x: elem x group)];
+                }
+              )
           )
-      )
-    );
-  };
+        );
+      }
+    ];
 
   mkRouter = name: args:
     mkSwitch name args

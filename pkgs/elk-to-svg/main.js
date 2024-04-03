@@ -194,7 +194,7 @@ function renderGraph(g, options, scaleFactor = 1.0) {
 			content = content.substring(content.indexOf('>')+1)
 			content = content.substring(0, content.indexOf('</svg>'))
 			// replace mask names to be globally unique
-			content = content.replaceAll("satori", node_d.id.toString('base64url'))
+			content = content.replaceAll("satori", Buffer.from(node_d.id).toString('base64url'))
 
             return svg`
                 <g transform="translate(${node_d.x.toString()} ${node_d.y.toString()})">
