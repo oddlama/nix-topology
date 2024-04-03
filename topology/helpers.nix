@@ -63,7 +63,7 @@ in rec {
     };
 
   mkDevice = name: args:
-    mkDevice name args
+    mkSwitch name args
     // {
       deviceType = "device";
     };
