@@ -1,6 +1,6 @@
 <p float="left">
-  <img src="https://oddlama.github.io/nix-topology/examples/complex/main.svg" alt="Main view. Click to enlarge." width="45%" />
-  <img src="https://oddlama.github.io/nix-topology/examples/complex/network.svg" alt="Network view. Click to enlarge." width="51%" />
+  <a href="https://oddlama.github.io/nix-topology/examples/complex/main.svg"><img src="https://oddlama.github.io/nix-topology/examples/complex/main.svg" alt="Main view. Click to enlarge." width="45%" /></a>
+  <a href="https://oddlama.github.io/nix-topology/examples/complex/network.svg"><img src="https://oddlama.github.io/nix-topology/examples/complex/network.svg" alt="Network view. Click to enlarge." width="51%" /></a>
 </p>
 
 [Documentation](https://oddlama.github.io/nix-topology) \| [Installation and Usage](#-installation-and-usage)
