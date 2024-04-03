@@ -20,6 +20,7 @@ f: {
     hasPrefix
     length
     mapAttrsToList
+    mergeDefinitions
     mkDefault
     mkIf
     mkOption
@@ -49,18 +50,38 @@ f: {
     then list
     else list ++ [x];
 
+  extractNetworkDefinitions = nodeId: node:
+    flip mapAttrsToList (node.interfaces or {}) (
+      interfaceId: interface:
+        optional (interface ? network && !isLazyValue interface.network) {
+          ${nodeId}.${interfaceId} = interface.network;
+        }
+    );
+
+  # This is a replacement type used for merging node definitions to determine the raw
+  # network assingments. It only merges interfaces and network assignments and discards
+  # the rest. The network assigments have a replacement type that also just outputs the raw assigned value.
+  nodeInterfaceNetworkReplacementType = types.attrsOf (types.submodule {
+    freeformType = types.unspecified; # Discard the rest
+    options.interfaces = mkOption {
+      default = {};
+      type = types.attrsOf (types.submodule {
+        freeformType = types.unspecified; # Discard the rest
+        options.network = mkOption {
+          default = lazyValue null;
+          type = lazyOf (types.nullOr types.str);
+        };
+      });
+    };
+  });
+
+  # Merge definitions with our replacement type, so we get the raw defined values for the networks.
+  effectiveNodeDefinitions = (mergeDefinitions options.nodes.loc nodeInterfaceNetworkReplacementType options.nodes.definitionsWithLocations).mergedValue;
+
   # The list of networks that were specifically assigned by the user
   # to other interfaces which are sharing their network with us.
   networkDefiningInterfaces = foldl' recursiveUpdate {} (flatten (
-    flip map options.nodes.definitions (mapAttrsToList (
-      nodeId: node:
-        flip mapAttrsToList (node.interfaces or {}) (
-          interfaceId: interface:
-            optional (interface ? network && !isLazyValue interface.network) {
-              ${nodeId}.${interfaceId} = interface.network;
-            }
-        )
-    ))
+    mapAttrsToList extractNetworkDefinitions effectiveNodeDefinitions
   ));
 
   # A list of all connections between all interfaces. Bidirectional.

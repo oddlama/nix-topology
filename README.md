@@ -170,7 +170,6 @@ Yep, there's still a lot that could be added or improved.
 - Macvtap/vlan/bridge interface type svg with small link
 - configurable font
 - Make colors configurable
-- The network propagator based on options.nodes cannot deal with mkMerge and mkIf stuff currently
 
 ## ❤️ Contributing
 
