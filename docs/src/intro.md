@@ -9,10 +9,11 @@ It defines a new global module system where you can specify what nodes and netwo
 Most of the work is done by the included NixOS module which automatically collects all the information from your hosts.
 
 - 🌱 Extracts a lot of information automatically from your NixOS configuration:
-  - 🔗 Interface information from systemd-networkd
-  - 🌐 Network information from kea
+  - 🔗 Interfaces from systemd-networkd
   - 🍵 Known configured services
-  - 💻 Supports [microvm.nix](https://github.com/astro/microvm.nix), nixos-containers
+  - 🖥️ Guests from [microvm.nix](https://github.com/astro/microvm.nix)
+  - 🖥️ Guests from nixos containers
+  - 🌐 Network information from kea
 - 🗺️ Renders both a main diagram (physical connections) and a network-centric diagram
 - ➡️  Automatically propagates assigned networks through your connections
 - 🖨️ Allows you to add external devices like switches, routers, printers ...
