@@ -10,6 +10,8 @@
     concatStringsSep
     flatten
     flip
+    imap0
+    listToAttrs
     mapAttrs
     mapAttrsToList
     mkDefault
@@ -33,6 +35,15 @@ in {
           icon = "services.adguardhome";
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
+
+      esphome = mkIf config.services.esphome.enable {
+        name = "ESPHome";
+        icon = "services.esphome";
+        details.listen.text =
+          if config.services.esphome.enableUnixSocket
+          then "/run/esphome/esphome.sock"
+          else "${config.services.esphome.address}:${toString config.services.esphome.port}";
+      };
 
       forgejo = let
         address = config.services.forgejo.settings.server.HTTP_ADDR or null;
@@ -73,6 +84,22 @@ in {
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
 
+      home-assistant = mkIf config.services.home-assistant.enable {
+        name = "Home Assistant";
+        icon = "services.home-assistant";
+        details.listen.text = toString (
+          flip map config.services.home-assistant.config.http.server_host (
+            addr: "${addr}:${toString config.services.home-assistant.config.http.server_port}"
+          )
+        );
+      };
+
+      influxdb2 = mkIf config.services.influxdb2.enable {
+        name = "InfluxDB v2";
+        icon = "services.influxdb2";
+        details.listen.text = config.services.influxdb2.settings.http-bind-address or "localhost:8086";
+      };
+
       kanidm = mkIf config.services.kanidm.enableServer {
         name = "Kanidm";
         icon = "services.kanidm";
@@ -88,6 +115,29 @@ in {
           name = "Loki";
           icon = "services.loki";
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+        };
+
+      mosquitto = let
+        listeners = flip map config.services.mosquitto.listeners (
+          l: rec {
+            address =
+              if l.address == null
+              then "[::]"
+              else l.address;
+            listen =
+              if l.port == 0
+              then address
+              else "${address}:${toString l.port}";
+          }
+        );
+      in
+        mkIf config.services.mosquitto.enable {
+          name = "Mosquitto";
+          icon = "services.mosquitto";
+          details = listToAttrs (flip imap0 listeners (i: l: {
+            name = "listen[${toString i}]";
+            value.text = l.listen;
+          }));
         };
 
       nginx = mkIf config.services.nginx.enable {
@@ -126,6 +176,16 @@ in {
         info = "port: ${concatStringsSep ", " (map toString config.services.openssh.ports)}";
       };
 
+      paperless-ngx = let
+        url = config.services.paperless.settings.PAPERLESS_URL or null;
+      in
+        mkIf config.services.paperless.enable {
+          name = "Paperless-ngx";
+          icon = "services.paperless-ngx";
+          info = mkIf (url != null) url;
+          details.listen.text = "${config.services.paperless.address}:${toString config.services.paperless.port}";
+        };
+
       radicale = mkIf config.services.radicale.enable {
         name = "Radicale";
         icon = "services.radicale";
@@ -151,6 +211,24 @@ in {
           icon = "services.vaultwarden";
           info = mkIf (domain != null) domain;
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+        };
+
+      zigbee2mqtt = let
+        mqttServer = config.services.zigbee2mqtt.settings.mqtt.server or null;
+        address = config.services.zigbee2mqtt.settings.frontend.host or null;
+        port = config.services.zigbee2mqtt.settings.frontend.port or null;
+        listen =
+          if address == null
+          then null
+          else if port == null
+          then address
+          else "${address}:${toString port}";
+      in
+        mkIf config.services.zigbee2mqtt.enable {
+          name = "Zigbee2MQTT";
+          icon = "services.zigbee2mqtt";
+          details.listen = mkIf (listen != null) {text = listen;};
+          details.mqtt = mkIf (mqttServer != null) {text = mqttServer;};
         };
     }
     // flip mapAttrs config.services.restic.backups (
