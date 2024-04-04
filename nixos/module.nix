@@ -17,7 +17,7 @@
     types
     ;
 
-  toplevelRelevantOptions = ["nodes" "networks"];
+  toplevelRelevantOptions = ["nodes" "networks" "icons"];
 in {
   imports =
     [

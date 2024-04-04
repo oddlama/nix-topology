@@ -141,6 +141,7 @@ in {
 
     nodes = aggregate ["nodes"];
     networks = aggregate ["networks"];
+    icons = aggregate ["icons"];
 
     lib.topology = import ./helpers.nix lib;
   };
