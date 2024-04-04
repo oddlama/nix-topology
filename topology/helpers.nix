@@ -27,6 +27,7 @@ in rec {
   mkSwitch = name: {
     info ? null,
     image ? null,
+    deviceType ? "switch",
     interfaceGroups ? [],
     connections ? {},
     ...
@@ -34,8 +35,7 @@ in rec {
     mkMerge [
       (builtins.removeAttrs args ["info" "image" "interfaceGroups" "connections"])
       {
-        inherit name;
-        deviceType = "switch";
+        inherit name deviceType;
         hardware = {
           info = mkIf (info != null) info;
           image = mkIf (image != null) image;
@@ -57,14 +57,14 @@ in rec {
     ];
 
   mkRouter = name: args:
-    mkSwitch name args
-    // {
-      deviceType = "router";
-    };
+    mkSwitch name (args
+      // {
+        deviceType = "router";
+      });
 
   mkDevice = name: args:
-    mkSwitch name args
-    // {
-      deviceType = "device";
-    };
+    mkSwitch name (args
+      // {
+        deviceType = "device";
+      });
 }
