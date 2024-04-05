@@ -25,3 +25,4 @@ in
 ```
 
 If you want to add support for new services, feel free to create a PR. Contributions are wholeheartedly welcome!
+There's more information in the [Development Chapter](./development.html).

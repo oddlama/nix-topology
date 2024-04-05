@@ -181,6 +181,7 @@ Yep, there's still a lot that could be added or improved.
 
 Contributions are whole-heartedly welcome! Please feel free to suggest new features,
 implement extractors, other stuff, or generally help out if you'd like. We'd be happy to have you.
+There's more information in [CONTRIBUTING.md](CONTRIBUTING.md) and the [Development Chapter](./development.html) in the docs.
 
 ## 📜 License
 

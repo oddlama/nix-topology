@@ -19,7 +19,7 @@ node asssigned to your nixos host, available as `topology.self`.
 
 Each NixOS host automatically extracts information from your NixOS configuration and exposes
 them in a structured format that is defined by the main topology module. For an overview
-over what is available, please refer to the [available options](https://oddlama.github.io/nix-topology/topology-options.html)
+over what is available, please refer to the [available options](../topology-options.html)
 
 ## 🤬 Caveats
 

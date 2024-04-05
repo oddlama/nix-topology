@@ -14,10 +14,12 @@
   - [Adding Networks](./networks.md)
 - [Topology Options](./topology-options.md)
 
-# Internal architecture
+# Internals
 
-- [Architecture](./architecture/architecture.md)
-- [Extractors](./architecture/extractors.md)
+- [Architecture](./internals/architecture.md)
+- [Extractors](./internals/extractors.md)
+- [Development](./internals/development.md)
 
 # Examples
 
+<!-- Examples must come last, since the examples are appended automatically by the build script! -->
