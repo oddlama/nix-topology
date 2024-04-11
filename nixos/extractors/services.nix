@@ -21,6 +21,7 @@
     mkMerge
     optional
     optionalString
+    optionalAttrs
     replaceStrings
     ;
 in {
@@ -70,6 +71,15 @@ in {
           then "/run/esphome/esphome.sock"
           else "${config.services.esphome.address}:${toString config.services.esphome.port}";
       };
+
+      firefox-syncserver = mkIf config.services.firefox-syncserver.enable ({
+          name = "Firefox Syncserver";
+          icon = "services.firefox-syncserver";
+          details.listen.text = "${config.services.firefox-syncserversettings.host or "127.0.0.1"}:${toString config.services.firefox-syncserver.settings.port}";
+        }
+        // (optionalAttrs config.services.firefox-syncserver.singleNode.enable {
+          info = config.services.firefox-syncserver.singleNode.url;
+        }));
 
       forgejo = let
         address = config.services.forgejo.settings.server.HTTP_ADDR or null;
