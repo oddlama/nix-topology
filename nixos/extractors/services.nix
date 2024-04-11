@@ -8,6 +8,7 @@
     attrNames
     concatLines
     concatStringsSep
+    filterAttrs
     flatten
     flip
     imap0
@@ -19,6 +20,7 @@
     mkIf
     mkMerge
     optional
+    optionalString
     replaceStrings
     ;
 in {
@@ -35,6 +37,30 @@ in {
           icon = "services.adguardhome";
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
+
+      authelia = let
+        instances =
+          filterAttrs (_: v: v.enable) config.services.authelia.instances;
+      in
+        mkIf (instances != {}) {
+          name = "Authelia";
+          icon = "services.authelia";
+          details = listToAttrs (mapAttrsToList (name: v: {
+              inherit name;
+              value.text = "${v.settings.server.host}:${toString v.settings.server.port}";
+            })
+            instances);
+        };
+
+      blocky = mkIf config.services.blocky.enable {
+        name = "Blocky";
+        icon = "services.blocky";
+        details = listToAttrs (mapAttrsToList (n: v: {
+            name = "listen.${n}";
+            value.text = toString v;
+          })
+          config.services.blocky.settings.ports);
+      };
 
       esphome = mkIf config.services.esphome.enable {
         name = "ESPHome";
@@ -139,6 +165,14 @@ in {
             value.text = l.listen;
           }));
         };
+
+      nextcloud = mkIf config.services.nextcloud.enable {
+        name = "Nextcloud";
+        icon = "services.nextcloud";
+        info = "http${
+          optionalString config.services.nextcloud.https "s"
+        }://${config.services.nextcloud.hostName}";
+      };
 
       nginx = mkIf config.services.nginx.enable {
         name = "NGINX";
