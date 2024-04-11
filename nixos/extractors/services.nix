@@ -120,6 +120,13 @@ in {
         );
       };
 
+      hydra = mkIf config.services.hydra.enable {
+        name = "Hydra";
+        icon = "devices.nixos";
+        info = config.services.hydra.hydraURL;
+        details.listen.text = "${config.services.hydra.listenHost}:${toString config.services.hydra.port}";
+      };
+
       influxdb2 = mkIf config.services.influxdb2.enable {
         name = "InfluxDB v2";
         icon = "services.influxdb2";
