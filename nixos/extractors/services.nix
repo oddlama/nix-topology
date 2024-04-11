@@ -51,6 +51,16 @@ in {
             instances);
         };
 
+      blocky = mkIf config.services.blocky.enable {
+        name = "Blocky";
+        icon = "services.blocky";
+        details = listToAttrs (mapAttrsToList (n: v: {
+            name = "listen.${n}";
+            value.text = toString v;
+          })
+          config.services.blocky.settings.ports);
+      };
+
       esphome = mkIf config.services.esphome.enable {
         name = "ESPHome";
         icon = "services.esphome";
