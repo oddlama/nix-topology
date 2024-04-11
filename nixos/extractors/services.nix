@@ -8,6 +8,7 @@
     attrNames
     concatLines
     concatStringsSep
+    filterAttrs
     flatten
     flip
     imap0
@@ -34,6 +35,20 @@ in {
           name = "AdGuard Home";
           icon = "services.adguardhome";
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+        };
+
+      authelia = let
+        instances =
+          filterAttrs (_: v: v.enable) config.services.authelia.instances;
+      in
+        mkIf (instances != {}) {
+          name = "Authelia";
+          icon = "services.authelia";
+          details = listToAttrs (mapAttrsToList (name: v: {
+              inherit name;
+              value.text = "${v.settings.server.host}:${toString v.settings.server.port}";
+            })
+            instances);
         };
 
       esphome = mkIf config.services.esphome.enable {
