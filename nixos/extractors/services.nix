@@ -20,6 +20,7 @@
     mkIf
     mkMerge
     optional
+    optionalString
     replaceStrings
     ;
 in {
@@ -164,6 +165,14 @@ in {
             value.text = l.listen;
           }));
         };
+
+      nextcloud = mkIf config.services.nextcloud.enable {
+        name = "Nextcloud";
+        icon = "services.nextcloud";
+        info = "http${
+          optionalString config.services.nextcloud.https "s"
+        }://${config.services.nextcloud.hostName}";
+      };
 
       nginx = mkIf config.services.nginx.enable {
         name = "NGINX";
