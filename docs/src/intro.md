@@ -31,10 +31,10 @@ Maybe it will be useful for somebody else, too.
 
 Contributions are whole-heartedly welcome! Please feel free to suggest new features,
 implement extractors, other stuff, or generally help out if you'd like. We'd be happy to have you.
-There's more information in [CONTRIBUTING.md](https://github.com/oddlama/nix-topology/CONTRIBUTING.md) and the [Development Chapter](./development.html) in the docs.
+There's more information in [CONTRIBUTING.md](https://github.com/oddlama/nix-topology/blob/main/CONTRIBUTING.md) and the [Development Chapter](./internals/development.html) in the docs.
 
 ## 📜 License
 
-Licensed under the MIT license ([LICENSE](https://github.com/oddlama/nix-topology/LICENSE) or <https://opensource.org/licenses/MIT>).
+Licensed under the MIT license ([LICENSE](https://github.com/oddlama/nix-topology/blob/main/LICENSE) or <https://opensource.org/licenses/MIT>).
 Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in this project by you, shall be licensed as above, without any additional terms or conditions.
