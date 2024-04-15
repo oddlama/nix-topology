@@ -143,6 +143,21 @@ in {
         details.listen.text = config.services.influxdb2.settings.http-bind-address or "localhost:8086";
       };
 
+      jellyfin = mkIf config.services.jellyfin.enable {
+        name = "Jellyfin";
+        icon = "services.jellyfin";
+        details = listToAttrs (mapAttrsToList (n: v: {
+            name = "listen.${n}";
+            value.text = "0.0.0.0:${toString v}";
+          })
+          (optionalAttrs config.services.jellyfin.openFirewall {
+            http = 8096;
+            https = 8920;
+            service-discovery = 1900;
+            client-discovery = 7359;
+          }));
+      };
+
       kanidm = mkIf config.services.kanidm.enableServer {
         name = "Kanidm";
         icon = "services.kanidm";
