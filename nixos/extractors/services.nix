@@ -120,6 +120,15 @@ in {
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
 
+      headscale = mkIf config.services.headscale.enable {
+        name = "Headscale";
+        icon = "services.headscale";
+        info = config.services.headscale.settings.server_url;
+        details = {
+          listen.text = "${config.services.headscale.address}:${toString config.services.headscale.port}";
+        };
+      };
+
       home-assistant = mkIf config.services.home-assistant.enable {
         name = "Home Assistant";
         icon = "services.home-assistant";
