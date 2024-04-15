@@ -191,6 +191,12 @@ in {
         }://${config.services.nextcloud.hostName}";
       };
 
+      nix-serve = mkIf config.services.nix-serve.enable {
+        name = "Nix Serve";
+        icon = "devices.nixos";
+        details.listen.text = "${config.services.nix-serve.bindAddress}:${toString config.services.nix-serve.port}";
+      };
+
       nginx = mkIf config.services.nginx.enable {
         name = "NGINX";
         icon = "services.nginx";
