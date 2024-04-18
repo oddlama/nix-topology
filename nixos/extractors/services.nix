@@ -167,6 +167,12 @@ in {
           }));
       };
 
+      jellyseerr = mkIf config.services.jellyseerr.enable {
+        name = "Jellyseerr";
+        icon = "services.jellyseerr";
+        details.listen = mkIf config.services.jellyseerr.openFirewall {text = "0.0.0.0:${toString config.services.jellyseerr.port}";};
+      };
+
       kanidm = mkIf config.services.kanidm.enableServer {
         name = "Kanidm";
         icon = "services.kanidm";
