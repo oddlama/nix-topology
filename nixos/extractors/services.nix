@@ -285,6 +285,12 @@ in {
         details.listen = mkIf config.services.prowlarr.openFirewall {text = "0.0.0.0:9696";};
       };
 
+      radarr = mkIf config.services.radarr.enable {
+        name = "Radarr";
+        icon = "services.radarr";
+        details.listen = mkIf config.services.radarr.openFirewall {text = "0.0.0.0:7878";};
+      };
+
       radicale = mkIf config.services.radicale.enable {
         name = "Radicale";
         icon = "services.radicale";
