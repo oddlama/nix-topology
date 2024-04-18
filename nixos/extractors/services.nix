@@ -306,6 +306,12 @@ in {
           mkIf (shares != []) {text = concatLines shares;};
       };
 
+      sonarr = mkIf config.services.sonarr.enable {
+        name = "Sonarr";
+        icon = "services.sonarr";
+        details.listen = mkIf config.services.sonarr.openFirewall {text = "0.0.0.0:8989";};
+      };
+
       vaultwarden = let
         domain = config.services.vaultwarden.config.domain or config.services.vaultwarden.config.DOMAIN or null;
         address = config.services.vaultwarden.config.rocketAddress or config.services.vaultwarden.config.ROCKET_ADDRESS or null;
