@@ -279,6 +279,12 @@ in {
           details.listen.text = "${config.services.paperless.address}:${toString config.services.paperless.port}";
         };
 
+      prowlarr = mkIf config.services.prowlarr.enable {
+        name = "Prowlarr";
+        icon = "services.prowlarr";
+        details.listen = mkIf config.services.prowlarr.openFirewall {text = "0.0.0.0:9696";};
+      };
+
       radicale = mkIf config.services.radicale.enable {
         name = "Radicale";
         icon = "services.radicale";
