@@ -180,6 +180,12 @@ in {
         details.listen.text = config.services.kanidm.serverSettings.bindaddress;
       };
 
+      lidarr = mkIf config.services.lidarr.enable {
+        name = "Lidarr";
+        icon = "services.lidarr";
+        details.listen = mkIf config.services.lidarr.openFirewall {text = "0.0.0.0:8686";};
+      };
+
       loki = let
         address = config.services.loki.configuration.server.http_listen_address or null;
         port = config.services.loki.configuration.server.http_listen_port or null;
