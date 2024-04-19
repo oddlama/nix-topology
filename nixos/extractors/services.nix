@@ -167,11 +167,23 @@ in {
           }));
       };
 
+      jellyseerr = mkIf config.services.jellyseerr.enable {
+        name = "Jellyseerr";
+        icon = "services.jellyseerr";
+        details.listen = mkIf config.services.jellyseerr.openFirewall {text = "0.0.0.0:${toString config.services.jellyseerr.port}";};
+      };
+
       kanidm = mkIf config.services.kanidm.enableServer {
         name = "Kanidm";
         icon = "services.kanidm";
         info = config.services.kanidm.serverSettings.origin;
         details.listen.text = config.services.kanidm.serverSettings.bindaddress;
+      };
+
+      lidarr = mkIf config.services.lidarr.enable {
+        name = "Lidarr";
+        icon = "services.lidarr";
+        details.listen = mkIf config.services.lidarr.openFirewall {text = "0.0.0.0:8686";};
       };
 
       loki = let
@@ -267,6 +279,18 @@ in {
           details.listen.text = "${config.services.paperless.address}:${toString config.services.paperless.port}";
         };
 
+      prowlarr = mkIf config.services.prowlarr.enable {
+        name = "Prowlarr";
+        icon = "services.prowlarr";
+        details.listen = mkIf config.services.prowlarr.openFirewall {text = "0.0.0.0:9696";};
+      };
+
+      radarr = mkIf config.services.radarr.enable {
+        name = "Radarr";
+        icon = "services.radarr";
+        details.listen = mkIf config.services.radarr.openFirewall {text = "0.0.0.0:7878";};
+      };
+
       radicale = mkIf config.services.radicale.enable {
         name = "Radicale";
         icon = "services.radicale";
@@ -280,6 +304,12 @@ in {
           shares = attrNames config.services.samba.shares;
         in
           mkIf (shares != []) {text = concatLines shares;};
+      };
+
+      sonarr = mkIf config.services.sonarr.enable {
+        name = "Sonarr";
+        icon = "services.sonarr";
+        details.listen = mkIf config.services.sonarr.openFirewall {text = "0.0.0.0:8989";};
       };
 
       vaultwarden = let
