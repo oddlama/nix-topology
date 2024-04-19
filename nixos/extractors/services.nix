@@ -312,6 +312,16 @@ in {
         details.listen = mkIf config.services.sonarr.openFirewall {text = "0.0.0.0:8989";};
       };
 
+      transmission = let
+        address = config.services.transmission.settings.rpc-bind-address or null;
+        port = config.services.transmission.settings.rpc-port or null;
+      in
+        mkIf config.services.transmission.enable {
+          name = "Transmission";
+          icon = "services.transmission";
+          details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+        };
+
       vaultwarden = let
         domain = config.services.vaultwarden.config.domain or config.services.vaultwarden.config.DOMAIN or null;
         address = config.services.vaultwarden.config.rocketAddress or config.services.vaultwarden.config.ROCKET_ADDRESS or null;
