@@ -196,6 +196,12 @@ in {
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
 
+      mastodon = mkIf config.services.mastodon.enable {
+        name = "Mastodon";
+        icon = "services.mastodon";
+        info = "https://${config.services.mastodon.localDomain}";
+      };
+
       mosquitto = let
         listeners = flip map config.services.mosquitto.listeners (
           l: rec {
