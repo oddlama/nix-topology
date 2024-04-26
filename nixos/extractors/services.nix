@@ -339,6 +339,15 @@ in {
         details.listen = mkIf config.services.sonarr.openFirewall {text = "0.0.0.0:8989";};
       };
 
+      static-web-server = mkIf config.services.static-web-server.enable {
+        name = "Static Web Server";
+        icon = "devices.nixos";
+        details = {
+          listen.text = toString config.services.static-web-server.listen;
+          root.text = toString config.services.static-web-server.root;
+        };
+      };
+
       transmission = let
         address = config.services.transmission.settings.rpc-bind-address or null;
         port = config.services.transmission.settings.rpc-port or null;
