@@ -6,6 +6,7 @@
   inherit
     (lib)
     attrNames
+    genAttrs
     concatLines
     concatStringsSep
     filterAttrs
@@ -23,6 +24,10 @@
     optionalString
     optionalAttrs
     replaceStrings
+    splitString
+    removePrefix
+    hasPrefix
+    filter
     ;
 in {
   options.topology.extractors.services.enable = mkEnableOption "topology service extractor" // {default = true;};
@@ -61,6 +66,22 @@ in {
             value.text = toString v;
           })
           config.services.blocky.settings.ports);
+      };
+
+      caddy = mkIf config.services.caddy.enable {
+        name = "Caddy";
+        icon = "services.caddy";
+        details = genAttrs (mapAttrsToList (name: _: name) config.services.caddy.virtualHosts) (name: {
+          text =
+            concatStringsSep " " # Turn the (possibly multiple) strings in the list into a single string
+            
+            (builtins.map
+              (line: removePrefix "reverse_proxy " line) # Remove the prefix, so only the list of hosts are left
+              
+              (filter (line: hasPrefix "reverse_proxy " line) # Filter out lines that don't start with reverse_proxy
+                
+                (splitString "\n" config.services.caddy.virtualHosts.${name}.extraConfig))); # Separate lines of string into list
+        });
       };
 
       esphome = mkIf config.services.esphome.enable {
