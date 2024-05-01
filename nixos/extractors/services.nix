@@ -79,15 +79,15 @@ in {
         details = genAttrs (mapAttrsToList (name: _: name) config.services.caddy.virtualHosts) (name: {
           text =
             concatStringsSep " " # Turn the (possibly multiple) strings in the list into a single string
-            
+
             (builtins.map
               (line: removePrefix "reverse_proxy " line) # Remove the prefix, so only the list of hosts are left
-              
+
               (filter (line: hasPrefix "reverse_proxy " line) # Filter out lines that don't start with reverse_proxy
-                
+
                 (splitString "\n" config.services.caddy.virtualHosts.${name}.extraConfig))); # Separate lines of string into list
         });
-        
+
       dnsmasq = mkIf config.services.dnsmasq.enable {
         name = "Dnsmasq";
         icon = "services.dnsmasq";
@@ -442,6 +442,6 @@ in {
         info = cfg.repository;
         details.paths.text = toString cfg.paths;
       }
-    )
-  );
+    );
+  });
 }
