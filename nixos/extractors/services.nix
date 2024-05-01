@@ -13,6 +13,8 @@
     filterAttrs
     flatten
     flip
+    forEach
+    head
     imap0
     length
     listToAttrs
@@ -30,6 +32,7 @@
     removePrefix
     hasPrefix
     filter
+    tail
     ;
 in {
   options.topology.extractors.services.enable = mkEnableOption "topology service extractor" // {default = true;};
@@ -84,6 +87,20 @@ in {
                 
                 (splitString "\n" config.services.caddy.virtualHosts.${name}.extraConfig))); # Separate lines of string into list
         });
+        
+      dnsmasq = mkIf config.services.dnsmasq.enable {
+        name = "Dnsmasq";
+        icon = "services.dnsmasq";
+        details = let
+          addresses = config.services.dnsmasq.settings.address;
+        in
+          listToAttrs (forEach
+            (forEach addresses
+              (x: (splitString "/" (removePrefix "/" x))))
+            (x: {
+              name = head x;
+              value.text = head (tail x);
+            }));
       };
 
       esphome = mkIf config.services.esphome.enable {
