@@ -9,10 +9,12 @@
     genAttrs
     concatLines
     concatStringsSep
+    elemAt
     filterAttrs
     flatten
     flip
     imap0
+    length
     listToAttrs
     mapAttrs
     mapAttrsToList
@@ -338,6 +340,43 @@ in {
         icon = "services.sonarr";
         details.listen = mkIf config.services.sonarr.openFirewall {text = "0.0.0.0:8989";};
       };
+
+      static-web-server = mkIf config.services.static-web-server.enable {
+        name = "Static Web Server";
+        icon = "devices.nixos";
+        details = {
+          listen.text = toString config.services.static-web-server.listen;
+          root.text = toString config.services.static-web-server.root;
+        };
+      };
+
+      traefik = let
+        dynCfg = config.services.traefik.dynamicConfigOptions;
+      in
+        mkIf config.services.traefik.enable {
+          name = "Traefik";
+          icon = "services.traefik";
+          details = mkIf (length (attrNames dynCfg) > 0) (let
+            formatOutput =
+              mapAttrsToList (
+                routerName: routerAttrs: let
+                  getServiceUrl = serviceName: let
+                    service = dynCfg.http.services.${toString serviceName}.loadBalancer.servers or [];
+                  in
+                    if length service > 0
+                    then (elemAt service 0).url
+                    else "invalid service";
+                  passText = toString (getServiceUrl routerAttrs.service);
+                in {
+                  ${toString routerName} = {
+                    text = passText;
+                  };
+                }
+              )
+              dynCfg.http.routers;
+          in
+            mkMerge formatOutput);
+        };
 
       transmission = let
         address = config.services.transmission.settings.rpc-bind-address or null;
