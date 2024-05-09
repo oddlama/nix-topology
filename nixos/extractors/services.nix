@@ -153,12 +153,16 @@ in {
       grafana = let
         address = config.services.grafana.settings.server.http_addr or null;
         port = config.services.grafana.settings.server.http_port or null;
+        plugins = config.services.grafana.declarativePlugins;
       in
         mkIf config.services.grafana.enable {
           name = "Grafana";
           icon = "services.grafana";
           info = config.services.grafana.settings.server.root_url;
-          details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+          details = {
+            listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+            plugins = mkIf (plugins != null) {text = concatStringsSep "\n" (builtins.map (p: p.name) plugins);};
+          };
         };
 
       headscale = mkIf config.services.headscale.enable {
