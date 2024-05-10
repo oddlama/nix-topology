@@ -303,10 +303,10 @@ in {
           mkMerge reverseProxies;
       };
 
-      oauth2_proxy = mkIf config.services.oauth2_proxy.enable {
+      oauth2-proxy = mkIf config.services.oauth2-proxy.enable {
         name = "OAuth2 Proxy";
         icon = "services.oauth2-proxy";
-        info = config.services.oauth2_proxy.httpAddress;
+        info = config.services.oauth2-proxy.httpAddress;
       };
 
       openssh = mkIf config.services.openssh.enable {
