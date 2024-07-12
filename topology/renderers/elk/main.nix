@@ -106,26 +106,36 @@ in rec {
             "org.eclipse.elk.padding" = "[top=0,left=0,bottom=0,right=0]";
             "org.eclipse.elk.priority" = 10000; # Place first!
           };
-          children = {
-            services-overview = {
-              svg = {
-                file = config.lib.renderers.svg.services.mkOverview;
-                scale = 0.8;
+          children =
+            {}
+            // optionalAttrs config.renderers.elk.overviews.services.enable {
+              services-overview = {
+                svg = {
+                  file = config.lib.renderers.svg.services.mkOverview;
+                  scale = 0.8;
+                };
+              };
+            }
+            // optionalAttrs config.renderers.elk.overviews.networks.enable {
+              networks-overview = {
+                svg = {
+                  file = config.lib.renderers.svg.net.mkOverview;
+                  scale = 0.8;
+                };
               };
             };
-
-            network-overview = {
-              svg = {
-                file = config.lib.renderers.svg.net.mkOverview;
-                scale = 0.8;
-              };
-            };
-          };
         };
       }
-      (mkEdge "children.legends.children.services-overview" "children.legends.children.network-overview" false {
-        style.stroke = "none"; # invisible
-      })
+      (
+        optionalAttrs (
+          config.renderers.elk.overviews.services.enable
+          && config.renderers.elk.overviews.networks.enable
+        ) (
+          mkEdge "children.legends.children.services-overview" "children.legends.children.networks-overview" false {
+            style.stroke = "none"; # invisible
+          }
+        )
+      )
     ]
     ++ flatten (map nodeToElk (attrValues config.nodes))
   );
