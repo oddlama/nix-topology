@@ -26,6 +26,8 @@
     ...
   } @ inputs:
     {
+      flakeModule = ./flake-module.nix;
+
       # Expose NixOS module
       nixosModules.topology = ./nixos/module.nix;
       nixosModules.default = self.nixosModules.topology;
