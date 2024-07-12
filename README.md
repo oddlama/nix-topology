@@ -35,7 +35,8 @@ Maybe it will be useful for somebody else, too.
 ## 📦 Installation and Usage
 
 Installation should be as simple as adding nix-topology to your flake.nix,
-defining the global module and adding the NixOS module to your systems:
+defining the global module and adding the NixOS module to your systems.
+A [flake-parts](https://flake.parts) module is also available (see end of this section for an example).
 
 1. Add nix-topology as an input to your flake
    ```nix
@@ -61,8 +62,9 @@ defining the global module and adding the NixOS module to your systems:
 4. Create the global topology by using `topology = import nix-topology { pkgs = /*...*/; };`.
    Expose this as an output in your flake so you can access it.
    ```nix
-   inputs.nix-topology.url = "github:oddlama/nix-topology";
-   topology = import nix-topology {
+   # Repeat this for each system where you want to build your topology.
+   # You can do this manually or use flake-utils.
+   topology.x86_64-linux = import nix-topology {
      inherit pkgs; # Only this package set must include nix-topology.overlays.default
      modules = [
        # Your own file to define global topology. Works in principle like a nixos module but uses different options.
@@ -72,7 +74,7 @@ defining the global module and adding the NixOS module to your systems:
      ];
    };
    ```
-5. Render your topology via `nix build .#topology.<current-system>.config.output`, the resulting directory will contain your finished svgs.
+5. Render your topology via `nix build .#topology.x86_64-linux.config.output`, the resulting directory will contain your finished svgs.
    Note that this can take a minute, depending on how many hosts you have defined. Evaluating many nixos configurations just takes some time,
    and the renderer sometimes struggles with handling bigger PNGs in a timely fashion.
 
@@ -114,6 +116,32 @@ defining the global module and adding the NixOS module to your systems:
       ];
     };
   });
+}
+```
+</details>
+
+<details>
+<summary>Example flake.nix with flake-parts</summary>
+
+
+```nix
+{
+  inputs.flake-parts.url = "github:hercules-ci/flake-parts";
+  inputs.nix-topology.url = "github:oddlama/nix-topology";
+  # ...
+  outputs = inputs:
+    inputs.flake-parts.lib.mkFlake {inherit inputs;} {
+      imports = [
+        inputs.nix-topology.flakeModule
+      ];
+      perSystem = {...}: {
+        topology.modules = [
+          {
+            # Your global topology definitions
+          }
+        ];
+      };
+    };
 }
 ```
 </details>
