@@ -93,7 +93,7 @@ in {
         name = "Dnsmasq";
         icon = "services.dnsmasq";
         details = let
-          addresses = config.services.dnsmasq.settings.address;
+          addresses = config.services.dnsmasq.settings.address or [];
         in
           listToAttrs (forEach
             (forEach addresses
