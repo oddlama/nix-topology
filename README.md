@@ -153,7 +153,7 @@ That's simply because nix-topology will be missing some important connections th
 be derived from a bunch of NixOS configurations, like physical connections.
 You'll probably also want to add some common devices like an image for the internet,
 switches, routers and stuff like that. But don't worry, all of this is quite simple.
-There's a whole [chapter in the documentation](https://oddlama.github.io/nix-topology/adding-additional-things.html) that will guide you through it.
+There's a whole [chapter in the documentation](https://oddlama.github.io/nix-topology/defining-additional-things.html) that will guide you through it.
 
 TL;DR: You can add connections and networks by specifying this information
 in the global topology module, or locally in one of your NixOS configs:
