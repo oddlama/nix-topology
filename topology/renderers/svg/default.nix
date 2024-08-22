@@ -14,6 +14,7 @@
     head
     mkOption
     optionalString
+    sort
     splitString
     tail
     types
@@ -188,8 +189,14 @@
 
       serviceDetails = service:
         optionalString (service.details != {}) ''<div tw="flex pt-2"></div>''
-        # FIXME: order not respected
-        + concatLines ((map serviceDetail) (attrValues service.details));
+        + concatLines ((map serviceDetail) (
+          flip sort (attrValues service.details) (
+            a: b:
+              if a.order != b.order
+              then a.order < b.order
+              else a.name < b.name
+          )
+        ));
 
       mkService = {
         additionalInfo ? "",
