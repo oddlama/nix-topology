@@ -73,7 +73,7 @@ which changes the icon to the right.
 Example:
 
 ```nix
-nodes.router = mkSwitch "Router" {
+nodes.router = mkRouter "Router" {
   info = "Some Router Type XY";
   # eth1-4 are switched, wan1 is the external DSL connection
   interfaceGroups = [["eth1" "eth2" "eth3" "eth4"] ["wan1"]];
