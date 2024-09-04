@@ -56,7 +56,7 @@ in {
         pkgs = mkOption {
           type = types.unspecified;
           description = "The package set to use for the topology evaluation on this system.";
-          default = pkgs;
+          default = pkgs.extend (import ./pkgs/default.nix);
           defaultText = lib.literalExpression "pkgs # (module argument)";
         };
         modules = mkOption {
