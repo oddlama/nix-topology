@@ -30,6 +30,7 @@
     replaceStrings
     splitString
     removePrefix
+    removeSuffix
     hasPrefix
     filter
     tail
@@ -81,7 +82,7 @@ in {
             concatStringsSep " " # Turn the (possibly multiple) strings in the list into a single string
             
             (builtins.map
-              (line: removePrefix "reverse_proxy " line) # Remove the prefix, so only the list of hosts are left
+              (line: removePrefix "reverse_proxy " (removeSuffix " {" line)) # Remove the prefix and suffix, so only the list of hosts are left
               
               (filter (line: hasPrefix "reverse_proxy " line) # Filter out lines that don't start with reverse_proxy
                 
