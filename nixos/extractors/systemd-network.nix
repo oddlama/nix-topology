@@ -7,6 +7,7 @@
     (lib)
     any
     attrValues
+    catAttrs
     concatLists
     concatStringsSep
     filter
@@ -113,7 +114,7 @@ in {
                 {
                   ${interfaceName} = {
                     mac = mkIf ((network.matchConfig.MACAddress or null) != null) network.matchConfig.MACAddress;
-                    addresses = map removeCidrMask (network.address ++ (network.networkConfig.Address or []));
+                    addresses = map removeCidrMask (network.address ++ (catAttrs "Address" network.addresses) ++ (network.networkConfig.Address or []));
                     gateways = network.gateway ++ (network.networkConfig.Gateway or []);
                   };
                 }
