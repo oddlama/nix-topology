@@ -19,17 +19,19 @@
 
   flakeForExample = path: let
     self = (import (path + "/flake.nix")).outputs {
-      inherit (flakeInputs) nixpkgs flake-utils;
+      inherit (flakeInputs) nixpkgs systems;
       inherit self;
-      nix-topology = flakeOutputs // {outPath = ./..;};
+      nix-topology =
+        flakeOutputs
+        // {
+          outPath = ./..;
+        };
     };
   in
     self;
 
   addDocForExample = exampleName: exampleOut:
-  /*
-  bash
-  */
+  # bash
   ''
     EXAMPLE_DIR=docs/src/examples/${exampleName}
     mkdir -p "$EXAMPLE_DIR"
@@ -56,16 +58,15 @@
     echo '- [${exampleName}](./examples/${exampleName}/main.md)' >> docs/src/SUMMARY.md
   '';
 
-  examples =
-    lib.mapAttrs (
-      dir: _:
-        (flakeForExample ../examples/${dir}).topology.${pkgs.hostPlatform.system}.config.output
-    )
-    (lib.filterAttrs (_: v: v == "directory") (builtins.readDir ../examples));
+  examples = lib.mapAttrs (
+    dir: _: (flakeForExample ../examples/${dir}).topology.${pkgs.hostPlatform.system}.config.output
+  ) (lib.filterAttrs (_: v: v == "directory") (builtins.readDir ../examples));
 in
-  runCommand "nix-topology-documentation" {
+  runCommand "nix-topology-documentation"
+  {
     nativeBuildInputs = [mdbook];
-  } ''
+  }
+  ''
     cp -r ${../docs} docs
     chmod 755 docs docs/src
     chmod 644 docs/src/SUMMARY.md
