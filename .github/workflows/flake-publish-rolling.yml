@@ -1,3 +1,4 @@
+name: "Publish Nix Flake"
 on:
   push:
     branches:
