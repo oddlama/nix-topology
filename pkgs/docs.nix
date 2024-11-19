@@ -15,6 +15,26 @@
       })
       options
       ;
+    transformOptions = opt:
+      opt
+      // {
+        declarations =
+          map (
+            decl:
+              if lib.hasPrefix (toString ../.) (toString decl)
+              then
+                gitHubDeclaration (
+                  lib.removePrefix "/" (lib.removePrefix (toString ../.) (toString decl))
+                )
+              else decl
+          )
+          opt.declarations;
+      };
+  };
+
+  gitHubDeclaration = subpath: {
+    url = "https://github.com/oddlama/nix-topology/blob/main/${subpath}";
+    name = "<${subpath}>";
   };
 
   flakeForExample = path: let
