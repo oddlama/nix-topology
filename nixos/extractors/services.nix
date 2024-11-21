@@ -114,6 +114,12 @@ in {
           else "${config.services.esphome.address}:${toString config.services.esphome.port}";
       };
 
+      fail2ban = mkIf config.services.fail2ban.enable {
+        name = "Fail2Ban";
+        icon = "services.fail2ban";
+        details.listen.text = optionalString config.services.fail2ban.bantime-increment "Bantime increments";
+      };
+
       firefox-syncserver = mkIf config.services.firefox-syncserver.enable ({
           name = "Firefox Syncserver";
           icon = "services.firefox-syncserver";
