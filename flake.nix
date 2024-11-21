@@ -2,88 +2,81 @@
   description = "🍁 Generate infrastructure and network diagrams directly from your NixOS configurations";
 
   inputs = {
-    devshell = {
-      url = "github:numtide/devshell";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    systems.url = "github:nix-systems/default";
+
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
-    pre-commit-hooks = {
-      url = "github:cachix/pre-commit-hooks.nix";
+    devshell = {
+      url = "github:numtide/devshell";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nixpkgs-stable.follows = "nixpkgs";
     };
   };
 
   outputs = {
     self,
-    devshell,
-    flake-utils,
     nixpkgs,
-    pre-commit-hooks,
+    systems,
+    treefmt-nix,
+    devshell,
     ...
-  } @ inputs:
-    {
-      flakeModule = ./flake-module.nix;
+  } @ inputs: let
+    forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
-      # Expose NixOS module
-      nixosModules.topology = ./nixos/module.nix;
-      nixosModules.default = self.nixosModules.topology;
+    treefmtEval = forAllSystems (
+      system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in
+        treefmt-nix.lib.evalModule pkgs ./treefmt.nix
+    );
+  in {
+    flakeModule = ./flake-module.nix;
 
-      # A nixpkgs overlay that adds the parametrized builder as a package
-      overlays.default = self.overlays.topology;
-      overlays.topology = import ./pkgs/default.nix;
-    }
-    // flake-utils.lib.eachDefaultSystem (system: rec {
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [
-          self.overlays.default
-          devshell.overlays.default
-        ];
-      };
+    # Expose NixOS module
+    nixosModules = {
+      default = self.nixosModules.topology;
+      topology = ./nixos/module.nix;
+    };
 
-      packages.docs = pkgs.callPackage ./pkgs/docs.nix {
-        flakeInputs = inputs;
-        flakeOutputs = self;
-      };
+    # A nixpkgs overlay that adds the parametrized builder as a package
+    overlays = {
+      default = self.overlays.topology;
+      topology = import ./pkgs/default.nix;
+    };
 
-      # `nix flake check`
-      checks.pre-commit-hooks = pre-commit-hooks.lib.${system}.run {
-        src = nixpkgs.lib.cleanSource ./.;
-        hooks = {
-          # Nix
-          alejandra.enable = true;
-          deadnix.enable = true;
-          statix.enable = true;
-        };
-      };
+    # `nix fmt`
+    formatter = forAllSystems (system: treefmtEval.${system}.config.build.wrapper);
 
-      # `nix develop`
-      devShells.default = pkgs.devshell.mkShell {
-        name = "nix-topology";
-
-        commands = [
-          {
-            package = pkgs.alejandra;
-            help = "Format nix code";
-          }
-          {
-            package = pkgs.statix;
-            help = "Lint nix code";
-          }
-          {
-            package = pkgs.deadnix;
-            help = "Find unused expressions in nix code";
-          }
-        ];
-
-        devshell.startup.pre-commit.text = self.checks.${system}.pre-commit-hooks.shellHook;
-      };
-
-      # `nix fmt`
-      formatter = pkgs.alejandra;
+    # `nix flake check`
+    checks = forAllSystems (system: {
+      formatting = treefmtEval.${system}.config.build.check self;
     });
+
+    packages = forAllSystems (
+      system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in {
+        docs = pkgs.callPackage ./pkgs/docs.nix {
+          flakeInputs = inputs;
+          flakeOutputs = self;
+        };
+      }
+    );
+
+    devShells = forAllSystems (
+      system: let
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [
+            self.overlays.default
+            devshell.overlays.default
+          ];
+        };
+      in
+        import ./shell.nix {inherit pkgs;}
+    );
+  };
 }
