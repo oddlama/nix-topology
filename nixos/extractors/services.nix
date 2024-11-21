@@ -41,8 +41,8 @@ in {
   config.topology.self.services = mkIf config.topology.extractors.services.enable (
     {
       adguardhome = let
-        address = config.services.adguardhome.settings.bind_host or null;
-        port = config.services.adguardhome.settings.bind_port or null;
+        address = config.services.adguardhome.host or null;
+        port = config.services.adguardhome.port or null;
       in
         mkIf config.services.adguardhome.enable {
           name = "AdGuard Home";
