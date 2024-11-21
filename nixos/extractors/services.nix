@@ -198,7 +198,7 @@ in {
         details.listen.text = config.services.influxdb2.settings.http-bind-address or "localhost:8086";
       };
 
-      immich = mkIf config.services.immich.enable {
+      immich = mkIf (config.services.immich.enable or false) {
         name = "Immich";
         icon = "services.immich";
         details.listen = mkIf config.services.immich.openFirewall {text = "${config.services.immich.host}:${toString config.services.immich.port}";};
