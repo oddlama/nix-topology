@@ -117,7 +117,6 @@ in {
       fail2ban = mkIf config.services.fail2ban.enable {
         name = "Fail2Ban";
         icon = "services.fail2ban";
-        details.listen.text = optionalString config.services.fail2ban.bantime-increment.enable "Bantime increments";
       };
 
       firefox-syncserver = mkIf config.services.firefox-syncserver.enable ({
