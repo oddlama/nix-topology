@@ -456,7 +456,7 @@ in {
       backupName: cfg: {
         name = "Restic backup '${backupName}'";
         icon = "services.restic";
-        info = cfg.repository;
+        info = cfg.repository or "";
         details.paths.text = toString cfg.paths;
       }
     )
