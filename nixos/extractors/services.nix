@@ -364,7 +364,7 @@ in {
         name = "Samba";
         icon = "services.samba";
         details.shares = let
-          shares = attrNames config.services.samba.shares;
+          shares = lib.remove "global" (attrNames config.services.samba.settings);
         in
           mkIf (shares != []) {text = concatLines shares;};
       };
