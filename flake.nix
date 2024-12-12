@@ -68,15 +68,15 @@
         commands = [
           {
             package = pkgs.alejandra;
-            help = "Format nix code";
-          }
-          {
-            package = pkgs.statix;
-            help = "Lint nix code";
+            category = "formatters";
           }
           {
             package = pkgs.deadnix;
-            help = "Find unused expressions in nix code";
+            category = "linters";
+          }
+          {
+            package = pkgs.statix;
+            category = "linters";
           }
         ];
 
