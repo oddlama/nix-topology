@@ -1,3 +1,4 @@
+name: "Publish on Flakehub"
 on:
   push:
     branches:
@@ -9,9 +10,14 @@ jobs:
       id-token: "write"
       contents: "read"
     steps:
-      - uses: "actions/checkout@v3"
-      - uses: "DeterminateSystems/nix-installer-action@main"
-      - uses: "DeterminateSystems/flakehub-push@main"
+      - name: Checkout
+        uses: "actions/checkout@v4"
+      - name: Install Nix
+        uses: "DeterminateSystems/nix-installer-action@main"
+      - name: Setup Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Push to Flakehub
+        uses: "DeterminateSystems/flakehub-push@main"
         with:
           visibility: "public"
           rolling: true
