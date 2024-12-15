@@ -325,6 +325,12 @@ in {
         info = config.services.oauth2-proxy.httpAddress;
       };
 
+      ollama = mkIf config.services.ollama.enable {
+        name = "Ollama";
+        icon = "services.ollama";
+        details.listen = mkIf config.services.ollama.openFirewall {text = "${config.services.ollama.host}:${toString config.services.ollama.port}";};
+      };
+
       openssh = mkIf config.services.openssh.enable {
         hidden = mkDefault true; # Causes a lot of clutter
         name = "OpenSSH";
