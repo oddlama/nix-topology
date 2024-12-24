@@ -366,6 +366,12 @@ in {
         details.listen = mkIf (config.services.radicale.settings ? server.hosts) {text = toString config.services.radicale.settings.server.hosts;};
       };
 
+      redlib = mkIf config.services.redlib.enable {
+        name = "Redlib";
+        icon = "services.redlib";
+        details.listen = mkIf config.services.redlib.openFirewall {text = "${config.services.redlib.address}:${toString config.services.redlib.port}";};
+      };
+
       samba = mkIf config.services.samba.enable {
         name = "Samba";
         icon = "services.samba";
