@@ -156,6 +156,12 @@ in {
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
 
+      glance = mkIf config.services.glance.enable {
+        name = "Glance";
+        icon = "services.glance";
+        details.listen = mkIf config.services.glance.openFirewall {text = "${config.services.settings.server.glance.host}:${toString config.services.glance.settings.server.port}";};
+      };
+
       grafana = let
         address = config.services.grafana.settings.server.http_addr or null;
         port = config.services.grafana.settings.server.http_port or null;
