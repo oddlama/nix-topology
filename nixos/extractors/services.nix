@@ -159,7 +159,7 @@ in {
       glance = mkIf config.services.glance.enable {
         name = "Glance";
         icon = "services.glance";
-        details.listen = mkIf config.services.glance.openFirewall {text = "${config.services.settings.server.glance.host}:${toString config.services.glance.settings.server.port}";};
+        details.listen = mkIf config.services.glance.openFirewall {text = "${config.services.glance.settings.server.host}:${toString config.services.glance.settings.server.port}";};
       };
 
       grafana = let
