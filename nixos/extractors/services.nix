@@ -156,6 +156,12 @@ in {
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
 
+      glance = mkIf config.services.glance.enable {
+        name = "Glance";
+        icon = "services.glance";
+        details.listen = mkIf config.services.glance.openFirewall {text = "${config.services.glance.settings.server.host}:${toString config.services.glance.settings.server.port}";};
+      };
+
       grafana = let
         address = config.services.grafana.settings.server.http_addr or null;
         port = config.services.grafana.settings.server.http_port or null;
@@ -331,6 +337,12 @@ in {
         details.listen = mkIf config.services.ollama.openFirewall {text = "${config.services.ollama.host}:${toString config.services.ollama.port}";};
       };
 
+      open-webui = mkIf config.services.open-webui.enable {
+        name = "Open Webui";
+        icon = "services.open-webui";
+        details.listen = mkIf config.services.open-webui.openFirewall {text = "${config.services.open-webui.host}:${toString config.services.open-webui.port}";};
+      };
+
       openssh = mkIf config.services.openssh.enable {
         hidden = mkDefault true; # Causes a lot of clutter
         name = "OpenSSH";
@@ -468,7 +480,7 @@ in {
       backupName: cfg: {
         name = "Restic backup '${backupName}'";
         icon = "services.restic";
-        info = cfg.repository;
+        info = mkIf (cfg.repository != null) cfg.repository;
         details.paths.text = toString cfg.paths;
       }
     )
