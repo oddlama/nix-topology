@@ -480,7 +480,7 @@ in {
       backupName: cfg: {
         name = "Restic backup '${backupName}'";
         icon = "services.restic";
-        info = cfg.repository or "";
+        info = mkIf (cfg.repository != null) cfg.repository;
         details.paths.text = toString cfg.paths;
       }
     )
