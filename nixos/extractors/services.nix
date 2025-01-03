@@ -331,6 +331,12 @@ in {
         details.listen = mkIf config.services.ollama.openFirewall {text = "${config.services.ollama.host}:${toString config.services.ollama.port}";};
       };
 
+      open-webui = mkIf config.services.open-webui.enable {
+        name = "Open Webui";
+        icon = "services.open-webui";
+        details.listen = mkIf config.services.open-webui.openFirewall {text = "${config.services.open-webui.host}:${toString config.services.open-webui.port}";};
+      };
+
       openssh = mkIf config.services.openssh.enable {
         hidden = mkDefault true; # Causes a lot of clutter
         name = "OpenSSH";
