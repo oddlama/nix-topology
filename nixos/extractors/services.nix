@@ -215,6 +215,12 @@ in {
         details.listen.text = config.services.influxdb2.settings.http-bind-address or "localhost:8086";
       };
 
+      invidious = mkIf config.services.invidious.enable {
+        name = "Invidious";
+        icon = "services.invidious";
+        details.listen.text = "${config.services.invidious.address}:${toString config.services.invidious.port}";
+      };
+
       jellyfin = mkIf config.services.jellyfin.enable {
         name = "Jellyfin";
         icon = "services.jellyfin";
