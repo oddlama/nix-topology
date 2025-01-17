@@ -50,6 +50,12 @@ in {
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
 
+      atuin = mkIf config.services.atuin.enable {
+        name = "Atuin";
+        icon = "services.atuin";
+        details.listen = mkIf config.services.atuin.openFirewall {text = "${config.services.atuin.host}:${toString config.services.atuin.port}";};
+      };
+
       authelia = let
         instances =
           filterAttrs (_: v: v.enable) config.services.authelia.instances;
