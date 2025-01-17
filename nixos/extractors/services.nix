@@ -209,16 +209,22 @@ in {
         details.listen.text = "${config.services.hydra.listenHost}:${toString config.services.hydra.port}";
       };
 
+      immich = mkIf (config.services.immich.enable or false) {
+        name = "Immich";
+        icon = "services.immich";
+        details.listen = mkIf config.services.immich.openFirewall {text = "${config.services.immich.host}:${toString config.services.immich.port}";};
+      };
+
       influxdb2 = mkIf config.services.influxdb2.enable {
         name = "InfluxDB v2";
         icon = "services.influxdb2";
         details.listen.text = config.services.influxdb2.settings.http-bind-address or "localhost:8086";
       };
 
-      immich = mkIf (config.services.immich.enable or false) {
-        name = "Immich";
-        icon = "services.immich";
-        details.listen = mkIf config.services.immich.openFirewall {text = "${config.services.immich.host}:${toString config.services.immich.port}";};
+      invidious = mkIf config.services.invidious.enable {
+        name = "Invidious";
+        icon = "services.invidious";
+        details.listen.text = "${config.services.invidious.address}:${toString config.services.invidious.port}";
       };
 
       jellyfin = mkIf config.services.jellyfin.enable {
