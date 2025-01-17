@@ -50,6 +50,12 @@ in {
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
 
+      atuin = mkIf config.services.atuin.enable {
+        name = "Atuin";
+        icon = "services.atuin";
+        details.listen = mkIf config.services.atuin.openFirewall {text = "${config.services.atuin.host}:${toString config.services.atuin.port}";};
+      };
+
       authelia = let
         instances =
           filterAttrs (_: v: v.enable) config.services.authelia.instances;
@@ -423,6 +429,16 @@ in {
           root.text = toString config.services.static-web-server.root;
         };
       };
+
+      stirling-pdf = let
+        address = config.services.stirling-pdf.environment.SERVER_HOST or null;
+        port = config.services.stirling-pdf.environment.SERVER_PORT or null;
+      in
+        mkIf config.services.stirling-pdf.enable {
+          name = "Stirling-PDF";
+          icon = "services.stirling-pdf";
+          details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+        };
 
       traefik = let
         dynCfg = config.services.traefik.dynamicConfigOptions;
