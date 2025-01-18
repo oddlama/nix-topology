@@ -440,6 +440,12 @@ in {
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
 
+      tabby = mkIf config.services.tabby.enable {
+        name = "Tabby";
+        icon = "services.tabby";
+        details.listen.text = "${config.services.tabby.host}:${toString config.services.tabby.port}";
+      };
+
       traefik = let
         dynCfg = config.services.traefik.dynamicConfigOptions;
       in
