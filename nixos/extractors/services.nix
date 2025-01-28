@@ -452,6 +452,15 @@ in {
         details.listen.text = "${config.services.tabby.host}:${toString config.services.tabby.port}";
       };
 
+      tor = let
+        _tor = config.services.tor;
+      in
+        mkIf _tor.enable {
+          name = "Tor";
+          icon = "services.tor";
+          info = optionalString _tor.relay.enable "Role: ${_tor.relay.role}";
+        };
+
       traefik = let
         dynCfg = config.services.traefik.dynamicConfigOptions;
       in
