@@ -209,6 +209,11 @@ in {
         details.listen.text = "${config.services.hydra.listenHost}:${toString config.services.hydra.port}";
       };
 
+      i2p = mkIf config.services.i2pd.enable {
+        name = "I2P";
+        icon = "services.i2p";
+      };
+
       immich = mkIf (config.services.immich.enable or false) {
         name = "Immich";
         icon = "services.immich";
