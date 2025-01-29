@@ -19,7 +19,7 @@ Most of the work is done by the included NixOS module which automatically collec
   - 🖥️ Guests from nixos containers
   - 🌐 Network information from kea
 - 🗺️ Renders both a main diagram (physical connections) and a network-centric diagram
-- ➡️  Automatically propagates assigned networks through your connections
+- ➡️ Automatically propagates assigned networks through your connections
 - 🖨️ Allows you to add external devices like switches, routers, printers ...
 
 Have a look at the [examples](./examples) directory for some self-contained examples
@@ -118,11 +118,11 @@ A [flake-parts](https://flake.parts) module is also available (see end of this s
   });
 }
 ```
+
 </details>
 
 <details>
 <summary>Example flake.nix with flake-parts</summary>
-
 
 ```nix
 {
@@ -144,6 +144,7 @@ A [flake-parts](https://flake.parts) module is also available (see end of this s
     };
 }
 ```
+
 </details>
 
 ## 🌱 Adding connections, networks and other devices

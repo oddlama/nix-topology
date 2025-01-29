@@ -48,7 +48,6 @@ It particular, it will:
   other interfaces in that specific list, like a dumb switch would.
 - Accepts an attrset `connections` where you can specify additional connections
   for each interface in the form of a single connection or list of connections.
-``.
 
 Example:
 

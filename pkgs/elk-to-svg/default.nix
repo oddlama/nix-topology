@@ -7,7 +7,7 @@ buildNpmPackage {
   version = "1.0.0";
 
   src = ./.;
-  npmDepsHash = "sha256-CAzXbGLgsb02A5ehb7XhT6TEYW1XN6s6g5Rr8Blm8kY=";
+  npmDepsHash = "sha256-EHybxOl+xKXnSFb2TEYqI5ESiIcnSwVWswH4q5pf7F0=";
   dontNpmBuild = true;
 
   #passthru.updateScript = nix-update-script { };

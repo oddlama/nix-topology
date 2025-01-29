@@ -23,12 +23,14 @@ If you want to submit a change, please make sure you have checked the following 
   should reflect that accordingly.
 
   Example: If your PR adds two service extractors, you should also have two commits:
+
   - `feat(extractors/services): Add support for vaultwarden`
   - `feat(extractors/services): Add support for forgejo`
 
   Changes to extractors should be scoped like `feat(extractors/<extractor_name>)`,
   same for `renderers/<renderer_name>` and `options/<option_name>`. If a change
   doesn't fit any of these scopes, then just don't add a scope.
+
 - I'm generally happy to accept any extractor, but please make sure they
   meet the [extractor criteria from the documentation](https://oddlama.github.io/nix-topology/internals/development.html)
 

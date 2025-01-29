@@ -1,18 +1,18 @@
 {
-    "name": "elk-to-svg",
-    "version": "1.0.0",
-    "description": "Converts ELK json descriptions to SVG",
-    "main": "main.js",
-    "author": "oddlama <oddlama@oddlama.org>",
-    "license": "MIT",
-    "type": "module",
-    "bin": {
-        "elk-to-svg": "./main.js"
-    },
-    "dependencies": {
-        "commander": "^12.0.0",
-        "elkjs": "^0.9.2",
-        "svg-parser": "^2.0.4",
-        "svgo": "^3.2.0"
-    }
+  "name": "elk-to-svg",
+  "version": "1.0.0",
+  "description": "Converts ELK json descriptions to SVG",
+  "main": "main.js",
+  "author": "oddlama <oddlama@oddlama.org>",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "elk-to-svg": "./main.js"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "elkjs": "^0.9.2",
+    "svg-parser": "^2.0.4",
+    "svgo": "^3.2.0"
+  }
 }
