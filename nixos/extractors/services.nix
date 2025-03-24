@@ -383,6 +383,12 @@ in {
           details.listen.text = "${config.services.paperless.address}:${toString config.services.paperless.port}";
         };
 
+      prometheus = mkIf config.services.prometheus.enable {
+        name = "Prometheus";
+        icon = "services.prometheus";
+        details.listen.text = "${config.services.prometheus.listenAddress}:${toString config.services.prometheus.port}";
+      };
+
       prowlarr = mkIf config.services.prowlarr.enable {
         name = "Prowlarr";
         icon = "services.prowlarr";
