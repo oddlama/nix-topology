@@ -458,7 +458,7 @@ in {
         mkIf _tor.enable {
           name = "Tor";
           icon = "services.tor";
-          info = optionalString _tor.relay.enable "Role: ${_tor.relay.role}";
+          info = mkIf _tor.relay.enable "Role: ${_tor.relay.role}";
         };
 
       traefik = let
