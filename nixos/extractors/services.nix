@@ -50,6 +50,11 @@ in {
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
 
+      alloy = mkIf config.services.alloy.enable {
+        name = "Alloy";
+        icon = "services.alloy";
+      };
+
       atuin = mkIf config.services.atuin.enable {
         name = "Atuin";
         icon = "services.atuin";
