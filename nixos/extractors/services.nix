@@ -50,6 +50,14 @@ in {
           details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
         };
 
+      anki = mkIf config.services.anki-sync-server.enable {
+        name = "Anki";
+        icon = "services.anki";
+        details.listen = mkIf config.services.anki-sync-server.openFirewall {
+          text = "${config.services.anki-sync-server.address}:${toString config.services.anki-sync-server.port}";
+        };
+      };
+
       alloy = mkIf config.services.alloy.enable {
         name = "Alloy";
         icon = "services.alloy";
