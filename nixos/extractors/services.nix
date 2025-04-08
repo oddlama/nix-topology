@@ -53,7 +53,14 @@ in {
       anki = mkIf config.services.anki-sync-server.enable {
         name = "Anki";
         icon = "services.anki";
-        details.listen = mkIf config.services.anki-sync-server.openFirewall {text = "${config.services.anki-sync-server.address}:${toString config.services.anki-sync-server.port}";};
+        details.listen = mkIf config.services.anki-sync-server.openFirewall {
+          text = "${config.services.anki-sync-server.address}:${toString config.services.anki-sync-server.port}";
+        };
+      };
+
+      alloy = mkIf config.services.alloy.enable {
+        name = "Alloy";
+        icon = "services.alloy";
       };
 
       atuin = mkIf config.services.atuin.enable {
@@ -388,6 +395,12 @@ in {
           info = mkIf (url != null) url;
           details.listen.text = "${config.services.paperless.address}:${toString config.services.paperless.port}";
         };
+
+      prometheus = mkIf config.services.prometheus.enable {
+        name = "Prometheus";
+        icon = "services.prometheus";
+        details.listen.text = "${config.services.prometheus.listenAddress}:${toString config.services.prometheus.port}";
+      };
 
       prowlarr = mkIf config.services.prowlarr.enable {
         name = "Prowlarr";
