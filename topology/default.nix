@@ -160,6 +160,7 @@ in
       nodes = aggregate [ "nodes" ];
       networks = aggregate [ "networks" ];
       icons = aggregate [ "icons" ];
+      serviceRegistry = aggregate [ "serviceRegistry" ];
 
       lib.topology = import ./helpers.nix lib;
     };

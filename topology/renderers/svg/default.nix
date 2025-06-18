@@ -17,6 +17,7 @@ let
     length
     mkOption
     optionalString
+    partition
     sort
     splitString
     tail
@@ -295,67 +296,77 @@ let
           node;
     };
 
-    services.mkOverview = {
-      html = mkCardContainer /* html */ ''
-        <div tw="flex flex-row mx-6 mt-2 items-center">
-          <h2 tw="text-2xl font-bold">Services Overview</h2>
-        </div>
-
-        ${
+    services.mkOverview =
+      let
+        allServices = concatMap (
+          node:
           let
-            allServices = concatMap (
-              node:
-              let
-                nodeServices = filter (s: !s.hidden) (attrValues node.services);
-              in
-              map (s: s // { nodeName = node.name; }) nodeServices
-            ) (attrValues config.nodes);
-            groupedServices = groupBy (s: s.name) allServices;
-            sortedNames = sort (a: b: a < b) (lib.attrNames groupedServices);
+            visible = filter (x: !x.hidden) (attrValues node.services);
           in
-          concatLines (
-            flip map sortedNames (
-              name:
-              let
-                services = groupedServices.${name};
-                count = length services;
-              in
-              if count > 1 then
-                let
-                  sortedServices = sort (a: b: a.nodeName < b.nodeName) services;
-                  mainService = (head services) // {
-                    info = "";
-                  };
-                  rows = flip map sortedServices (s: /* html */ ''
-                    <div tw="flex flex-row mt-1">
-                       <span tw="text-sm text-[#7a899f]">${s.nodeName}</span>
-                       <span tw="flex grow"></span>
-                       ${optionalString (
-                         s.info != ""
-                       ) ''<span tw="text-sm text-[#e3e6eb] text-right pl-4">${s.info}</span>''}
-                    </div>
-                  '');
-                  additionalInfo = concatLines rows;
-                in
-                flip html.node.mkService mainService {
-                  inherit additionalInfo;
-                  includeDetails = false;
-                }
-              else
-                let
-                  service = head services;
-                in
-                flip html.node.mkService service {
-                  additionalInfo = /* html */ ''<p tw="text-sm text-[#7a899f] m-0">${service.nodeName}</p>'';
-                  includeDetails = false;
-                }
-            )
-          )
-        }
+          map (svc: { inherit node svc; }) visible
+        ) (attrValues config.nodes);
 
-        ${spacingMt2}
-      '';
-    };
+        # Deduplicate services by serviceId in overview
+        deduped =
+          let
+            parts = partition (p: p.svc.serviceId != null) allServices;
+            withId = parts.right;
+            withoutId = parts.wrong;
+            grouped = groupBy (p: p.svc.serviceId) withId;
+            uniqueById = map head (attrValues grouped);
+          in
+          uniqueById ++ withoutId;
+
+        groupedByName = groupBy (p: p.svc.name) deduped;
+        sortedNames = sort (a: b: a < b) (lib.attrNames groupedByName);
+
+        renderServiceGroup =
+          name:
+          let
+            services = groupedByName.${name};
+            count = length services;
+          in
+          if count > 1 then
+            let
+              sortedServices = sort (a: b: a.node.name < b.node.name) services;
+              mainService = (head services).svc // {
+                info = "";
+              };
+              rows = flip map sortedServices (p: /* html */ ''
+                <div tw="flex flex-row mt-1">
+                   <span tw="text-sm text-[#7a899f]">${p.node.name}</span>
+                   <span tw="flex grow"></span>
+                   ${optionalString (
+                     p.svc.info != ""
+                   ) ''<span tw="text-sm text-[#e3e6eb] text-right pl-4">${p.svc.info}</span>''}
+                </div>
+              '');
+              additionalInfo = concatLines rows;
+            in
+            flip html.node.mkService mainService {
+              inherit additionalInfo;
+              includeDetails = false;
+            }
+          else
+            let
+              pair = head services;
+            in
+            flip html.node.mkService pair.svc {
+              additionalInfo = /* html */ ''<p tw="text-sm text-[#7a899f] m-0">${pair.node.name}</p>'';
+              includeDetails = false;
+            };
+      in
+      {
+        html = mkCardContainer /* html */ ''
+          <div tw="flex flex-row mx-6 mt-2 items-center">
+            <h2 tw="text-2xl font-bold">Services Overview</h2>
+          </div>
+
+          ${concatLines (map renderServiceGroup sortedNames)}
+
+          ${spacingMt2}
+        '';
+      };
   };
 in
 {
