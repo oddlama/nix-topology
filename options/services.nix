@@ -8,6 +8,7 @@ f: {
     attrValues
     flatten
     flip
+    hasPrefix
     mkDefault
     mkIf
     mkOption
@@ -30,9 +31,19 @@ in
                   default = submod.config._module.args.name;
                 };
 
+                serviceId = mkOption {
+                  description = "The id of the service as defined in topology.serviceRegistry.<service-id>";
+                  type = types.nullOr types.str;
+                  default = null;
+                };
+
                 name = mkOption {
                   description = "The name of this service";
                   type = types.str;
+                  default =
+                    if submod.config.serviceId != null
+                    then config.serviceRegistry.${submod.config.serviceId}.name
+                    else submod.config.id;
                 };
 
                 hidden = mkOption {
@@ -44,7 +55,16 @@ in
                 icon = mkOption {
                   description = "The icon for this service. Must be a path to an image or a valid icon name (<category>.<name>).";
                   type = types.nullOr (types.either types.path types.str);
-                  default = null;
+                  default =
+                    if submod.config.serviceId != null
+                    then (config.serviceRegistry.${submod.config.serviceId}.icon or null)
+                    else null;
+                };
+
+                source = mkOption {
+                  description = "The source of this service, e.g. the extractor that provides it";
+                  type = types.enum ["nixos" "oci"];
+                  default = "nixos";
                 };
 
                 info = mkOption {
@@ -99,6 +119,10 @@ in
             service: [
               (config.lib.assertions.iconValid
                 service.icon "nodes.${node.id}.services.${service.id}")
+              (mkIf (service.serviceId != null && !hasPrefix "restic-backup-" service.serviceId) {
+                assertion = config.serviceRegistry ? ${service.serviceId};
+                message = "serviceId '${service.serviceId}' for nodes.${node.id}.services.${service.id} is not defined in topology.serviceRegistry";
+              })
             ]
           )
       ));

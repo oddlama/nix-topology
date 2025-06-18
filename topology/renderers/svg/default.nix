@@ -8,12 +8,15 @@
     (lib)
     attrValues
     concatLines
+    concatMap
     filter
     flip
+    groupBy
     hasSuffix
     head
     mkOption
     optionalString
+    partition
     sort
     splitString
     tail
@@ -306,7 +309,31 @@
         node;
     };
 
-    services.mkOverview = {
+    services.mkOverview = let
+      services = concatMap (
+        node: let
+          visible = filter (x: !x.hidden) (attrValues node.services);
+        in
+          map (svc: {inherit node svc;}) visible
+      ) (attrValues config.nodes);
+
+      # Deduplicate services by serviceId in overview
+      deduped = let
+        parts = partition (p: p.svc.serviceId != null) services;
+        withId = parts.right;
+        withoutId = parts.wrong;
+        grouped = groupBy (p: p.svc.serviceId) withId;
+        uniqueById = map head (attrValues grouped);
+      in
+        uniqueById ++ withoutId;
+
+      renderService = pair:
+        html.node.mkService {
+          additionalInfo = ''<p tw="text-sm text-[#7a899f] m-0">${pair.node.name}</p>'';
+          includeDetails = false;
+        }
+        pair.svc;
+    in {
       width = 480;
       html =
         mkCardContainer
@@ -318,19 +345,7 @@
             <h2 tw="text-2xl font-bold">Services Overview</h2>
           </div>
 
-          ${concatLines (flip map (attrValues config.nodes) (
-            node: let
-              services = filter (x: !x.hidden) (attrValues node.services);
-            in
-              concatLines (
-                flip map services (
-                  html.node.mkService {
-                    additionalInfo = ''<p tw="text-sm text-[#7a899f] m-0">${node.name}</p>'';
-                    includeDetails = false;
-                  }
-                )
-              )
-          ))}
+          ${concatLines (map renderService deduped)}
 
           ${spacingMt2}
         '';
