@@ -50,8 +50,8 @@ in {
         nixosConfigurations = mkOption {
           type = types.lazyAttrsOf types.unspecified;
           description = "All nixosSystems that should be evaluated for topology definitions.";
-          default = self.nixosConfigurations;
-          defaultText = lib.literalExpression "self.nixosConfigurations";
+          default = lib.filterAttrs (_: x: x.config ? topology) self.nixosConfigurations;
+          defaultText = lib.literalExpression "lib.filterAttrs (_: x: x.config ? topology) self.nixosConfigurations";
         };
         pkgs = mkOption {
           type = types.unspecified;
