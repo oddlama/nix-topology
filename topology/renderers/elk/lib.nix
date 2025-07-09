@@ -119,7 +119,7 @@ in rec {
       "50-mac" = mkLabel interface.mac 1 netStyle;
     }
     // optionalAttrs (interface.addresses != []) {
-      "60-addrs" = mkLabel (toString interface.addresses) 1 netStyle;
+      "60-addrs" = mkLabel (interface.addressFormatter interface.addresses) 1 netStyle;
     };
 
   mkDiagram = defs:

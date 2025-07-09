@@ -268,6 +268,12 @@ in
                   type = types.listOf types.str;
                 };
 
+                addressFormatter = mkOption {
+                  description = "A function to format a list of addresses.";
+                  default = lib.concatStringsSep "\n";
+                  type = types.functionTo types.str;
+                };
+
                 gateways = mkOption {
                   description = "The configured gateways, if any.";
                   default = [];
