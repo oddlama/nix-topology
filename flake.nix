@@ -7,7 +7,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     pre-commit-hooks = {
@@ -20,11 +19,25 @@
   outputs = {
     self,
     devshell,
-    flake-utils,
     nixpkgs,
     pre-commit-hooks,
     ...
-  } @ inputs:
+  } @ inputs: let
+    inherit (nixpkgs) lib;
+
+    eachSystem = systems: fn:
+      lib.foldl' (
+        acc: system: lib.recursiveUpdate acc (lib.mapAttrs (_: value: {${system} = value;}) (fn system))
+      ) {}
+      systems;
+
+    systems = [
+      "aarch64-darwin"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "x86_64-linux"
+    ];
+  in
     {
       flakeModule = ./flake-module.nix;
 
@@ -36,7 +49,7 @@
       overlays.default = self.overlays.topology;
       overlays.topology = import ./pkgs/default.nix;
     }
-    // flake-utils.lib.eachDefaultSystem (system: rec {
+    // eachSystem systems (system: rec {
       pkgs = import nixpkgs {
         inherit system;
         overlays = [

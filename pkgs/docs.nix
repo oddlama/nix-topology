@@ -39,7 +39,7 @@
 
   flakeForExample = path: let
     self = (import (path + "/flake.nix")).outputs {
-      inherit (flakeInputs) nixpkgs flake-utils;
+      inherit (flakeInputs) nixpkgs;
       inherit self;
       nix-topology = flakeOutputs // {outPath = ./..;};
     };
