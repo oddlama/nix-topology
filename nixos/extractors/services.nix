@@ -78,7 +78,7 @@ in {
           icon = "services.authelia";
           details = listToAttrs (mapAttrsToList (name: v: {
               inherit name;
-              value.text = "${v.settings.server.host}:${toString v.settings.server.port}";
+              value.text = "${lib.strings.removeSuffix "/" (lib.strings.removePrefix "tcp://" v.settings.server.address)}";
             })
             instances);
         };
