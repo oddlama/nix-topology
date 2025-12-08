@@ -62,6 +62,7 @@ in {
         A list of option definition values that shall be merged with this host's definitions.
         Useful to bring in dependent configurations like nixos-containers or vm configs.
       '';
+      default = [];
       type = types.listOf types.unspecified;
     };
 
