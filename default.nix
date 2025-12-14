@@ -3,9 +3,10 @@
   pkgs ? import <nixpkgs> {},
   modules ? [],
   specialArgs ? {},
+  class ? "topology",
 }:
 pkgs.lib.evalModules {
-  inherit prefix;
+  inherit class prefix;
   modules = [./topology] ++ modules;
   specialArgs =
     {
