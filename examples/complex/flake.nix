@@ -1,6 +1,5 @@
 {
   inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nix-topology.url = "github:oddlama/nix-topology";
     nix-topology.inputs.nixpkgs.follows = "nixpkgs";
@@ -10,9 +9,23 @@
     self,
     nixpkgs,
     nix-topology,
-    flake-utils,
     ...
-  }:
+  }: let
+    inherit (nixpkgs) lib;
+
+    eachSystem = systems: fn:
+      lib.foldl' (
+        acc: system: lib.recursiveUpdate acc (lib.mapAttrs (_: value: {${system} = value;}) (fn system))
+      ) {}
+      systems;
+
+    systems = [
+      "aarch64-darwin"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "x86_64-linux"
+    ];
+  in
     {
       nixosConfigurations.host1 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -174,7 +187,7 @@
         ];
       };
     }
-    // flake-utils.lib.eachDefaultSystem (system: rec {
+    // eachSystem systems (system: rec {
       pkgs = import nixpkgs {
         inherit system;
         overlays = [nix-topology.overlays.default];
