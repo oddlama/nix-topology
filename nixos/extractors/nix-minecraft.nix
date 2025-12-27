@@ -32,7 +32,7 @@ in {
               text =
                 if isVelocityServer
                 then velocityConfig.value.bind or "0.0.0.0:25565"
-                else "127.0.0.1:${toString v.serverProperties.server-port or 25565}";
+                else "0.0.0.0:${toString v.serverProperties.server-port or 25565}";
             }
           ))
         ];
