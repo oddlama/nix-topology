@@ -324,6 +324,12 @@ in {
           }));
         };
 
+      navidrome = mkIf config.services.navidrome.enable {
+        name = "Navidrome";
+        icon = "services.navidrome";
+        details.listen = mkIf config.services.navidrome.openFirewall {text = "${config.services.navidrome.settings.Address}:${toString config.services.navidrome.settings.Port}";};
+      };
+
       nextcloud = mkIf config.services.nextcloud.enable {
         name = "Nextcloud";
         icon = "services.nextcloud";
