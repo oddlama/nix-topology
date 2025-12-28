@@ -103,7 +103,9 @@ in rec {
           background = style.secondaryColor;
         };
     }
-    .${style.pattern};
+    .${
+      style.pattern
+    };
 
   idForInterface = node: interfaceId: "children.node:${node.id}.ports.interface:${interfaceId}";
 
