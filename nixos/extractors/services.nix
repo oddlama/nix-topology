@@ -109,6 +109,12 @@ in {
         });
       };
 
+      code-server = mkIf config.services.code-server.enable {
+        name = "Code Server";
+        icon = "services.code-server";
+        details.listen.text = "${config.services.code-server.host}:${toString config.services.code-server.port}";
+      };
+
       dnsmasq = mkIf config.services.dnsmasq.enable {
         name = "Dnsmasq";
         icon = "services.dnsmasq";
