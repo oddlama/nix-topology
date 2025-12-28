@@ -279,6 +279,12 @@ in {
         details.listen.text = "127.0.0.1:${toString config.services.languagetool.port}";
       };
 
+      libretranslate = mkIf config.services.libretranslate.enable {
+        name = "Libretranslate";
+        icon = "services.libretranslate";
+        details.listen.text = "${config.services.libretranslate.host}:${toString config.services.libretranslate.port}";
+      };
+
       lidarr = mkIf config.services.lidarr.enable {
         name = "Lidarr";
         icon = "services.lidarr";
