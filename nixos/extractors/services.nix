@@ -218,6 +218,19 @@ in {
         };
       };
 
+      hickory-dns = let
+        hickorySettings = config.services.hickory-dns.settings;
+        concatWithPort = addr: "${addr}:${toString hickorySettings.listen_port}";
+      in
+        mkIf config.services.hickory-dns.enable {
+          name = "Hickory DNS";
+          icon = "services.hickory-dns";
+          details = {
+            listen_ipv4.text = toString (map concatWithPort hickorySettings.listen_addrs_ipv4);
+            listen_ipv6.text = toString (map concatWithPort hickorySettings.listen_addrs_ipv6);
+          };
+        };
+
       home-assistant = mkIf config.services.home-assistant.enable {
         name = "Home Assistant";
         icon = "services.home-assistant";
