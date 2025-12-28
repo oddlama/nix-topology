@@ -79,7 +79,7 @@
   examples =
     lib.mapAttrs (
       dir: _:
-        (flakeForExample ../examples/${dir}).topology.${pkgs.hostPlatform.system}.config.output
+        (flakeForExample ../examples/${dir}).topology.${pkgs.stdenv.hostPlatform.system}.config.output
     )
     (lib.filterAttrs (_: v: v == "directory") (builtins.readDir ../examples));
 in
