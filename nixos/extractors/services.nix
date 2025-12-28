@@ -299,6 +299,11 @@ in {
         details.listen.text = config.services.kanidm.serverSettings.bindaddress;
       };
 
+      karakeep = mkIf config.services.karakeep.enable {
+        name = "Karakeep";
+        icon = "services.karakeep";
+      };
+
       languagetool = mkIf config.services.languagetool.enable {
         name = "Languagetool";
         icon = "services.languagetool";
