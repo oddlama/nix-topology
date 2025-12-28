@@ -109,6 +109,13 @@ in {
         });
       };
 
+      coder = mkIf config.services.coder.enable {
+        name = "Coder";
+        icon = "services.coder";
+        info = config.services.coder.accessUrl;
+        details.listen.text = config.services.coder.listenAddress;
+      };
+
       code-server = mkIf config.services.code-server.enable {
         name = "Code Server";
         icon = "services.code-server";
