@@ -57,7 +57,9 @@ in {
                     ];
                   };
                 }
-                .${i.type}
+                .${
+                  i.type
+                }
                 or {
                   ${i.id} = {
                     inherit (i) mac;
@@ -80,7 +82,9 @@ in {
                 {
                   macvtap.${i.macvtap.link} = {};
                 }
-                .${i.type}
+                .${
+                  i.type
+                }
                 or {
                   ${i.id} = {};
                 }
