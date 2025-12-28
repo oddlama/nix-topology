@@ -109,6 +109,19 @@ in {
         });
       };
 
+      coder = mkIf config.services.coder.enable {
+        name = "Coder";
+        icon = "services.coder";
+        info = config.services.coder.accessUrl;
+        details.listen.text = config.services.coder.listenAddress;
+      };
+
+      code-server = mkIf config.services.code-server.enable {
+        name = "Code Server";
+        icon = "services.code-server";
+        details.listen.text = "${config.services.code-server.host}:${toString config.services.code-server.port}";
+      };
+
       dnsmasq = mkIf config.services.dnsmasq.enable {
         name = "Dnsmasq";
         icon = "services.dnsmasq";
@@ -205,6 +218,19 @@ in {
         };
       };
 
+      hickory-dns = let
+        hickorySettings = config.services.hickory-dns.settings;
+        concatWithPort = addr: "${addr}:${toString hickorySettings.listen_port}";
+      in
+        mkIf config.services.hickory-dns.enable {
+          name = "Hickory DNS";
+          icon = "services.hickory-dns";
+          details = {
+            listen_ipv4.text = toString (map concatWithPort hickorySettings.listen_addrs_ipv4);
+            listen_ipv6.text = toString (map concatWithPort hickorySettings.listen_addrs_ipv6);
+          };
+        };
+
       home-assistant = mkIf config.services.home-assistant.enable {
         name = "Home Assistant";
         icon = "services.home-assistant";
@@ -277,6 +303,11 @@ in {
         name = "Komga";
         icon = "services.komga";
         details.listen = mkIf config.services.komga.openFirewall {text = "0.0.0.0:${toString config.services.komga.settings.server.port}";};
+      };
+
+      karakeep = mkIf config.services.karakeep.enable {
+        name = "Karakeep";
+        icon = "services.karakeep";
       };
 
       languagetool = mkIf config.services.languagetool.enable {
