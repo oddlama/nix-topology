@@ -16,7 +16,10 @@
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
 
-      imports = [ flake-parts.flakeModules.partitions ];
+      imports = with flake-parts.flakeModules; [
+        partitions
+        flakeModules
+      ];
 
       partitions.dev = {
         extraInputsFlake = ./dev;

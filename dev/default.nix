@@ -1,7 +1,17 @@
 { inputs, self, ... }:
 {
+  imports = with inputs; [
+    devshell.flakeModule
+    git-hooks-nix.flakeModule
+  ];
+
   perSystem =
-    { system, pkgs, ... }:
+    {
+      self',
+      system,
+      pkgs,
+      ...
+    }:
     {
       _module.args.pkgs = import inputs.nixpkgs {
         inherit system;
@@ -11,20 +21,21 @@
         ];
       };
 
-      formatter = pkgs.nixfmt;
+      formatter = pkgs.nixfmt-tree;
 
-      checks.pre-commit-hooks = inputs.pre-commit-hooks.lib.${system}.run {
-        src = inputs.nixpkgs.lib.cleanSource ../.;
-        hooks = {
+      pre-commit = {
+        check.enable = true;
+        devShell = self'.devShells.default;
+        settings.hooks = {
           nixfmt.enable = true;
           deadnix.enable = true;
           statix.enable = true;
         };
       };
 
-      devShells.default = pkgs.devshell.mkShell {
+      devshells.default = {
         name = "nix-topology";
-        devshell.startup.pre-commit.text = self.checks.${system}.pre-commit-hooks.shellHook;
+
         commands = [
           {
             package = pkgs.nixfmt;
