@@ -435,6 +435,15 @@ in {
           mkIf (shares != []) {text = concatLines shares;};
       };
 
+      scrutiny = let
+        inherit (config.services.scrutiny.settings) web;
+      in
+        mkIf config.services.scrutiny.enable {
+          name = "Scrutiny";
+          icon = "services.scrutiny";
+          details.listen = lib.mkIf config.services.scrutiny.openFirewall {text = "${web.listen.host}:${toString web.listen.port}";};
+        };
+
       searxng = let
         address = config.services.searx.settings.server.bind_address or null;
         port = config.services.searx.settings.server.port or null;
