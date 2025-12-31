@@ -386,6 +386,12 @@ in {
         info = "port: ${concatStringsSep ", " (map toString config.services.openssh.ports)}";
       };
 
+      owncast = mkIf config.services.owncast.enable {
+        name = "Owncast";
+        icon = "services.owncast";
+        details.listen = mkIf config.services.owncast.openFirewall {text = "${config.services.owncast.listen}:${toString config.services.owncast.port}";};
+      };
+
       paperless-ngx = let
         url = config.services.paperless.settings.PAPERLESS_URL or null;
       in
