@@ -105,7 +105,9 @@
           dashed = ''<div tw="flex flex-none ${twAttrs}" style="backgroundImage: linear-gradient(90deg, ${net.style.primaryColor} 0%, ${net.style.primaryColor} 50%, ${secondaryColor} 50.01%, ${secondaryColor} 100%);"></div>'';
           dotted = ''<div tw="flex flex-none ${twAttrs}" style="backgroundImage: radial-gradient(circle, ${net.style.primaryColor} 30%, ${secondaryColor} 30.01%);"></div>'';
         }
-        .${net.style.pattern};
+        .${
+          net.style.pattern
+        };
 
       mkCard = net: {
         width = 480;

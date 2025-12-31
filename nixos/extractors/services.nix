@@ -109,6 +109,19 @@ in {
         });
       };
 
+      coder = mkIf config.services.coder.enable {
+        name = "Coder";
+        icon = "services.coder";
+        info = config.services.coder.accessUrl;
+        details.listen.text = config.services.coder.listenAddress;
+      };
+
+      code-server = mkIf config.services.code-server.enable {
+        name = "Code Server";
+        icon = "services.code-server";
+        details.listen.text = "${config.services.code-server.host}:${toString config.services.code-server.port}";
+      };
+
       dnsmasq = mkIf config.services.dnsmasq.enable {
         name = "Dnsmasq";
         icon = "services.dnsmasq";
@@ -279,10 +292,21 @@ in {
         details.listen = mkIf config.services.komga.openFirewall {text = "0.0.0.0:${toString config.services.komga.settings.server.port}";};
       };
 
+      karakeep = mkIf config.services.karakeep.enable {
+        name = "Karakeep";
+        icon = "services.karakeep";
+      };
+
       languagetool = mkIf config.services.languagetool.enable {
         name = "Languagetool";
         icon = "services.languagetool";
         details.listen.text = "127.0.0.1:${toString config.services.languagetool.port}";
+      };
+
+      libretranslate = mkIf config.services.libretranslate.enable {
+        name = "Libretranslate";
+        icon = "services.libretranslate";
+        details.listen.text = "${config.services.libretranslate.host}:${toString config.services.libretranslate.port}";
       };
 
       lidarr = mkIf config.services.lidarr.enable {
@@ -307,6 +331,12 @@ in {
         info = "https://${config.services.mastodon.localDomain}";
       };
 
+      meilisearch = mkIf config.services.meilisearch.enable {
+        name = "Meilisearch";
+        icon = "services.meilisearch";
+        details.listen.text = "${config.services.meilisearch.listenAddress}:${toString config.services.meilisearch.listenPort}";
+      };
+
       mosquitto = let
         listeners = flip map config.services.mosquitto.listeners (
           l: rec {
@@ -329,6 +359,13 @@ in {
             value.text = l.listen;
           }));
         };
+
+      navidrome = mkIf config.services.navidrome.enable {
+        name = "Navidrome";
+        icon = "services.navidrome";
+        info = mkIf (config.services.navidrome.settings ? BaseUrl) config.services.navidrome.settings.BaseUrl;
+        details.listen = mkIf config.services.navidrome.openFirewall {text = "${config.services.navidrome.settings.Address}:${toString config.services.navidrome.settings.Port}";};
+      };
 
       nextcloud = mkIf config.services.nextcloud.enable {
         name = "Nextcloud";
@@ -392,6 +429,12 @@ in {
         info = "port: ${concatStringsSep ", " (map toString config.services.openssh.ports)}";
       };
 
+      owncast = mkIf config.services.owncast.enable {
+        name = "Owncast";
+        icon = "services.owncast";
+        details.listen = mkIf config.services.owncast.openFirewall {text = "${config.services.owncast.listen}:${toString config.services.owncast.port}";};
+      };
+
       paperless-ngx = let
         url = config.services.paperless.settings.PAPERLESS_URL or null;
       in
@@ -440,6 +483,15 @@ in {
         in
           mkIf (shares != []) {text = concatLines shares;};
       };
+
+      scrutiny = let
+        inherit (config.services.scrutiny.settings) web;
+      in
+        mkIf config.services.scrutiny.enable {
+          name = "Scrutiny";
+          icon = "services.scrutiny";
+          details.listen = lib.mkIf config.services.scrutiny.openFirewall {text = "${web.listen.host}:${toString web.listen.port}";};
+        };
 
       searxng = let
         address = config.services.searx.settings.server.bind_address or null;
@@ -558,6 +610,12 @@ in {
           details.listen = mkIf (listen != null) {text = listen;};
           details.mqtt = mkIf (mqttServer != null) {text = mqttServer;};
         };
+
+      zipline = mkIf config.services.zipline.enable {
+        name = "Zipline";
+        icon = "services.zipline";
+        details.listen.text = "${config.services.zipline.settings.CORE_HOSTNAME}:${toString config.services.zipline.settings.CORE_PORT}";
+      };
     }
     // flip mapAttrs config.services.restic.backups (
       backupName: cfg: {
