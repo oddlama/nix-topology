@@ -1,10 +1,6 @@
-{
-  config,
-  lib,
-  ...
-}: let
-  inherit
-    (lib)
+{ config, lib, ... }:
+let
+  inherit (lib)
     attrNames
     genAttrs
     concatLines
@@ -35,19 +31,23 @@
     filter
     tail
     ;
-in {
-  options.topology.extractors.services.enable = mkEnableOption "topology service extractor" // {default = true;};
+in
+{
+  options.topology.extractors.services.enable = mkEnableOption "topology service extractor" // {
+    default = true;
+  };
 
   config.topology.self.services = mkIf config.topology.extractors.services.enable (
     {
-      adguardhome = let
-        address = config.services.adguardhome.host or null;
-        port = config.services.adguardhome.port or null;
-      in
+      adguardhome =
+        let
+          address = config.services.adguardhome.host or null;
+          port = config.services.adguardhome.port or null;
+        in
         mkIf config.services.adguardhome.enable {
           name = "AdGuard Home";
           icon = "services.adguardhome";
-          details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
         };
 
       anki = mkIf config.services.anki-sync-server.enable {
@@ -66,31 +66,37 @@ in {
       atuin = mkIf config.services.atuin.enable {
         name = "Atuin";
         icon = "services.atuin";
-        details.listen = mkIf config.services.atuin.openFirewall {text = "${config.services.atuin.host}:${toString config.services.atuin.port}";};
+        details.listen = mkIf config.services.atuin.openFirewall {
+          text = "${config.services.atuin.host}:${toString config.services.atuin.port}";
+        };
       };
 
-      authelia = let
-        instances =
-          filterAttrs (_: v: v.enable) config.services.authelia.instances;
-      in
-        mkIf (instances != {}) {
+      authelia =
+        let
+          instances = filterAttrs (_: v: v.enable) config.services.authelia.instances;
+        in
+        mkIf (instances != { }) {
           name = "Authelia";
           icon = "services.authelia";
-          details = listToAttrs (mapAttrsToList (name: v: {
+          details = listToAttrs (
+            mapAttrsToList (name: v: {
               inherit name;
-              value.text = "${lib.strings.removeSuffix "/" (lib.strings.removePrefix "tcp://" v.settings.server.address)}";
-            })
-            instances);
+              value.text = "${lib.strings.removeSuffix "/" (
+                lib.strings.removePrefix "tcp://" v.settings.server.address
+              )}";
+            }) instances
+          );
         };
 
       blocky = mkIf config.services.blocky.enable {
         name = "Blocky";
         icon = "services.blocky";
-        details = listToAttrs (mapAttrsToList (n: v: {
+        details = listToAttrs (
+          mapAttrsToList (n: v: {
             name = "listen.${n}";
             value.text = toString v;
-          })
-          config.services.blocky.settings.ports);
+          }) config.services.blocky.settings.ports
+        );
       };
 
       caddy = mkIf config.services.caddy.enable {
@@ -99,13 +105,16 @@ in {
         details = genAttrs (mapAttrsToList (name: _: name) config.services.caddy.virtualHosts) (name: {
           text =
             concatStringsSep " " # Turn the (possibly multiple) strings in the list into a single string
-            
-            (builtins.map
-              (line: removePrefix "reverse_proxy " (removeSuffix " {" line)) # Remove the prefix and suffix, so only the list of hosts are left
-              
-              (filter (line: hasPrefix "reverse_proxy " line) # Filter out lines that don't start with reverse_proxy
-                
-                (splitString "\n" config.services.caddy.virtualHosts.${name}.extraConfig))); # Separate lines of string into list
+
+              (
+                builtins.map (line: removePrefix "reverse_proxy " (removeSuffix " {" line)) # Remove the prefix and suffix, so only the list of hosts are left
+
+                  (
+                    filter (line: hasPrefix "reverse_proxy " line) # Filter out lines that don't start with reverse_proxy
+
+                      (splitString "\n" config.services.caddy.virtualHosts.${name}.extraConfig)
+                  )
+              ); # Separate lines of string into list
         });
       };
 
@@ -125,25 +134,26 @@ in {
       dnsmasq = mkIf config.services.dnsmasq.enable {
         name = "Dnsmasq";
         icon = "services.dnsmasq";
-        details = let
-          addresses = config.services.dnsmasq.settings.address or [];
-        in
-          listToAttrs (forEach
-            (forEach addresses
-              (x: (splitString "/" (removePrefix "/" x))))
-            (x: {
+        details =
+          let
+            addresses = config.services.dnsmasq.settings.address or [ ];
+          in
+          listToAttrs (
+            forEach (forEach addresses (x: (splitString "/" (removePrefix "/" x)))) (x: {
               name = head x;
               value.text = head (tail x);
-            }));
+            })
+          );
       };
 
       esphome = mkIf config.services.esphome.enable {
         name = "ESPHome";
         icon = "services.esphome";
         details.listen.text =
-          if config.services.esphome.enableUnixSocket
-          then "/run/esphome/esphome.sock"
-          else "${config.services.esphome.address}:${toString config.services.esphome.port}";
+          if config.services.esphome.enableUnixSocket then
+            "/run/esphome/esphome.sock"
+          else
+            "${config.services.esphome.address}:${toString config.services.esphome.port}";
       };
 
       fail2ban = mkIf config.services.fail2ban.enable {
@@ -151,61 +161,78 @@ in {
         icon = "services.fail2ban";
       };
 
-      firefox-syncserver = mkIf config.services.firefox-syncserver.enable ({
+      firefox-syncserver = mkIf config.services.firefox-syncserver.enable (
+        {
           name = "Firefox Syncserver";
           icon = "services.firefox-syncserver";
-          details.listen.text = "${config.services.firefox-syncserversettings.host or "127.0.0.1"}:${toString config.services.firefox-syncserver.settings.port}";
+          details.listen.text = "${
+            config.services.firefox-syncserversettings.host or "127.0.0.1"
+          }:${toString config.services.firefox-syncserver.settings.port}";
         }
         // (optionalAttrs config.services.firefox-syncserver.singleNode.enable {
           info = config.services.firefox-syncserver.singleNode.url;
-        }));
+        })
+      );
 
-      forgejo = let
-        address = config.services.forgejo.settings.server.HTTP_ADDR or null;
-        port = config.services.forgejo.settings.server.HTTP_PORT or null;
-      in
+      forgejo =
+        let
+          address = config.services.forgejo.settings.server.HTTP_ADDR or null;
+          port = config.services.forgejo.settings.server.HTTP_PORT or null;
+        in
         mkIf config.services.forgejo.enable {
           name =
-            if config.services.forgejo.settings ? DEFAULT.APP_NAME
-            then "Forgejo (${config.services.forgejo.settings.DEFAULT.APP_NAME})"
-            else "Forgejo";
+            if config.services.forgejo.settings ? DEFAULT.APP_NAME then
+              "Forgejo (${config.services.forgejo.settings.DEFAULT.APP_NAME})"
+            else
+              "Forgejo";
           icon = "services.forgejo";
-          info = mkIf (config.services.forgejo.settings ? server.ROOT_URL) config.services.forgejo.settings.server.ROOT_URL;
-          details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+          info = mkIf (
+            config.services.forgejo.settings ? server.ROOT_URL
+          ) config.services.forgejo.settings.server.ROOT_URL;
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
         };
 
-      gitea = let
-        address = config.services.gitea.settings.server.HTTP_ADDR or null;
-        port = config.services.gitea.settings.server.HTTP_PORT or null;
-      in
+      gitea =
+        let
+          address = config.services.gitea.settings.server.HTTP_ADDR or null;
+          port = config.services.gitea.settings.server.HTTP_PORT or null;
+        in
         mkIf config.services.gitea.enable {
           name =
-            if config.services.gitea.settings ? DEFAULT.APP_NAME
-            then "gitea (${config.services.gitea.settings.DEFAULT.APP_NAME})"
-            else "gitea";
+            if config.services.gitea.settings ? DEFAULT.APP_NAME then
+              "gitea (${config.services.gitea.settings.DEFAULT.APP_NAME})"
+            else
+              "gitea";
           icon = "services.gitea";
-          info = mkIf (config.services.gitea.settings ? server.ROOT_URL) config.services.gitea.settings.server.ROOT_URL;
-          details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+          info = mkIf (
+            config.services.gitea.settings ? server.ROOT_URL
+          ) config.services.gitea.settings.server.ROOT_URL;
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
         };
 
       glance = mkIf config.services.glance.enable {
         name = "Glance";
         icon = "services.glance";
-        details.listen = mkIf config.services.glance.openFirewall {text = "${config.services.glance.settings.server.host}:${toString config.services.glance.settings.server.port}";};
+        details.listen = mkIf config.services.glance.openFirewall {
+          text = "${config.services.glance.settings.server.host}:${toString config.services.glance.settings.server.port}";
+        };
       };
 
-      grafana = let
-        address = config.services.grafana.settings.server.http_addr or null;
-        port = config.services.grafana.settings.server.http_port or null;
-        plugins = config.services.grafana.declarativePlugins;
-      in
+      grafana =
+        let
+          address = config.services.grafana.settings.server.http_addr or null;
+          port = config.services.grafana.settings.server.http_port or null;
+          plugins = config.services.grafana.declarativePlugins;
+        in
         mkIf config.services.grafana.enable {
           name = "Grafana";
           icon = "services.grafana";
           info = config.services.grafana.settings.server.root_url;
           details = {
-            listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
-            plugins = mkIf (plugins != null) {text = concatStringsSep "\n" (builtins.map (p: p.name) plugins);};
+            listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
+            plugins = mkIf (plugins != null) {
+              text = concatStringsSep "\n" (builtins.map (p: p.name) plugins);
+            };
           };
         };
 
@@ -243,7 +270,9 @@ in {
       immich = mkIf (config.services.immich.enable or false) {
         name = "Immich";
         icon = "services.immich";
-        details.listen = mkIf config.services.immich.openFirewall {text = "${config.services.immich.host}:${toString config.services.immich.port}";};
+        details.listen = mkIf config.services.immich.openFirewall {
+          text = "${config.services.immich.host}:${toString config.services.immich.port}";
+        };
       };
 
       influxdb2 = mkIf config.services.influxdb2.enable {
@@ -261,22 +290,29 @@ in {
       jellyfin = mkIf config.services.jellyfin.enable {
         name = "Jellyfin";
         icon = "services.jellyfin";
-        details = listToAttrs (mapAttrsToList (n: v: {
-            name = "listen.${n}";
-            value.text = "0.0.0.0:${toString v}";
-          })
-          (optionalAttrs config.services.jellyfin.openFirewall {
-            http = 8096;
-            https = 8920;
-            service-discovery = 1900;
-            client-discovery = 7359;
-          }));
+        details = listToAttrs (
+          mapAttrsToList
+            (n: v: {
+              name = "listen.${n}";
+              value.text = "0.0.0.0:${toString v}";
+            })
+            (
+              optionalAttrs config.services.jellyfin.openFirewall {
+                http = 8096;
+                https = 8920;
+                service-discovery = 1900;
+                client-discovery = 7359;
+              }
+            )
+        );
       };
 
       jellyseerr = mkIf config.services.jellyseerr.enable {
         name = "Jellyseerr";
         icon = "services.jellyseerr";
-        details.listen = mkIf config.services.jellyseerr.openFirewall {text = "0.0.0.0:${toString config.services.jellyseerr.port}";};
+        details.listen = mkIf config.services.jellyseerr.openFirewall {
+          text = "0.0.0.0:${toString config.services.jellyseerr.port}";
+        };
       };
 
       kanidm = mkIf config.services.kanidm.enableServer {
@@ -289,7 +325,9 @@ in {
       komga = mkIf config.services.komga.enable {
         name = "Komga";
         icon = "services.komga";
-        details.listen = mkIf config.services.komga.openFirewall {text = "0.0.0.0:${toString config.services.komga.settings.server.port}";};
+        details.listen = mkIf config.services.komga.openFirewall {
+          text = "0.0.0.0:${toString config.services.komga.settings.server.port}";
+        };
       };
 
       karakeep = mkIf config.services.karakeep.enable {
@@ -312,17 +350,18 @@ in {
       lidarr = mkIf config.services.lidarr.enable {
         name = "Lidarr";
         icon = "services.lidarr";
-        details.listen = mkIf config.services.lidarr.openFirewall {text = "0.0.0.0:8686";};
+        details.listen = mkIf config.services.lidarr.openFirewall { text = "0.0.0.0:8686"; };
       };
 
-      loki = let
-        address = config.services.loki.configuration.server.http_listen_address or null;
-        port = config.services.loki.configuration.server.http_listen_port or null;
-      in
+      loki =
+        let
+          address = config.services.loki.configuration.server.http_listen_address or null;
+          port = config.services.loki.configuration.server.http_listen_port or null;
+        in
         mkIf config.services.loki.enable {
           name = "Loki";
           icon = "services.loki";
-          details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
         };
 
       mastodon = mkIf config.services.mastodon.enable {
@@ -337,42 +376,41 @@ in {
         details.listen.text = "${config.services.meilisearch.listenAddress}:${toString config.services.meilisearch.listenPort}";
       };
 
-      mosquitto = let
-        listeners = flip map config.services.mosquitto.listeners (
-          l: rec {
-            address =
-              if l.address == null
-              then "[::]"
-              else l.address;
-            listen =
-              if l.port == 0
-              then address
-              else "${address}:${toString l.port}";
-          }
-        );
-      in
+      mosquitto =
+        let
+          listeners = flip map config.services.mosquitto.listeners (l: rec {
+            address = if l.address == null then "[::]" else l.address;
+            listen = if l.port == 0 then address else "${address}:${toString l.port}";
+          });
+        in
         mkIf config.services.mosquitto.enable {
           name = "Mosquitto";
           icon = "services.mosquitto";
-          details = listToAttrs (flip imap0 listeners (i: l: {
-            name = "listen[${toString i}]";
-            value.text = l.listen;
-          }));
+          details = listToAttrs (
+            flip imap0 listeners (
+              i: l: {
+                name = "listen[${toString i}]";
+                value.text = l.listen;
+              }
+            )
+          );
         };
 
       navidrome = mkIf config.services.navidrome.enable {
         name = "Navidrome";
         icon = "services.navidrome";
-        info = mkIf (config.services.navidrome.settings ? BaseUrl) config.services.navidrome.settings.BaseUrl;
-        details.listen = mkIf config.services.navidrome.openFirewall {text = "${config.services.navidrome.settings.Address}:${toString config.services.navidrome.settings.Port}";};
+        info = mkIf (
+          config.services.navidrome.settings ? BaseUrl
+        ) config.services.navidrome.settings.BaseUrl;
+        details.listen = mkIf config.services.navidrome.openFirewall {
+          text = "${config.services.navidrome.settings.Address}:${toString config.services.navidrome.settings.Port}";
+        };
       };
 
       nextcloud = mkIf config.services.nextcloud.enable {
         name = "Nextcloud";
         icon = "services.nextcloud";
-        info = "http${
-          optionalString config.services.nextcloud.https "s"
-        }://${config.services.nextcloud.hostName}";
+        info = "http${optionalString config.services.nextcloud.https "s"}://${config.services.nextcloud.hostName}";
       };
 
       nix-serve = mkIf config.services.nix-serve.enable {
@@ -384,23 +422,30 @@ in {
       nginx = mkIf config.services.nginx.enable {
         name = "NGINX";
         icon = "services.nginx";
-        details = let
-          reverseProxies = flatten (flip mapAttrsToList config.services.nginx.virtualHosts (
-            server: vh:
-              flip mapAttrsToList vh.locations (
-                path: location: let
-                  upstreamName = replaceStrings ["http://" "https://"] ["" ""] location.proxyPass;
-                  passTo =
-                    if config.services.nginx.upstreams ? ${upstreamName}
-                    then toString (attrNames config.services.nginx.upstreams.${upstreamName}.servers)
-                    else location.proxyPass;
-                in
+        details =
+          let
+            reverseProxies = flatten (
+              flip mapAttrsToList config.services.nginx.virtualHosts (
+                server: vh:
+                flip mapAttrsToList vh.locations (
+                  path: location:
+                  let
+                    upstreamName = replaceStrings [ "http://" "https://" ] [ "" "" ] location.proxyPass;
+                    passTo =
+                      if config.services.nginx.upstreams ? ${upstreamName} then
+                        toString (attrNames config.services.nginx.upstreams.${upstreamName}.servers)
+                      else
+                        location.proxyPass;
+                  in
                   optional (path == "/" && location.proxyPass != null) {
-                    ${server} = {text = passTo;};
+                    ${server} = {
+                      text = passTo;
+                    };
                   }
+                )
               )
-          ));
-        in
+            );
+          in
           mkMerge reverseProxies;
       };
 
@@ -413,13 +458,17 @@ in {
       ollama = mkIf config.services.ollama.enable {
         name = "Ollama";
         icon = "services.ollama";
-        details.listen = mkIf config.services.ollama.openFirewall {text = "${config.services.ollama.host}:${toString config.services.ollama.port}";};
+        details.listen = mkIf config.services.ollama.openFirewall {
+          text = "${config.services.ollama.host}:${toString config.services.ollama.port}";
+        };
       };
 
       open-webui = mkIf config.services.open-webui.enable {
         name = "Open Webui";
         icon = "services.open-webui";
-        details.listen = mkIf config.services.open-webui.openFirewall {text = "${config.services.open-webui.host}:${toString config.services.open-webui.port}";};
+        details.listen = mkIf config.services.open-webui.openFirewall {
+          text = "${config.services.open-webui.host}:${toString config.services.open-webui.port}";
+        };
       };
 
       openssh = mkIf config.services.openssh.enable {
@@ -432,12 +481,15 @@ in {
       owncast = mkIf config.services.owncast.enable {
         name = "Owncast";
         icon = "services.owncast";
-        details.listen = mkIf config.services.owncast.openFirewall {text = "${config.services.owncast.listen}:${toString config.services.owncast.port}";};
+        details.listen = mkIf config.services.owncast.openFirewall {
+          text = "${config.services.owncast.listen}:${toString config.services.owncast.port}";
+        };
       };
 
-      paperless-ngx = let
-        url = config.services.paperless.settings.PAPERLESS_URL or null;
-      in
+      paperless-ngx =
+        let
+          url = config.services.paperless.settings.PAPERLESS_URL or null;
+        in
         mkIf config.services.paperless.enable {
           name = "Paperless-ngx";
           icon = "services.paperless-ngx";
@@ -454,59 +506,70 @@ in {
       prowlarr = mkIf config.services.prowlarr.enable {
         name = "Prowlarr";
         icon = "services.prowlarr";
-        details.listen = mkIf config.services.prowlarr.openFirewall {text = "0.0.0.0:9696";};
+        details.listen = mkIf config.services.prowlarr.openFirewall { text = "0.0.0.0:9696"; };
       };
 
       radarr = mkIf config.services.radarr.enable {
         name = "Radarr";
         icon = "services.radarr";
-        details.listen = mkIf config.services.radarr.openFirewall {text = "0.0.0.0:7878";};
+        details.listen = mkIf config.services.radarr.openFirewall { text = "0.0.0.0:7878"; };
       };
 
       radicale = mkIf config.services.radicale.enable {
         name = "Radicale";
         icon = "services.radicale";
-        details.listen = mkIf (config.services.radicale.settings ? server.hosts) {text = toString config.services.radicale.settings.server.hosts;};
+        details.listen = mkIf (config.services.radicale.settings ? server.hosts) {
+          text = toString config.services.radicale.settings.server.hosts;
+        };
       };
 
       redlib = mkIf config.services.redlib.enable {
         name = "Redlib";
         icon = "services.redlib";
-        details.listen = mkIf config.services.redlib.openFirewall {text = "${config.services.redlib.address}:${toString config.services.redlib.port}";};
+        details.listen = mkIf config.services.redlib.openFirewall {
+          text = "${config.services.redlib.address}:${toString config.services.redlib.port}";
+        };
       };
 
       samba = mkIf config.services.samba.enable {
         name = "Samba";
         icon = "services.samba";
-        details.shares = let
-          shares = lib.remove "global" (attrNames config.services.samba.settings);
-        in
-          mkIf (shares != []) {text = concatLines shares;};
+        details.shares =
+          let
+            shares = lib.remove "global" (attrNames config.services.samba.settings);
+          in
+          mkIf (shares != [ ]) { text = concatLines shares; };
       };
 
-      scrutiny = let
-        inherit (config.services.scrutiny.settings) web;
-      in
+      scrutiny =
+        let
+          inherit (config.services.scrutiny.settings) web;
+        in
         mkIf config.services.scrutiny.enable {
           name = "Scrutiny";
           icon = "services.scrutiny";
-          details.listen = lib.mkIf config.services.scrutiny.openFirewall {text = "${web.listen.host}:${toString web.listen.port}";};
+          details.listen = lib.mkIf config.services.scrutiny.openFirewall {
+            text = "${web.listen.host}:${toString web.listen.port}";
+          };
         };
 
-      searxng = let
-        address = config.services.searx.settings.server.bind_address or null;
-        port = config.services.searx.settings.server.port or null;
-      in
+      searxng =
+        let
+          address = config.services.searx.settings.server.bind_address or null;
+          port = config.services.searx.settings.server.port or null;
+        in
         mkIf config.services.searx.enable {
           name = "SearXNG";
           icon = "services.searxng";
-          details.listen = lib.mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+          details.listen = lib.mkIf (address != null && port != null) {
+            text = "${address}:${toString port}";
+          };
         };
 
       sonarr = mkIf config.services.sonarr.enable {
         name = "Sonarr";
         icon = "services.sonarr";
-        details.listen = mkIf config.services.sonarr.openFirewall {text = "0.0.0.0:8989";};
+        details.listen = mkIf config.services.sonarr.openFirewall { text = "0.0.0.0:8989"; };
       };
 
       static-web-server = mkIf config.services.static-web-server.enable {
@@ -518,14 +581,15 @@ in {
         };
       };
 
-      stirling-pdf = let
-        address = config.services.stirling-pdf.environment.SERVER_HOST or null;
-        port = config.services.stirling-pdf.environment.SERVER_PORT or null;
-      in
+      stirling-pdf =
+        let
+          address = config.services.stirling-pdf.environment.SERVER_HOST or null;
+          port = config.services.stirling-pdf.environment.SERVER_PORT or null;
+        in
         mkIf config.services.stirling-pdf.enable {
           name = "Stirling-PDF";
           icon = "services.stirling-pdf";
-          details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
         };
 
       tabby = mkIf config.services.tabby.enable {
@@ -534,81 +598,94 @@ in {
         details.listen.text = "${config.services.tabby.host}:${toString config.services.tabby.port}";
       };
 
-      tor = let
-        _tor = config.services.tor;
-      in
+      tor =
+        let
+          _tor = config.services.tor;
+        in
         mkIf _tor.enable {
           name = "Tor";
           icon = "services.tor";
           info = mkIf _tor.relay.enable "Role: ${_tor.relay.role}";
         };
 
-      traefik = let
-        dynCfg = config.services.traefik.dynamicConfigOptions;
-      in
+      traefik =
+        let
+          dynCfg = config.services.traefik.dynamicConfigOptions;
+        in
         mkIf config.services.traefik.enable {
           name = "Traefik";
           icon = "services.traefik";
-          details = mkIf (length (attrNames dynCfg) > 0) (let
-            formatOutput =
-              mapAttrsToList (
-                routerName: routerAttrs: let
-                  getServiceUrl = serviceName: let
-                    service = dynCfg.http.services.${toString serviceName}.loadBalancer.servers or [];
-                  in
-                    if length service > 0
-                    then (elemAt service 0).url
-                    else "invalid service";
+          details = mkIf (length (attrNames dynCfg) > 0) (
+            let
+              formatOutput = mapAttrsToList (
+                routerName: routerAttrs:
+                let
+                  getServiceUrl =
+                    serviceName:
+                    let
+                      service = dynCfg.http.services.${toString serviceName}.loadBalancer.servers or [ ];
+                    in
+                    if length service > 0 then (elemAt service 0).url else "invalid service";
                   passText = toString (getServiceUrl routerAttrs.service);
-                in {
+                in
+                {
                   ${toString routerName} = {
                     text = passText;
                   };
                 }
-              )
-              dynCfg.http.routers;
-          in
-            mkMerge formatOutput);
+              ) dynCfg.http.routers;
+            in
+            mkMerge formatOutput
+          );
         };
 
-      transmission = let
-        address = config.services.transmission.settings.rpc-bind-address or null;
-        port = config.services.transmission.settings.rpc-port or null;
-      in
+      transmission =
+        let
+          address = config.services.transmission.settings.rpc-bind-address or null;
+          port = config.services.transmission.settings.rpc-port or null;
+        in
         mkIf config.services.transmission.enable {
           name = "Transmission";
           icon = "services.transmission";
-          details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
         };
 
-      vaultwarden = let
-        domain = config.services.vaultwarden.config.domain or config.services.vaultwarden.config.DOMAIN or null;
-        address = config.services.vaultwarden.config.rocketAddress or config.services.vaultwarden.config.ROCKET_ADDRESS or null;
-        port = config.services.vaultwarden.config.rocketPort or config.services.vaultwarden.config.ROCKET_PORT or null;
-      in
+      vaultwarden =
+        let
+          domain =
+            config.services.vaultwarden.config.domain or config.services.vaultwarden.config.DOMAIN or null;
+          address =
+            config.services.vaultwarden.config.rocketAddress
+              or config.services.vaultwarden.config.ROCKET_ADDRESS or null;
+          port =
+            config.services.vaultwarden.config.rocketPort or config.services.vaultwarden.config.ROCKET_PORT
+              or null;
+        in
         mkIf config.services.vaultwarden.enable {
           name = "Vaultwarden";
           icon = "services.vaultwarden";
           info = mkIf (domain != null) domain;
-          details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
         };
 
-      zigbee2mqtt = let
-        mqttServer = config.services.zigbee2mqtt.settings.mqtt.server or null;
-        address = config.services.zigbee2mqtt.settings.frontend.host or null;
-        port = config.services.zigbee2mqtt.settings.frontend.port or null;
-        listen =
-          if address == null
-          then null
-          else if port == null
-          then address
-          else "${address}:${toString port}";
-      in
+      zigbee2mqtt =
+        let
+          mqttServer = config.services.zigbee2mqtt.settings.mqtt.server or null;
+          address = config.services.zigbee2mqtt.settings.frontend.host or null;
+          port = config.services.zigbee2mqtt.settings.frontend.port or null;
+          listen =
+            if address == null then
+              null
+            else if port == null then
+              address
+            else
+              "${address}:${toString port}";
+        in
         mkIf config.services.zigbee2mqtt.enable {
           name = "Zigbee2MQTT";
           icon = "services.zigbee2mqtt";
-          details.listen = mkIf (listen != null) {text = listen;};
-          details.mqtt = mkIf (mqttServer != null) {text = mqttServer;};
+          details.listen = mkIf (listen != null) { text = listen; };
+          details.mqtt = mkIf (mqttServer != null) { text = mqttServer; };
         };
 
       zipline = mkIf config.services.zipline.enable {

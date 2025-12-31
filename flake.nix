@@ -16,73 +16,82 @@
     };
   };
 
-  outputs = {
-    self,
-    devshell,
-    flake-utils,
-    nixpkgs,
-    pre-commit-hooks,
-    ...
-  } @ inputs:
+  outputs =
+    {
+      self,
+      devshell,
+      flake-utils,
+      nixpkgs,
+      pre-commit-hooks,
+      ...
+    }@inputs:
     {
       flakeModule = ./flake-module.nix;
 
       # Expose NixOS module
-      nixosModules.topology = ./nixos/module.nix;
-      nixosModules.default = self.nixosModules.topology;
+      nixosModules = {
+        topology = ./nixos/module.nix;
+        default = self.nixosModules.topology;
+      };
 
       # A nixpkgs overlay that adds the parametrized builder as a package
-      overlays.default = self.overlays.topology;
-      overlays.topology = import ./pkgs/default.nix;
+      overlays = {
+        default = self.overlays.topology;
+        topology = import ./pkgs/default.nix;
+      };
     }
-    // flake-utils.lib.eachDefaultSystem (system: rec {
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [
-          self.overlays.default
-          devshell.overlays.default
-        ];
-      };
-
-      packages.docs = pkgs.callPackage ./pkgs/docs.nix {
-        flakeInputs = inputs;
-        flakeOutputs = self;
-      };
-
-      # `nix flake check`
-      checks.pre-commit-hooks = pre-commit-hooks.lib.${system}.run {
-        src = nixpkgs.lib.cleanSource ./.;
-        hooks = {
-          # Nix
-          alejandra.enable = true;
-          deadnix.enable = true;
-          statix.enable = true;
+    // flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [
+            self.overlays.default
+            devshell.overlays.default
+          ];
         };
-      };
+      in
+      {
+        packages.docs = pkgs.callPackage ./pkgs/docs.nix {
+          flakeInputs = inputs;
+          flakeOutputs = self;
+        };
 
-      # `nix develop`
-      devShells.default = pkgs.devshell.mkShell {
-        name = "nix-topology";
+        # `nix fmt`
+        formatter = pkgs.alejandra;
 
-        commands = [
-          {
-            package = pkgs.alejandra;
-            category = "formatters";
-          }
-          {
-            package = pkgs.deadnix;
-            category = "linters";
-          }
-          {
-            package = pkgs.statix;
-            category = "linters";
-          }
-        ];
+        # `nix flake check`
+        checks.pre-commit-hooks = pre-commit-hooks.lib.${system}.run {
+          src = nixpkgs.lib.cleanSource ./.;
+          hooks = {
+            # Nix
+            nixfmt.enable = true;
+            deadnix.enable = true;
+            statix.enable = true;
+          };
+        };
 
-        devshell.startup.pre-commit.text = self.checks.${system}.pre-commit-hooks.shellHook;
-      };
+        # `nix develop`
+        devShells.default = pkgs.devshell.mkShell {
+          name = "nix-topology";
 
-      # `nix fmt`
-      formatter = pkgs.alejandra;
-    });
+          commands = [
+            {
+              package = pkgs.alejandra;
+              category = "formatters";
+            }
+            {
+              package = pkgs.deadnix;
+              category = "linters";
+            }
+            {
+              package = pkgs.statix;
+              category = "linters";
+            }
+          ];
+
+          devshell.startup.pre-commit.text = self.checks.${system}.pre-commit-hooks.shellHook;
+        };
+      }
+    );
 }

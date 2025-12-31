@@ -1,11 +1,12 @@
-f: {
+f:
+{
   lib,
   config,
   options,
   ...
-}: let
-  inherit
-    (lib)
+}:
+let
+  inherit (lib)
     attrNames
     attrValues
     elemAt
@@ -26,16 +27,9 @@ f: {
     warnIf
     ;
 
-  inherit
-    (import ../topology/lazy.nix lib)
-    isLazyValue
-    lazyOf
-    lazyValue
-    ;
+  inherit (import ../topology/lazy.nix lib) isLazyValue lazyOf lazyValue;
 
-  style = primaryColor: secondaryColor: pattern: {
-    inherit primaryColor secondaryColor pattern;
-  };
+  style = primaryColor: secondaryColor: pattern: { inherit primaryColor secondaryColor pattern; };
 
   predefinedStyles = [
     (style "#f1cf8a" null "solid")
@@ -71,14 +65,15 @@ f: {
   ];
 
   # A map containing all networks that have an explicitly assigned style, and the style.
-  explicitStyles = foldl' recursiveUpdate {} (flatten (
-    flip map options.networks.definitions (mapAttrsToList (
-      netId: net:
-        optional (net ? style && !isLazyValue net.style) {
-          ${netId} = net.style;
-        }
-    ))
-  ));
+  explicitStyles = foldl' recursiveUpdate { } (
+    flatten (
+      flip map options.networks.definitions (
+        mapAttrsToList (
+          netId: net: optional (net ? style && !isLazyValue net.style) { ${netId} = net.style; }
+        )
+      )
+    )
+  );
 
   # All unused predefined styles
   remainingStyles = subtractLists (unique (attrValues explicitStyles)) predefinedStyles;
@@ -87,21 +82,21 @@ f: {
   # Fold over all networks that have no style and assign the next free one. Warn and repeat from beginning if necessary.
   computedStyles =
     explicitStyles
-    // warnIf
-    (length remainingNets > length remainingStyles)
-    "topology: There are more networks without styles than predefined styles. Some styles will have to be reused!"
-    (
-      foldl' recursiveUpdate {} (imap0 (i: net: {
-          ${net} = elemAt remainingStyles (mod i (length remainingStyles));
-        })
-        remainingNets)
-    );
+    //
+      warnIf (length remainingNets > length remainingStyles)
+        "topology: There are more networks without styles than predefined styles. Some styles will have to be reused!"
+        (
+          foldl' recursiveUpdate { } (
+            imap0 (i: net: { ${net} = elemAt remainingStyles (mod i (length remainingStyles)); }) remainingNets
+          )
+        );
 in
-  f {
-    options.networks = mkOption {
-      default = {};
-      description = "Defines logical networks that are present in your topology.";
-      type = types.attrsOf (types.submodule (networkSubmod: {
+f {
+  options.networks = mkOption {
+    default = { };
+    description = "Defines logical networks that are present in your topology.";
+    type = types.attrsOf (
+      types.submodule (networkSubmod: {
         options = {
           id = mkOption {
             description = "The id of this network";
@@ -155,17 +150,15 @@ in
           # FIXME: vlan ids
           # FIXME: nat to [other networks] (happening on node XY)
         };
-      }));
-    };
+      })
+    );
+  };
 
-    config = {
-      assertions = flatten (
-        flip map (attrValues config.networks) (
-          network: [
-            (config.lib.assertions.iconValid
-              network.icon "networks.${network.id}.icon")
-          ]
-        )
-      );
-    };
-  }
+  config = {
+    assertions = flatten (
+      flip map (attrValues config.networks) (network: [
+        (config.lib.assertions.iconValid network.icon "networks.${network.id}.icon")
+      ])
+    );
+  };
+}

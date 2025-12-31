@@ -6,29 +6,27 @@
   nixosOptionsDoc,
   flakeInputs,
   flakeOutputs,
-}: let
+}:
+let
   topologyDoc = nixosOptionsDoc {
     inherit
       (import ../. {
         inherit pkgs;
-        prefix = [];
+        prefix = [ ];
       })
       options
       ;
-    transformOptions = opt:
+    transformOptions =
+      opt:
       opt
       // {
-        declarations =
-          map (
-            decl:
-              if lib.hasPrefix (toString ../.) (toString decl)
-              then
-                gitHubDeclaration (
-                  lib.removePrefix "/" (lib.removePrefix (toString ../.) (toString decl))
-                )
-              else decl
-          )
-          opt.declarations;
+        declarations = map (
+          decl:
+          if lib.hasPrefix (toString ../.) (toString decl) then
+            gitHubDeclaration (lib.removePrefix "/" (lib.removePrefix (toString ../.) (toString decl)))
+          else
+            decl
+        ) opt.declarations;
       };
   };
 
@@ -37,20 +35,20 @@
     name = "<${subpath}>";
   };
 
-  flakeForExample = path: let
-    self = (import (path + "/flake.nix")).outputs {
-      inherit (flakeInputs) nixpkgs flake-utils;
-      inherit self;
-      nix-topology = flakeOutputs // {outPath = ./..;};
-    };
-  in
+  flakeForExample =
+    path:
+    let
+      self = (import (path + "/flake.nix")).outputs {
+        inherit (flakeInputs) nixpkgs flake-utils;
+        inherit self;
+        nix-topology = flakeOutputs // {
+          outPath = ./..;
+        };
+      };
+    in
     self;
 
-  addDocForExample = exampleName: exampleOut:
-  /*
-  bash
-  */
-  ''
+  addDocForExample = exampleName: exampleOut: /* bash */ ''
     EXAMPLE_DIR=docs/src/examples/${exampleName}
     mkdir -p "$EXAMPLE_DIR"
     cp ${exampleOut}/* "$EXAMPLE_DIR"/
@@ -76,22 +74,18 @@
     echo '- [${exampleName}](./examples/${exampleName}/main.md)' >> docs/src/SUMMARY.md
   '';
 
-  examples =
-    lib.mapAttrs (
-      dir: _:
-        (flakeForExample ../examples/${dir}).topology.${pkgs.stdenv.hostPlatform.system}.config.output
-    )
-    (lib.filterAttrs (_: v: v == "directory") (builtins.readDir ../examples));
+  examples = lib.mapAttrs (
+    dir: _:
+    (flakeForExample ../examples/${dir}).topology.${pkgs.stdenv.hostPlatform.system}.config.output
+  ) (lib.filterAttrs (_: v: v == "directory") (builtins.readDir ../examples));
 in
-  runCommand "nix-topology-documentation" {
-    nativeBuildInputs = [mdbook];
-  } ''
-    cp -r ${../docs} docs
-    chmod 755 docs docs/src
-    chmod 644 docs/src/SUMMARY.md
-    mkdir docs/theme
-    ${lib.concatLines (lib.mapAttrsToList addDocForExample examples)}
-    cp ${topologyDoc.optionsCommonMark} docs/src/topology-options.md
-    cp ${pkgs.documentation-highlighter}/highlight.pack.js docs/theme/highlight.js
-    ${lib.getExe mdbook} build -d $out docs
-  ''
+runCommand "nix-topology-documentation" { nativeBuildInputs = [ mdbook ]; } ''
+  cp -r ${../docs} docs
+  chmod 755 docs docs/src
+  chmod 644 docs/src/SUMMARY.md
+  mkdir docs/theme
+  ${lib.concatLines (lib.mapAttrsToList addDocForExample examples)}
+  cp ${topologyDoc.optionsCommonMark} docs/src/topology-options.md
+  cp ${pkgs.documentation-highlighter}/highlight.pack.js docs/theme/highlight.js
+  ${lib.getExe mdbook} build -d $out docs
+''

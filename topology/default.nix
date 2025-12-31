@@ -1,10 +1,6 @@
-{
-  lib,
-  config,
-  ...
-}: let
-  inherit
-    (lib)
+{ lib, config, ... }:
+let
+  inherit (lib)
     attrNames
     concatLines
     concatLists
@@ -23,23 +19,28 @@
     warnIf
     ;
 
-  availableRenderers = attrNames (filterAttrs (_: v: v == "directory") (builtins.readDir ./renderers));
-in {
+  availableRenderers = attrNames (
+    filterAttrs (_: v: v == "directory") (builtins.readDir ./renderers)
+  );
+in
+{
   imports =
     map (x: ./renderers/${x}) (attrNames (builtins.readDir ./renderers))
-    ++ flip map (attrNames (builtins.readDir ../options)) (x:
+    ++ flip map (attrNames (builtins.readDir ../options)) (
+      x:
       import ../options/${x} (
         module:
-          module
-          // {
-            # Set the correct filename for diagnostics
-            _file = ../options/${x};
-          }
-      ));
+        module
+        // {
+          # Set the correct filename for diagnostics
+          _file = ../options/${x};
+        }
+      )
+    );
 
   options = {
     nixosConfigurations = mkOption {
-      default = {};
+      default = { };
       description = ''
         The list of nixos configurations to process for topology rendering.
         All of these must include the relevant nixos topology module.
@@ -61,7 +62,7 @@ in {
     };
 
     lib = lib.mkOption {
-      default = {};
+      default = { };
       type = lib.types.attrsOf lib.types.attrs;
       description = ''
         This option allows modules to define helper functions, constants, etc.
@@ -70,7 +71,7 @@ in {
 
     assertions = mkOption {
       internal = true;
-      default = [];
+      default = [ ];
       example = [
         {
           assertion = false;
@@ -82,25 +83,27 @@ in {
         hold for the evaluation of the topology configuration to
         succeed, along with associated error messages for the user.
       '';
-      type = types.listOf (types.submodule {
-        options = {
-          assertion = mkOption {
-            description = "The thing to assert.";
-            type = types.bool;
-          };
+      type = types.listOf (
+        types.submodule {
+          options = {
+            assertion = mkOption {
+              description = "The thing to assert.";
+              type = types.bool;
+            };
 
-          message = mkOption {
-            description = "The error message.";
-            type = types.str;
+            message = mkOption {
+              description = "The error message.";
+              type = types.str;
+            };
           };
-        };
-      });
+        }
+      );
     };
 
     warnings = mkOption {
       internal = true;
-      default = [];
-      example = ["This is deprecated for that reason"];
+      default = [ ];
+      example = [ "This is deprecated for that reason" ];
       description = ''
         This option allows modules to show warnings to users during
         the evaluation of the topology configuration.
@@ -117,32 +120,47 @@ in {
     };
   };
 
-  config = let
-    # Aggregates all values for an option from each host
-    aggregate = optionPath:
-      mkMerge (
-        concatLists (flip mapAttrsToList config.nixosConfigurations (
-          name: cfg:
-            builtins.addErrorContext "while aggregating topology definitions from self.nixosConfigurations.${name} into toplevel topology:" (
-              getAttrFromPath (["options" "topology"] ++ optionPath ++ ["definitions"]) cfg
+  config =
+    let
+      # Aggregates all values for an option from each host
+      aggregate =
+        optionPath:
+        mkMerge (
+          concatLists (
+            flip mapAttrsToList config.nixosConfigurations (
+              name: cfg:
+              builtins.addErrorContext
+                "while aggregating topology definitions from self.nixosConfigurations.${name} into toplevel topology:"
+                (
+                  getAttrFromPath (
+                    [
+                      "options"
+                      "topology"
+                    ]
+                    ++ optionPath
+                    ++ [ "definitions" ]
+                  ) cfg
+                )
             )
-        ))
-      );
-  in {
-    output = let
-      failedAssertions = map (x: x.message) (filter (x: !x.assertion) config.assertions);
+          )
+        );
     in
-      if failedAssertions != []
-      then throw "\nFailed assertions:\n${concatStringsSep "\n" (map (x: "- ${x}") failedAssertions)}"
-      else
-        warnIf (config.warnings != [])
-        (concatLines (["The following warnings were raised during evaluation:"] ++ config.warnings))
-        (mkIf (config.renderer != null) (mkDefault config.renderers.${config.renderer}.output));
+    {
+      output =
+        let
+          failedAssertions = map (x: x.message) (filter (x: !x.assertion) config.assertions);
+        in
+        if failedAssertions != [ ] then
+          throw "\nFailed assertions:\n${concatStringsSep "\n" (map (x: "- ${x}") failedAssertions)}"
+        else
+          warnIf (config.warnings != [ ]) (concatLines (
+            [ "The following warnings were raised during evaluation:" ] ++ config.warnings
+          )) (mkIf (config.renderer != null) (mkDefault config.renderers.${config.renderer}.output));
 
-    nodes = aggregate ["nodes"];
-    networks = aggregate ["networks"];
-    icons = aggregate ["icons"];
+      nodes = aggregate [ "nodes" ];
+      networks = aggregate [ "networks" ];
+      icons = aggregate [ "icons" ];
 
-    lib.topology = import ./helpers.nix lib;
-  };
+      lib.topology = import ./helpers.nix lib;
+    };
 }
