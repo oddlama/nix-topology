@@ -2,31 +2,31 @@
   description = "🍁 Generate infrastructure and network diagrams directly from your NixOS configurations";
 
   inputs = {
-    devshell = {
-      url = "github:numtide/devshell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
-    pre-commit-hooks = {
-      url = "github:cachix/pre-commit-hooks.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
     {
       self,
-      devshell,
       flake-parts,
       nixpkgs,
-      pre-commit-hooks,
       ...
     }@inputs:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
+
+      imports = [ flake-parts.flakeModules.partitions ];
+
+      partitions.dev = {
+        extraInputsFlake = ./dev;
+        module = ./dev;
+      };
+      partitionedAttrs = {
+        checks = "dev";
+        devShells = "dev";
+        formatter = "dev";
+      };
 
       flake = {
         flakeModule = ./flake-module.nix;
@@ -45,55 +45,11 @@
       };
 
       perSystem =
-        { system, pkgs, ... }:
+        { pkgs, ... }:
         {
-          _module.args.pkgs = import nixpkgs {
-            inherit system;
-            overlays = [
-              self.overlays.default
-              devshell.overlays.default
-            ];
-          };
-
           packages.docs = pkgs.callPackage ./pkgs/docs.nix {
             flakeInputs = inputs;
             flakeOutputs = self;
-          };
-
-          # `nix fmt`
-          formatter = pkgs.alejandra;
-
-          # `nix flake check`
-          checks.pre-commit-hooks = pre-commit-hooks.lib.${system}.run {
-            src = nixpkgs.lib.cleanSource ./.;
-            hooks = {
-              # Nix
-              nixfmt.enable = true;
-              deadnix.enable = true;
-              statix.enable = true;
-            };
-          };
-
-          # `nix develop`
-          devShells.default = pkgs.devshell.mkShell {
-            name = "nix-topology";
-
-            commands = [
-              {
-                package = pkgs.alejandra;
-                category = "formatters";
-              }
-              {
-                package = pkgs.deadnix;
-                category = "linters";
-              }
-              {
-                package = pkgs.statix;
-                category = "linters";
-              }
-            ];
-
-            devshell.startup.pre-commit.text = self.checks.${system}.pre-commit-hooks.shellHook;
           };
         };
     };
