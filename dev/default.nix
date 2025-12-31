@@ -7,7 +7,6 @@
 
   perSystem =
     {
-      self',
       system,
       pkgs,
       ...
@@ -25,7 +24,6 @@
 
       pre-commit = {
         check.enable = true;
-        devShell = self'.devShells.default;
         settings.hooks = {
           nixfmt.enable = true;
           deadnix.enable = true;
