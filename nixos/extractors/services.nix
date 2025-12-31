@@ -318,6 +318,12 @@ in {
         info = "https://${config.services.mastodon.localDomain}";
       };
 
+      meilisearch = mkIf config.services.meilisearch.enable {
+        name = "Meilisearch";
+        icon = "services.meilisearch";
+        details.listen.text = "${config.services.meilisearch.listenAddress}:${toString config.services.meilisearch.listenPort}";
+      };
+
       mosquitto = let
         listeners = flip map config.services.mosquitto.listeners (
           l: rec {
