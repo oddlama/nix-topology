@@ -104,17 +104,16 @@ in
         icon = "services.caddy";
         details = genAttrs (mapAttrsToList (name: _: name) config.services.caddy.virtualHosts) (name: {
           text =
-            concatStringsSep " " # Turn the (possibly multiple) strings in the list into a single string
-
-              (
-                builtins.map (line: removePrefix "reverse_proxy " (removeSuffix " {" line)) # Remove the prefix and suffix, so only the list of hosts are left
-
-                  (
-                    filter (line: hasPrefix "reverse_proxy " line) # Filter out lines that don't start with reverse_proxy
-
-                      (splitString "\n" config.services.caddy.virtualHosts.${name}.extraConfig)
-                  )
-              ); # Separate lines of string into list
+            # Turn the (possibly multiple) strings in the list into a single string
+            concatStringsSep " " (
+              # Remove the prefix and suffix, so only the list of hosts are left
+              builtins.map (line: removePrefix "reverse_proxy " (removeSuffix " {" line)) (
+                # Filter out lines that don't start with reverse_proxy
+                filter (line: hasPrefix "reverse_proxy " line) (
+                  splitString "\n" config.services.caddy.virtualHosts.${name}.extraConfig
+                )
+              )
+            ); # Separate lines of string into list
         });
       };
 
