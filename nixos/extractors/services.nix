@@ -552,6 +552,12 @@ in {
           details.listen = mkIf (listen != null) {text = listen;};
           details.mqtt = mkIf (mqttServer != null) {text = mqttServer;};
         };
+
+      zipline = mkIf config.services.zipline.enable {
+        name = "Zipline";
+        icon = "services.zipline";
+        details.listen.text = "${config.services.zipline.settings.CORE_HOSTNAME}:${toString config.services.zipline.settings.CORE_PORT}";
+      };
     }
     // flip mapAttrs config.services.restic.backups (
       backupName: cfg: {
