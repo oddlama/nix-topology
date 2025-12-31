@@ -286,6 +286,12 @@ in {
         details.listen.text = config.services.kanidm.serverSettings.bindaddress;
       };
 
+      komga = mkIf config.services.komga.enable {
+        name = "Komga";
+        icon = "services.komga";
+        details.listen = mkIf config.services.komga.openFirewall {text = "0.0.0.0:${toString config.services.komga.settings.server.port}";};
+      };
+
       karakeep = mkIf config.services.karakeep.enable {
         name = "Karakeep";
         icon = "services.karakeep";
