@@ -7,7 +7,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    flake-utils.url = "github:numtide/flake-utils";
+    flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     pre-commit-hooks = {
@@ -20,78 +20,81 @@
     {
       self,
       devshell,
-      flake-utils,
+      flake-parts,
       nixpkgs,
       pre-commit-hooks,
       ...
     }@inputs:
-    {
-      flakeModule = ./flake-module.nix;
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = nixpkgs.lib.systems.flakeExposed;
 
-      # Expose NixOS module
-      nixosModules = {
-        topology = ./nixos/module.nix;
-        default = self.nixosModules.topology;
-      };
+      flake = {
+        flakeModule = ./flake-module.nix;
 
-      # A nixpkgs overlay that adds the parametrized builder as a package
-      overlays = {
-        default = self.overlays.topology;
-        topology = import ./pkgs/default.nix;
-      };
-    }
-    // flake-utils.lib.eachDefaultSystem (
-      system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [
-            self.overlays.default
-            devshell.overlays.default
-          ];
-        };
-      in
-      {
-        packages.docs = pkgs.callPackage ./pkgs/docs.nix {
-          flakeInputs = inputs;
-          flakeOutputs = self;
+        # Expose NixOS module
+        nixosModules = {
+          topology = ./nixos/module.nix;
+          default = self.nixosModules.topology;
         };
 
-        # `nix fmt`
-        formatter = pkgs.alejandra;
+        # A nixpkgs overlay that adds the parametrized builder as a package
+        overlays = {
+          default = self.overlays.topology;
+          topology = import ./pkgs/default.nix;
+        };
+      };
 
-        # `nix flake check`
-        checks.pre-commit-hooks = pre-commit-hooks.lib.${system}.run {
-          src = nixpkgs.lib.cleanSource ./.;
-          hooks = {
-            # Nix
-            nixfmt.enable = true;
-            deadnix.enable = true;
-            statix.enable = true;
+      perSystem =
+        { system, pkgs, ... }:
+        {
+          _module.args.pkgs = import nixpkgs {
+            inherit system;
+            overlays = [
+              self.overlays.default
+              devshell.overlays.default
+            ];
+          };
+
+          packages.docs = pkgs.callPackage ./pkgs/docs.nix {
+            flakeInputs = inputs;
+            flakeOutputs = self;
+          };
+
+          # `nix fmt`
+          formatter = pkgs.alejandra;
+
+          # `nix flake check`
+          checks.pre-commit-hooks = pre-commit-hooks.lib.${system}.run {
+            src = nixpkgs.lib.cleanSource ./.;
+            hooks = {
+              # Nix
+              nixfmt.enable = true;
+              deadnix.enable = true;
+              statix.enable = true;
+            };
+          };
+
+          # `nix develop`
+          devShells.default = pkgs.devshell.mkShell {
+            name = "nix-topology";
+
+            commands = [
+              {
+                package = pkgs.alejandra;
+                category = "formatters";
+              }
+              {
+                package = pkgs.deadnix;
+                category = "linters";
+              }
+              {
+                package = pkgs.statix;
+                category = "linters";
+              }
+            ];
+
+            devshell.startup.pre-commit.text = self.checks.${system}.pre-commit-hooks.shellHook;
           };
         };
-
-        # `nix develop`
-        devShells.default = pkgs.devshell.mkShell {
-          name = "nix-topology";
-
-          commands = [
-            {
-              package = pkgs.alejandra;
-              category = "formatters";
-            }
-            {
-              package = pkgs.deadnix;
-              category = "linters";
-            }
-            {
-              package = pkgs.statix;
-              category = "linters";
-            }
-          ];
-
-          devshell.startup.pre-commit.text = self.checks.${system}.pre-commit-hooks.shellHook;
-        };
-      }
-    );
+    };
 }

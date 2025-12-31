@@ -1,6 +1,5 @@
 {
   inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nix-topology.url = "github:oddlama/nix-topology";
     nix-topology.inputs.nixpkgs.follows = "nixpkgs";
@@ -11,7 +10,6 @@
       self,
       nixpkgs,
       nix-topology,
-      flake-utils,
       ...
     }:
     {
@@ -174,94 +172,103 @@
         ];
       };
     }
-    // flake-utils.lib.eachDefaultSystem (system: rec {
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [ nix-topology.overlays.default ];
-      };
+    // (
+      let
+        forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
+      in
+      {
+        topology = forAllSystems (
+          system:
+          let
+            pkgs = import nixpkgs {
+              inherit system;
+              overlays = [ nix-topology.overlays.default ];
+            };
+          in
+          # This is the global topology module.
+          import nix-topology {
+            inherit pkgs;
+            modules = [
+              (
+                { config, ... }:
+                let
+                  inherit (config.lib.topology)
+                    mkInternet
+                    mkRouter
+                    mkSwitch
+                    mkConnection
+                    ;
+                in
+                {
+                  inherit (self) nixosConfigurations;
 
-      # This is the global topology module.
-      topology = import nix-topology {
-        inherit pkgs;
-        modules = [
-          (
-            { config, ... }:
-            let
-              inherit (config.lib.topology)
-                mkInternet
-                mkRouter
-                mkSwitch
-                mkConnection
-                ;
-            in
-            {
-              inherit (self) nixosConfigurations;
+                  # Add a node for the internet
+                  nodes.internet = mkInternet { connections = mkConnection "router" "wan1"; };
 
-              # Add a node for the internet
-              nodes.internet = mkInternet { connections = mkConnection "router" "wan1"; };
+                  # Add a router that we use to access the internet
+                  nodes.router = mkRouter "FritzBox" {
+                    info = "FRITZ!Box 7520";
+                    image = ./images/fritzbox.png;
+                    interfaceGroups = [
+                      [
+                        "eth1"
+                        "eth2"
+                        "eth3"
+                        "eth4"
+                      ]
+                      [ "wan1" ]
+                    ];
+                    connections.eth1 = mkConnection "host1" "wan";
+                    interfaces.eth1 = {
+                      addresses = [ "192.168.178.1" ];
+                      network = "home-fritzbox";
+                    };
+                  };
 
-              # Add a router that we use to access the internet
-              nodes.router = mkRouter "FritzBox" {
-                info = "FRITZ!Box 7520";
-                image = ./images/fritzbox.png;
-                interfaceGroups = [
-                  [
-                    "eth1"
-                    "eth2"
-                    "eth3"
-                    "eth4"
-                  ]
-                  [ "wan1" ]
-                ];
-                connections.eth1 = mkConnection "host1" "wan";
-                interfaces.eth1 = {
-                  addresses = [ "192.168.178.1" ];
-                  network = "home-fritzbox";
-                };
-              };
+                  networks.home-fritzbox = {
+                    name = "Home Fritzbox";
+                    cidrv4 = "192.168.178.0/24";
+                  };
 
-              networks.home-fritzbox = {
-                name = "Home Fritzbox";
-                cidrv4 = "192.168.178.0/24";
-              };
+                  networks.host1-kea.name = "Home LAN";
+                  nodes.switch-main = mkSwitch "Main Switch" {
+                    info = "D-Link DGS-1016D";
+                    image = ./images/dlink-dgs1016d.png;
+                    interfaceGroups = [
+                      [
+                        "eth1"
+                        "eth2"
+                        "eth3"
+                        "eth4"
+                        "eth5"
+                        "eth6"
+                      ]
+                    ];
+                    connections.eth1 = mkConnection "host1" "lan";
+                    connections.eth2 = mkConnection "host2" "eth0";
+                    connections.eth3 = mkConnection "switch-livingroom" "eth1";
+                  };
 
-              networks.host1-kea.name = "Home LAN";
-              nodes.switch-main = mkSwitch "Main Switch" {
-                info = "D-Link DGS-1016D";
-                image = ./images/dlink-dgs1016d.png;
-                interfaceGroups = [
-                  [
-                    "eth1"
-                    "eth2"
-                    "eth3"
-                    "eth4"
-                    "eth5"
-                    "eth6"
-                  ]
-                ];
-                connections.eth1 = mkConnection "host1" "lan";
-                connections.eth2 = mkConnection "host2" "eth0";
-                connections.eth3 = mkConnection "switch-livingroom" "eth1";
-              };
-
-              nodes.switch-livingroom = mkSwitch "Livingroom Switch" {
-                info = "D-Link DGS-105";
-                image = ./images/dlink-dgs105.png;
-                interfaceGroups = [
-                  [
-                    "eth1"
-                    "eth2"
-                    "eth3"
-                    "eth4"
-                    "eth5"
-                  ]
-                ];
-                connections.eth2 = mkConnection "desktop" "eth0";
-                connections.eth3 = mkConnection "laptop" "eth0";
-              };
-            }
-          )
-        ];
-      };
-    });
+                  nodes.switch-livingroom = mkSwitch "Livingroom Switch" {
+                    info = "D-Link DGS-105";
+                    image = ./images/dlink-dgs105.png;
+                    interfaceGroups = [
+                      [
+                        "eth1"
+                        "eth2"
+                        "eth3"
+                        "eth4"
+                        "eth5"
+                      ]
+                    ];
+                    connections.eth2 = mkConnection "desktop" "eth0";
+                    connections.eth3 = mkConnection "laptop" "eth0";
+                  };
+                }
+              )
+            ];
+          }
+        );
+      }
+    );
 }

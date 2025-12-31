@@ -1,6 +1,5 @@
 {
   inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nix-topology.url = "github:oddlama/nix-topology";
     nix-topology.inputs.nixpkgs.follows = "nixpkgs";
@@ -11,7 +10,6 @@
       self,
       nixpkgs,
       nix-topology,
-      flake-utils,
       ...
     }:
     {
@@ -97,56 +95,65 @@
         ];
       };
     }
-    // flake-utils.lib.eachDefaultSystem (system: rec {
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [ nix-topology.overlays.default ];
-      };
+    // (
+      let
+        forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
+      in
+      {
+        # This is the global topology module.
+        topology = forAllSystems (
+          system:
+          let
+            pkgs = import nixpkgs {
+              inherit system;
+              overlays = [ nix-topology.overlays.default ];
+            };
+          in
+          import nix-topology {
+            inherit pkgs;
+            modules = [
+              (
+                { config, ... }:
+                let
+                  inherit (config.lib.topology) mkInternet mkRouter mkConnection;
+                in
+                {
+                  inherit (self) nixosConfigurations;
 
-      # This is the global topology module.
-      topology = import nix-topology {
-        inherit pkgs;
-        modules = [
-          (
-            { config, ... }:
-            let
-              inherit (config.lib.topology) mkInternet mkRouter mkConnection;
-            in
-            {
-              inherit (self) nixosConfigurations;
+                  # Add a node for the internet
+                  nodes.internet = mkInternet { connections = mkConnection "router" "wan1"; };
 
-              # Add a node for the internet
-              nodes.internet = mkInternet { connections = mkConnection "router" "wan1"; };
+                  # Add a router that we use to access the internet
+                  nodes.router = mkRouter "FritzBox" {
+                    info = "FRITZ!Box 7520";
+                    image = ./images/fritzbox.png;
+                    interfaceGroups = [
+                      [
+                        "eth1"
+                        "eth2"
+                        "eth3"
+                        "eth4"
+                        "wifi"
+                      ]
+                      [ "wan1" ]
+                    ];
+                    connections.eth1 = mkConnection "host1" "eth0";
+                    connections.wifi = mkConnection "host2" "wlp3s0";
+                    interfaces.eth1 = {
+                      addresses = [ "192.168.178.1" ];
+                      network = "home";
+                    };
+                  };
 
-              # Add a router that we use to access the internet
-              nodes.router = mkRouter "FritzBox" {
-                info = "FRITZ!Box 7520";
-                image = ./images/fritzbox.png;
-                interfaceGroups = [
-                  [
-                    "eth1"
-                    "eth2"
-                    "eth3"
-                    "eth4"
-                    "wifi"
-                  ]
-                  [ "wan1" ]
-                ];
-                connections.eth1 = mkConnection "host1" "eth0";
-                connections.wifi = mkConnection "host2" "wlp3s0";
-                interfaces.eth1 = {
-                  addresses = [ "192.168.178.1" ];
-                  network = "home";
-                };
-              };
-
-              networks.home = {
-                name = "Home";
-                cidrv4 = "192.168.178.0/24";
-              };
-            }
-          )
-        ];
-      };
-    });
+                  networks.home = {
+                    name = "Home";
+                    cidrv4 = "192.168.178.0/24";
+                  };
+                }
+              )
+            ];
+          }
+        );
+      }
+    );
 }
