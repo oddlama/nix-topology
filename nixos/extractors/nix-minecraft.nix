@@ -25,14 +25,17 @@ in {
           (filterAttrs (_: s: s.enable && s.openFirewall))
           (mapAttrs (
             _: v: let
+              velocityDefaultBind = "0.0.0.0:25565";
               velocityCfgName = "velocity.toml";
               velocityConfig = v.symlinks.${velocityCfgName} or v.files.${velocityCfgName} or null;
               isVelocityServer = velocityConfig != null;
             in {
               text =
-                if isVelocityServer
-                then velocityConfig.value.bind or "0.0.0.0:25565"
-                else "0.0.0.0:${toString v.serverProperties.server-port or 25565}";
+                if (!isVelocityServer)
+                then "0.0.0.0:${toString v.serverProperties.server-port or 25565}"
+                else if (velocityConfig ? value)
+                then velocityConfig.value.bind or velocityDefaultBind
+                else (builtins.fromTOML (builtins.readFile velocityConfig)).bind or velocityDefaultBind;
             }
           ))
         ];
