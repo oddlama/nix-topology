@@ -109,7 +109,6 @@ in {
         });
       };
 
-
       coder = mkIf config.services.coder.enable {
         name = "Coder";
         icon = "services.coder";
