@@ -2,87 +2,58 @@
   description = "🍁 Generate infrastructure and network diagrams directly from your NixOS configurations";
 
   inputs = {
-    devshell = {
-      url = "github:numtide/devshell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    flake-utils.url = "github:numtide/flake-utils";
+    flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
-    pre-commit-hooks = {
-      url = "github:cachix/pre-commit-hooks.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = {
-    self,
-    devshell,
-    flake-utils,
-    nixpkgs,
-    pre-commit-hooks,
-    ...
-  } @ inputs:
+  outputs =
     {
-      flakeModule = ./flake-module.nix;
+      self,
+      flake-parts,
+      nixpkgs,
+      ...
+    }@inputs:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = nixpkgs.lib.systems.flakeExposed;
 
-      # Expose NixOS module
-      nixosModules.topology = ./nixos/module.nix;
-      nixosModules.default = self.nixosModules.topology;
+      imports = with flake-parts.flakeModules; [
+        partitions
+        flakeModules
+      ];
 
-      # A nixpkgs overlay that adds the parametrized builder as a package
-      overlays.default = self.overlays.topology;
-      overlays.topology = import ./pkgs/default.nix;
-    }
-    // flake-utils.lib.eachDefaultSystem (system: rec {
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [
-          self.overlays.default
-          devshell.overlays.default
-        ];
+      partitions.dev = {
+        extraInputsFlake = ./dev;
+        module = ./dev;
+      };
+      partitionedAttrs = {
+        checks = "dev";
+        devShells = "dev";
+        formatter = "dev";
       };
 
-      packages.docs = pkgs.callPackage ./pkgs/docs.nix {
-        flakeInputs = inputs;
-        flakeOutputs = self;
-      };
+      flake = {
+        flakeModule = ./flake-module.nix;
 
-      # `nix flake check`
-      checks.pre-commit-hooks = pre-commit-hooks.lib.${system}.run {
-        src = nixpkgs.lib.cleanSource ./.;
-        hooks = {
-          # Nix
-          alejandra.enable = true;
-          deadnix.enable = true;
-          statix.enable = true;
+        # Expose NixOS module
+        nixosModules = {
+          topology = ./nixos/module.nix;
+          default = self.nixosModules.topology;
+        };
+
+        # A nixpkgs overlay that adds the parametrized builder as a package
+        overlays = {
+          default = self.overlays.topology;
+          topology = import ./pkgs/default.nix;
         };
       };
 
-      # `nix develop`
-      devShells.default = pkgs.devshell.mkShell {
-        name = "nix-topology";
-
-        commands = [
-          {
-            package = pkgs.alejandra;
-            category = "formatters";
-          }
-          {
-            package = pkgs.deadnix;
-            category = "linters";
-          }
-          {
-            package = pkgs.statix;
-            category = "linters";
-          }
-        ];
-
-        devshell.startup.pre-commit.text = self.checks.${system}.pre-commit-hooks.shellHook;
-      };
-
-      # `nix fmt`
-      formatter = pkgs.alejandra;
-    });
+      perSystem =
+        { pkgs, ... }:
+        {
+          packages.docs = pkgs.callPackage ./pkgs/docs.nix {
+            flakeInputs = inputs;
+            flakeOutputs = self;
+          };
+        };
+    };
 }

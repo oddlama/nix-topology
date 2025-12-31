@@ -1,7 +1,4 @@
-{
-  buildNpmPackage,
-  lib,
-}:
+{ buildNpmPackage, lib }:
 buildNpmPackage {
   pname = "elk-to-svg";
   version = "1.0.0";
@@ -16,7 +13,7 @@ buildNpmPackage {
     description = "Convert ELK to SVG";
     #homepage = "https://github.com/oddlama/elk-to-svg";
     license = licenses.mit;
-    maintainers = with maintainers; [oddlama];
+    maintainers = with maintainers; [ oddlama ];
     mainProgram = "elk-to-svg";
   };
 }

@@ -1,17 +1,8 @@
-{
-  config,
-  lib,
-  ...
-} @ args: let
-  inherit
-    (lib)
-    attrValues
-    flatten
-    optionalAttrs
-    ;
+{ config, lib, ... }@args:
+let
+  inherit (lib) attrValues flatten optionalAttrs;
 
-  inherit
-    (import ./lib.nix args)
+  inherit (import ./lib.nix args)
     idForInterface
     interfaceLabels
     mkDiagram
@@ -31,9 +22,7 @@
         };
         properties."portLabels.placement" = "OUTSIDE";
 
-        ports.default = mkPort {
-          labels."00-name" = mkLabel "*" 1 {};
-        };
+        ports.default = mkPort { labels."00-name" = mkLabel "*" 1 { }; };
       };
     }
   ];
@@ -48,13 +37,14 @@
 
     # Edge in network-centric view
     (optionalAttrs (interface.network != null) (
-      mkEdge (idForInterface node interface.id) "children.net:${interface.network}.ports.default" interface.virtual {
-        style = pathStyleFromNetworkStyle config.networks.${interface.network}.style;
-      }
+      mkEdge (idForInterface node interface.id) "children.net:${interface.network}.ports.default"
+        interface.virtual
+        { style = pathStyleFromNetworkStyle config.networks.${interface.network}.style; }
     ))
   ];
 
-  nodeToElk = node:
+  nodeToElk =
+    node:
     [
       # Add node to network-centric view
       {
@@ -68,7 +58,8 @@
       }
     ]
     ++ map (nodeInterfaceToElk node) (attrValues node.interfaces);
-in rec {
+in
+rec {
   diagram = mkDiagram (
     flatten (map netToElk (attrValues config.networks))
     ++ flatten (map nodeToElk (attrValues config.nodes))

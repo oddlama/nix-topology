@@ -1,14 +1,8 @@
+{ lib, pkgs, ... }@args:
+let
+  inherit (lib) mkOption types;
+in
 {
-  lib,
-  pkgs,
-  ...
-} @ args: let
-  inherit
-    (lib)
-    mkOption
-    types
-    ;
-in {
   options.renderers.elk = {
     overviews = {
       services.enable = mkOption {
@@ -29,7 +23,7 @@ in {
     };
   };
 
-  config.renderers.elk.output = pkgs.runCommand "topology-diagrams" {} ''
+  config.renderers.elk.output = pkgs.runCommand "topology-diagrams" { } ''
     mkdir -p $out
 
     cp ${(import ./main.nix args).render} $out/main.svg

@@ -1,10 +1,6 @@
-{
-  config,
-  lib,
-  ...
-} @ args: let
-  inherit
-    (lib)
+{ config, lib, ... }@args:
+let
+  inherit (lib)
     any
     attrValues
     flatten
@@ -13,8 +9,7 @@
     optionalAttrs
     ;
 
-  inherit
-    (import ./lib.nix args)
+  inherit (import ./lib.nix args)
     idForInterface
     interfaceLabels
     mkDiagram
@@ -25,40 +20,45 @@
     pathStyleFromNetworkStyle
     ;
 
-  nodeInterfaceToElk = node: interface:
+  nodeInterfaceToElk =
+    node: interface:
     [
       {
         children."node:${node.id}".ports."interface:${interface.id}" = mkPort {
-          properties = optionalAttrs (node.renderer.preferredType == "card") {
-            "port.side" = "WEST";
-          };
+          properties = optionalAttrs (node.renderer.preferredType == "card") { "port.side" = "WEST"; };
           labels = interfaceLabels interface;
         };
       }
     ]
-    ++ flatten (flip map interface.physicalConnections (
-      conn: let
-        otherInterface = config.nodes.${conn.node}.interfaces.${conn.interface};
-      in
-        optionalAttrs (
-          (!any (y: y.node == node.id && y.interface == interface.id) otherInterface.physicalConnections)
-          || (node.id < conn.node)
-        ) (
-          optional (!interface.renderer.hidePhysicalConnections && !otherInterface.renderer.hidePhysicalConnections) (
-            mkEdge
-            (idForInterface node interface.id)
-            (idForInterface config.nodes.${conn.node} conn.interface)
-            conn.renderer.reverse
-            {
-              style = optionalAttrs (interface.network != null) (
-                pathStyleFromNetworkStyle config.networks.${interface.network}.style
-              );
-            }
+    ++ flatten (
+      flip map interface.physicalConnections (
+        conn:
+        let
+          otherInterface = config.nodes.${conn.node}.interfaces.${conn.interface};
+        in
+        optionalAttrs
+          (
+            (!any (y: y.node == node.id && y.interface == interface.id) otherInterface.physicalConnections)
+            || (node.id < conn.node)
           )
-        )
-    ));
+          (
+            optional
+              (!interface.renderer.hidePhysicalConnections && !otherInterface.renderer.hidePhysicalConnections)
+              (
+                mkEdge (idForInterface node interface.id) (idForInterface config.nodes.${conn.node} conn.interface)
+                  conn.renderer.reverse
+                  {
+                    style = optionalAttrs (interface.network != null) (
+                      pathStyleFromNetworkStyle config.networks.${interface.network}.style
+                    );
+                  }
+              )
+          )
+      )
+    );
 
-  nodeToElk = node:
+  nodeToElk =
+    node:
     [
       # Add node to main view
       {
@@ -67,13 +67,12 @@
             file = config.lib.renderers.svg.node.mkPreferredRender node;
             scale = 0.8;
           };
-          properties =
-            {
-              "portLabels.placement" = "OUTSIDE";
-            }
-            // optionalAttrs (node.renderer.preferredType == "card") {
-              # "portConstraints" = "FIXED_SIDE";
-            };
+          properties = {
+            "portLabels.placement" = "OUTSIDE";
+          }
+          // optionalAttrs (node.renderer.preferredType == "card") {
+            # "portConstraints" = "FIXED_SIDE";
+          };
         };
       }
     ]
@@ -83,7 +82,7 @@
           properties."port.side" = "EAST";
           style.stroke = "#49d18d";
           style.fill = "#78dba9";
-          labels."00-name" = mkLabel "guests" 1 {};
+          labels."00-name" = mkLabel "guests" 1 { };
         };
       }
       // mkEdge "children.node:${node.parent}.ports.guests" "children.node:${node.id}" false {
@@ -92,7 +91,8 @@
       }
     )
     ++ map (nodeInterfaceToElk node) (attrValues node.interfaces);
-in rec {
+in
+rec {
   diagram = mkDiagram (
     [
       # Add legends
@@ -107,7 +107,7 @@ in rec {
             "org.eclipse.elk.priority" = 10000; # Place first!
           };
           children =
-            {}
+            { }
             // optionalAttrs config.renderers.elk.overviews.services.enable {
               services-overview = {
                 svg = {
@@ -126,14 +126,14 @@ in rec {
             };
         };
       }
-      (
-        optionalAttrs (
-          config.renderers.elk.overviews.services.enable
-          && config.renderers.elk.overviews.networks.enable
-        ) (
-          mkEdge "children.legends.children.services-overview" "children.legends.children.networks-overview" false {
-            style.stroke = "none"; # invisible
-          }
+      (optionalAttrs
+        (config.renderers.elk.overviews.services.enable && config.renderers.elk.overviews.networks.enable)
+        (
+          mkEdge "children.legends.children.services-overview" "children.legends.children.networks-overview"
+            false
+            {
+              style.stroke = "none"; # invisible
+            }
         )
       )
     ]

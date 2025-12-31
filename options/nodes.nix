@@ -1,10 +1,7 @@
-f: {
-  lib,
-  config,
-  ...
-}: let
-  inherit
-    (lib)
+f:
+{ lib, config, ... }:
+let
+  inherit (lib)
     attrValues
     elem
     flatten
@@ -17,14 +14,15 @@ f: {
     types
     ;
 in
-  f {
-    options.nodes = mkOption {
-      default = {};
-      description = ''
-        Defines nodes that are shown in the topology graph.
-        Nodes usually correspond to nixos hosts or other devices in your network.
-      '';
-      type = types.attrsOf (types.submodule (nodeSubmod: {
+f {
+  options.nodes = mkOption {
+    default = { };
+    description = ''
+      Defines nodes that are shown in the topology graph.
+      Nodes usually correspond to nixos hosts or other devices in your network.
+    '';
+    type = types.attrsOf (
+      types.submodule (nodeSubmod: {
         options = {
           id = mkOption {
             description = "The id of this node";
@@ -66,13 +64,24 @@ in
               values exist that will automatically set some other defaults, most notably
               the deviceIcon and renderer.preferredType.
             '';
-            type = types.either (types.enum ["nixos" "internet" "router" "switch" "device"]) types.str;
+            type = types.either (types.enum [
+              "nixos"
+              "internet"
+              "router"
+              "switch"
+              "device"
+            ]) types.str;
           };
 
           guestType = mkOption {
             description = "If the device is a guest of another device, this will tell the type of guest it is.";
             default = null;
-            type = types.nullOr (types.either (types.enum ["microvm" "nixos-container"]) types.str);
+            type = types.nullOr (
+              types.either (types.enum [
+                "microvm"
+                "nixos-container"
+              ]) types.str
+            );
           };
 
           deviceIcon = mkOption {
@@ -95,16 +104,20 @@ in
                 rendered as a full card, or just as an image with name. If there is no hardware
                 image, this will usually still render a small card.
               '';
-              type = types.enum ["card" "image"];
+              type = types.enum [
+                "card"
+                "image"
+              ];
               default = "card";
               defaultText = ''"card" # defaults to card but is also derived from the deviceType if possible.'';
             };
           };
         };
 
-        config = let
-          nodeCfg = nodeSubmod.config;
-        in
+        config =
+          let
+            nodeCfg = nodeSubmod.config;
+          in
           mkIf config.topology.isMainModule (mkMerge [
             {
               # Set the default icon, if an icon exists with a matching name
@@ -117,23 +130,23 @@ in
             }
 
             # If the device type is not a full nixos node, try to render it as an image with name.
-            (mkIf (elem nodeCfg.deviceType ["internet" "router" "switch" "device"]) {
-              renderer.preferredType = mkDefault "image";
-            })
+            (mkIf (elem nodeCfg.deviceType [
+              "internet"
+              "router"
+              "switch"
+              "device"
+            ]) { renderer.preferredType = mkDefault "image"; })
           ]);
-      }));
-    };
+      })
+    );
+  };
 
-    config = {
-      assertions = flatten (
-        flip map (attrValues config.nodes) (
-          node: [
-            (config.lib.assertions.iconValid
-              node.icon "nodes.${node.id}.icon")
-            (config.lib.assertions.iconValid
-              node.deviceIcon "nodes.${node.id}.deviceIcon")
-          ]
-        )
-      );
-    };
-  }
+  config = {
+    assertions = flatten (
+      flip map (attrValues config.nodes) (node: [
+        (config.lib.assertions.iconValid node.icon "nodes.${node.id}.icon")
+        (config.lib.assertions.iconValid node.deviceIcon "nodes.${node.id}.deviceIcon")
+      ])
+    );
+  };
+}
