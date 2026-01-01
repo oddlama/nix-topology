@@ -518,6 +518,12 @@ in {
         };
       };
 
+      step-ca = mkIf config.services.step-ca.enable {
+        name = "step-ca";
+        icon = "services.step-ca";
+        details.listen = mkIf config.services.step-ca.openFirewall {text = "${config.services.step-ca.address}:${toString config.services.step-ca.port}";};
+      };
+
       stirling-pdf = let
         address = config.services.stirling-pdf.environment.SERVER_HOST or null;
         port = config.services.stirling-pdf.environment.SERVER_PORT or null;
