@@ -209,6 +209,11 @@ in {
           };
         };
 
+      harmonia = mkIf (config.services.harmonia.enable || (config.services.harmonia-dev.cache.enable or false)) {
+        name = "Harmonia";
+        icon = "services.not-available";
+      };
+
       headscale = mkIf config.services.headscale.enable {
         name = "Headscale";
         icon = "services.headscale";
