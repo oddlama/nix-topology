@@ -82,4 +82,5 @@ defining the global module and adding the NixOS module to your systems:
   });
 }
 ```
+
 </details>

@@ -11,10 +11,7 @@
   ...
 }:
 let
-  inherit (lib)
-    mkOption
-    types
-    ;
+  inherit (lib) mkOption types;
 in
 {
   options = {
@@ -25,9 +22,7 @@ in
           _system: config':
           import ./. {
             inherit (config'.topology) pkgs;
-            modules = config'.topology.modules ++ [
-              { inherit (config'.topology) nixosConfigurations; }
-            ];
+            modules = config'.topology.modules ++ [ { inherit (config'.topology) nixosConfigurations; } ];
           }
         ) config.allSystems;
         defaultText = "Automatically filled by nix-topology";
@@ -40,11 +35,7 @@ in
     };
 
     perSystem = flake-parts-lib.mkPerSystemOption (
-      {
-        lib,
-        pkgs,
-        ...
-      }:
+      { lib, pkgs, ... }:
       {
         options.topology = {
           nixosConfigurations = mkOption {
