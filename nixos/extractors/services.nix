@@ -235,6 +235,13 @@ in
           };
         };
 
+      harmonia =
+        mkIf (config.services.harmonia.enable || (config.services.harmonia-dev.cache.enable or false))
+          {
+            name = "Harmonia";
+            icon = "services.not-available";
+          };
+
       headscale = mkIf config.services.headscale.enable {
         name = "Headscale";
         icon = "services.headscale";
@@ -591,6 +598,14 @@ in
         details = {
           listen.text = toString config.services.static-web-server.listen;
           root.text = toString config.services.static-web-server.root;
+        };
+      };
+
+      step-ca = mkIf config.services.step-ca.enable {
+        name = "step-ca";
+        icon = "services.step-ca";
+        details.listen = mkIf config.services.step-ca.openFirewall {
+          text = "${config.services.step-ca.address}:${toString config.services.step-ca.port}";
         };
       };
 
