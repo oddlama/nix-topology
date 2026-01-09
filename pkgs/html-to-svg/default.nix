@@ -1,7 +1,4 @@
-{
-  buildNpmPackage,
-  lib,
-}:
+{ buildNpmPackage, lib }:
 buildNpmPackage {
   pname = "html-to-svg";
   version = "1.0.0";
@@ -16,7 +13,7 @@ buildNpmPackage {
     description = "Convert satori compatible HTML to SVG";
     #homepage = "https://github.com/oddlama/html-to-svg";
     license = licenses.mit;
-    maintainers = with maintainers; [oddlama];
+    maintainers = with maintainers; [ oddlama ];
     mainProgram = "html-to-svg";
   };
 }
