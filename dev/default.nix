@@ -6,7 +6,12 @@
   ];
 
   perSystem =
-    { config, system, ... }:
+    {
+      config,
+      system,
+      pkgs,
+      ...
+    }:
     {
       _module.args.pkgs = import inputs.nixpkgs {
         inherit system;
@@ -15,6 +20,36 @@
 
       treefmt = {
         flakeCheck = false; # Already covered by git-hooks
+        settings.formatter."svg-optimizer" = {
+          includes = [ "*.svg" ];
+          command = pkgs.writeShellApplication {
+            name = "svg-optimizer";
+            runtimeInputs = with pkgs; [
+              scour
+              svgo
+            ];
+            text = ''
+              for file in "$@"; do
+                # Save original timestamp
+                ts="$(stat -c %y "$file")"
+
+                tmp="$(mktemp)"
+
+                scour --enable-viewboxing -i "$file" -o "$tmp"
+                svgo -i "$tmp" -o "$tmp"
+
+                if ! cmp -s "$file" "$tmp"; then
+                  mv "$tmp" "$file"
+                else
+                  rm "$tmp"
+                fi
+
+                # Restore timestamp
+                touch -d "$ts" "$file"
+              done
+            '';
+          };
+        };
         programs = {
           # PNG
           oxipng = {
