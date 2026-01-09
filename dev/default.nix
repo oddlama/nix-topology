@@ -1,53 +1,60 @@
 { inputs, self, ... }:
 {
   imports = with inputs; [
-    devshell.flakeModule
     git-hooks-nix.flakeModule
+    treefmt-nix.flakeModule
   ];
 
   perSystem =
-    {
-      system,
-      pkgs,
-      ...
-    }:
+    { config, system, ... }:
     {
       _module.args.pkgs = import inputs.nixpkgs {
         inherit system;
-        overlays = [
-          self.overlays.default
-          inputs.devshell.overlays.default
-        ];
+        overlays = [ self.overlays.default ];
       };
 
-      formatter = pkgs.nixfmt-tree;
+      treefmt = {
+        flakeCheck = false; # Already covered by git-hooks
+        programs = {
+          # PNG
+          oxipng = {
+            enable = true;
+            opt = "max";
+            strip = "safe";
+          };
 
-      pre-commit = {
-        check.enable = true;
-        settings.hooks = {
-          nixfmt.enable = true;
+          # Various
+          prettier = {
+            enable = true;
+            excludes = [
+              "*package-lock.json"
+              "*package.json"
+            ];
+          };
+
+          # Nix
           deadnix.enable = true;
+          nixfmt = {
+            enable = true;
+            strict = true;
+          };
           statix.enable = true;
+
+          # TOML
+          taplo.enable = true;
+          toml-sort.enable = true;
         };
       };
 
-      devshells.default = {
-        name = "nix-topology";
-
-        commands = [
-          {
-            package = pkgs.nixfmt;
-            category = "formatters";
-          }
-          {
-            package = pkgs.deadnix;
-            category = "linters";
-          }
-          {
-            package = pkgs.statix;
-            category = "linters";
-          }
-        ];
+      pre-commit = {
+        check.enable = true;
+        settings.hooks.treefmt = {
+          enable = true;
+          packageOverrides.treefmt = config.treefmt.build.wrapper;
+          pass_filenames = false;
+        };
       };
+
+      devShells.default = config.pre-commit.devShell;
     };
 }
