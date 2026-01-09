@@ -3,16 +3,16 @@
 First of all, here's a very quick overview over the codebase:
 
 - `examples/` each folder in here should contain a `flake.nix` as a user would write it for their configuration.
-   Each such example flake will automatically be evaluated and rendered in the documentation.
+  Each such example flake will automatically be evaluated and rendered in the documentation.
 - `icons/` contains all the service, device and interface icons. Placing a new file here will automatically register it.
 - `nixos/` contains anything related to the provided NixOS module. Mostly information extractors.
 - `options/` contains shared options. Shared means that all of these options will be present
-   both in the global topology module and also in each NixOS module under the `topology` option,
-   which will be merged into the global topology. If you need NixOS specific options (like extractors) or topology specific options (like renderers)
-   have a look at `nixos/module.nix` and `topology/default.nix`.
+  both in the global topology module and also in each NixOS module under the `topology` option,
+  which will be merged into the global topology. If you need NixOS specific options (like extractors) or topology specific options (like renderers)
+  have a look at `nixos/module.nix` and `topology/default.nix`.
 - `pkgs/` contains our nixpkgs overlay and packages required to render the graphs.
 - `topology/` contains anything related to the global topology module. This is where the NixOS configurations
-   are merged into the global topology and where the renderers are defined.
+  are merged into the global topology and where the renderers are defined.
 
 ## Criteria for new extractors and service extractors
 
