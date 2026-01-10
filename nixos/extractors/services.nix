@@ -517,6 +517,13 @@ in
           details.listen.text = "${config.services.paperless.address}:${toString config.services.paperless.port}";
         };
 
+      plausible = mkIf config.services.plausible.enable {
+        name = "Plausible";
+        icon = "services.plausible";
+        info = config.services.plausible.server.baseUrl;
+        details.listen.text = "${config.services.plausible.server.listenAddress}:${toString config.services.plausible.server.port}";
+      };
+
       prometheus = mkIf config.services.prometheus.enable {
         name = "Prometheus";
         icon = "services.prometheus";
