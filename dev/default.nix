@@ -36,7 +36,7 @@
                 tmp="$(mktemp)"
 
                 scour --enable-viewboxing -i "$file" -o "$tmp"
-                svgo -i "$tmp" -o "$tmp"
+                svgo --multipass -i "$tmp" -o "$tmp"
 
                 if ! cmp -s "$file" "$tmp"; then
                   mv "$tmp" "$file"
