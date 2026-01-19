@@ -22,6 +22,7 @@
         flakeCheck = false; # Already covered by git-hooks
         settings.formatter."svg-optimizer" = {
           includes = [ "*.svg" ];
+          excludes = [ "icons/services/mpd.svg" ];
           command = pkgs.writeShellApplication {
             name = "svg-optimizer";
             runtimeInputs = with pkgs; [
@@ -85,8 +86,9 @@
         check.enable = true;
         settings.hooks.treefmt = {
           enable = true;
+          excludes = [ "mpd\\.svg" ];
           packageOverrides.treefmt = config.treefmt.build.wrapper;
-          pass_filenames = false;
+          pass_filenames = true;
         };
       };
 
