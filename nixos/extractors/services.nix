@@ -342,6 +342,12 @@ in
         details.listen.text = config.services.kanidm.serverSettings.bindaddress;
       };
 
+      kavita = mkIf config.services.kavita.enable {
+        name = "Kavita";
+        icon = "services.kavita";
+        details.listen.text = "0.0.0.0:${toString config.services.kavita.settings.Port}";
+      };
+
       komga = mkIf config.services.komga.enable {
         name = "Komga";
         icon = "services.komga";
