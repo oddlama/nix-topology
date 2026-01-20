@@ -100,6 +100,16 @@
                 };
               };
 
+              services.vaultwarden = {
+                enable = true;
+                config = {
+                  rocketAddress = "0.0.0.0";
+                  rocketPort = 8012;
+                  domain = "https://anothervault.example.com/";
+                  # ...
+                };
+              };
+
               containers.test.config = {
                 imports = [ nix-topology.nixosModules.default ];
                 networking.hostName = "host2-test";

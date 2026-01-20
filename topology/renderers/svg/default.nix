@@ -8,10 +8,13 @@ let
   inherit (lib)
     attrValues
     concatLines
+    concatMap
     filter
     flip
+    groupBy
     hasSuffix
     head
+    length
     mkOption
     optionalString
     sort
@@ -90,7 +93,7 @@ let
       </div>
     '';
 
-    mkCardContainer = mkRootContainer "bg-[#101419] rounded-xl";
+    mkCardContainer = mkRootContainer "bg-[#101419] rounded-xl min-w-[30rem]";
 
     spacingMt2 = ''
       <div tw="flex mt-2"></div>
@@ -129,7 +132,6 @@ let
       };
 
       mkOverview = {
-        width = 480;
         html = mkCardContainer /* html */ ''
           <div tw="flex flex-row mx-6 mt-2 items-center">
             <h2 tw="text-2xl font-bold">Networks Overview</h2>
@@ -294,28 +296,62 @@ let
     };
 
     services.mkOverview = {
-      width = 480;
       html = mkCardContainer /* html */ ''
         <div tw="flex flex-row mx-6 mt-2 items-center">
           <h2 tw="text-2xl font-bold">Services Overview</h2>
         </div>
 
-        ${concatLines (
-          flip map (attrValues config.nodes) (
-            node:
-            let
-              services = filter (x: !x.hidden) (attrValues node.services);
-            in
-            concatLines (
-              flip map services (
-                html.node.mkService {
-                  additionalInfo = ''<p tw="text-sm text-[#7a899f] m-0">${node.name}</p>'';
+        ${
+          let
+            allServices = concatMap (
+              node:
+              let
+                nodeServices = filter (s: !s.hidden) (attrValues node.services);
+              in
+              map (s: s // { nodeName = node.name; }) nodeServices
+            ) (attrValues config.nodes);
+            groupedServices = groupBy (s: s.name) allServices;
+            sortedNames = sort (a: b: a < b) (lib.attrNames groupedServices);
+          in
+          concatLines (
+            flip map sortedNames (
+              name:
+              let
+                services = groupedServices.${name};
+                count = length services;
+              in
+              if count > 1 then
+                let
+                  sortedServices = sort (a: b: a.nodeName < b.nodeName) services;
+                  mainService = (head services) // {
+                    info = "";
+                  };
+                  rows = flip map sortedServices (s: /* html */ ''
+                    <div tw="flex flex-row mt-1">
+                       <span tw="text-sm text-[#7a899f]">${s.nodeName}</span>
+                       <span tw="flex grow"></span>
+                       ${optionalString (
+                         s.info != ""
+                       ) ''<span tw="text-sm text-[#e3e6eb] text-right pl-4">${s.info}</span>''}
+                    </div>
+                  '');
+                  additionalInfo = concatLines rows;
+                in
+                flip html.node.mkService mainService {
+                  inherit additionalInfo;
                   includeDetails = false;
                 }
-              )
+              else
+                let
+                  service = head services;
+                in
+                flip html.node.mkService service {
+                  additionalInfo = /* html */ ''<p tw="text-sm text-[#7a899f] m-0">${service.nodeName}</p>'';
+                  includeDetails = false;
+                }
             )
           )
-        )}
+        }
 
         ${spacingMt2}
       '';
