@@ -547,7 +547,9 @@ in
       postgresql = mkIf config.services.postgresql.enable {
         name = "PostgreSQL";
         icon = "services.postgresql";
-        details.listen.text = "0.0.0.0:${toString config.services.postgresql.settings.port}";
+        details.listen = mkIf config.services.postgresql.enableTCPIP {
+          text = "0.0.0.0:${toString config.services.postgresql.settings.port}";
+        };
       };
 
       prometheus = mkIf config.services.prometheus.enable {
