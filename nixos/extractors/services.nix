@@ -530,6 +530,12 @@ in
         details.listen.text = "${config.services.plausible.server.listenAddress}:${toString config.services.plausible.server.port}";
       };
 
+      postgresql = mkIf config.services.postgresql.enable {
+        name = "PostgreSQL";
+        icon = "services.postgresql";
+        details.listen.text = "0.0.0.0:${toString config.services.postgresql.settings.port}";
+      };
+
       prometheus = mkIf config.services.prometheus.enable {
         name = "Prometheus";
         icon = "services.prometheus";
