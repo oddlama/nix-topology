@@ -93,7 +93,7 @@ let
       </div>
     '';
 
-    mkCardContainer = mkRootContainer "bg-[#101419] rounded-xl";
+    mkCardContainer = mkRootContainer "bg-[#101419] rounded-xl min-w-[30rem]";
 
     spacingMt2 = ''
       <div tw="flex mt-2"></div>
@@ -132,7 +132,6 @@ let
       };
 
       mkOverview = {
-        width = 480;
         html = mkCardContainer /* html */ ''
           <div tw="flex flex-row mx-6 mt-2 items-center">
             <h2 tw="text-2xl font-bold">Networks Overview</h2>
@@ -297,7 +296,6 @@ let
     };
 
     services.mkOverview = {
-      width = 480;
       html = mkCardContainer /* html */ ''
         <div tw="flex flex-row mx-6 mt-2 items-center">
           <h2 tw="text-2xl font-bold">Services Overview</h2>
