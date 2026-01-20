@@ -396,6 +396,20 @@ in
         info = "https://${config.services.mastodon.localDomain}";
       };
 
+      matrix-synapse =
+        let
+          address = config.services.matrix-synapse.settings.public_baseurl or null;
+          listener = builtins.head config.services.matrix-synapse.settings.listeners or null;
+        in
+        mkIf config.services.matrix-synapse.enable {
+          name = "Matrix (Synapse)";
+          icon = "services.matrix";
+          info = mkIf (address != null) address;
+          details.listen.text = mkIf (
+            listener != null
+          ) "${builtins.head listener.bind_addresses}:${builtins.toString listener.port}";
+        };
+
       meilisearch = mkIf config.services.meilisearch.enable {
         name = "Meilisearch";
         icon = "services.meilisearch";
