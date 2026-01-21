@@ -436,6 +436,17 @@ in
           );
         };
 
+      mpd = mkIf config.services.mpd.enable {
+        name = "MPD";
+        icon = "services.mpd";
+        details.listen.text = "${
+          if (config.services.mpd.network.listenAddress == "any") then
+            "0.0.0.0"
+          else
+            config.services.mpd.network.listenAddress
+        }:${toString config.services.mpd.network.port}";
+      };
+
       navidrome = mkIf config.services.navidrome.enable {
         name = "Navidrome";
         icon = "services.navidrome";
