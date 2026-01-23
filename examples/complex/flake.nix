@@ -112,13 +112,13 @@
 
               containers.test.config = {
                 imports = [ nix-topology.nixosModules.default ];
-                networking.hostName = "host2-test";
+                networking.hostName = "host2-test-with-a-long-name";
               };
 
               # We can change our own node's topology settings from here:
               topology.self = {
                 name = "☄️  Powerful host2";
-                hardware.info = "2U Server with loads of RAM";
+                hardware.info = "2U Server with loads of RAM and a really long description";
                 interfaces.wg0 = {
                   addresses = [ "10.0.0.2" ];
                   # Rendering virtual connections such as wireguard connections can sometimes
