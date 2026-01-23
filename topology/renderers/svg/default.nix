@@ -231,13 +231,13 @@ let
           html = mkCardContainer /* html */ ''
             <div tw="flex flex-row mx-6 mt-2 items-center">
               ${mkImageMaybe "w-8 h-8 mr-4" (config.lib.icons.get node.icon)}
-              <div tw="flex flex-col min-h-18 justify-center">
+              <div tw="flex flex-col min-h-18 justify-center flex-1 min-w-0">
                 <span tw="text-2xl font-bold">${node.name}</span>
                 ${optionalString (
                   node.hardware.info != null
                 ) ''<span tw="text-xs">${node.hardware.info}</span>''}
               </div>
-              <div tw="flex grow min-w-8"></div>
+              <div tw="flex min-w-8"></div>
               ${mkImageMaybe "w-12 h-12 ml-4" (config.lib.icons.get node.deviceIcon)}
             </div>
 
@@ -263,7 +263,7 @@ let
           mkRootContainer "items-center" /* html */ ''
             <div tw="flex flex-row mx-6 mt-2 items-center">
               ${mkImageMaybe "w-8 h-8 mr-4" (config.lib.icons.get node.icon)}
-              <div tw="flex flex-col min-h-18 justify-center">
+              <div tw="flex flex-col min-h-18 justify-center flex-1 min-w-0">
                 <span tw="text-2xl font-bold">${node.name}</span>
                 ${optionalString (
                   node.hardware.info != null
@@ -272,7 +272,7 @@ let
               ${optionalString
                 (deviceIconImage != null && node.hardware.image != null -> deviceIconImage != node.hardware.image)
                 ''
-                  <div tw="flex grow min-w-4"></div>
+                  <div tw="flex min-w-4"></div>
                   ${mkImageMaybe "w-12 h-12" deviceIconImage}
                 ''
               }
