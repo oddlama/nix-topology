@@ -410,6 +410,17 @@ in
           ) "${builtins.head listener.bind_addresses}:${builtins.toString listener.port}";
         };
 
+      mautrix-telegram =
+        let
+          address = config.services.mautrix-telegram.settings.appservice.hostname or null;
+          port = config.services.mautrix-telegram.settings.appservice.port or null;
+        in
+        mkIf config.services.mautrix-telegram.enable {
+          name = "mautrix-telegram";
+          icon = "services.mautrix-telegram";
+          details.listen.text = mkIf (address != null && port != null) "${address}:${builtins.toString port}";
+        };
+
       meilisearch = mkIf config.services.meilisearch.enable {
         name = "Meilisearch";
         icon = "services.meilisearch";
