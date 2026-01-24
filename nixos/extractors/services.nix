@@ -410,6 +410,17 @@ in
           ) "${builtins.head listener.bind_addresses}:${builtins.toString listener.port}";
         };
 
+      mautrix-signal =
+        let
+          address = config.services.mautrix-signal.settings.appservice.hostname or null;
+          port = config.services.mautrix-signal.settings.appservice.port or null;
+        in
+        mkIf config.services.mautrix-signal.enable {
+          name = "mautrix-signal";
+          icon = "services.mautrix-signal";
+          details.listen.text = mkIf (address != null && port != null) "${address}:${builtins.toString port}";
+        };
+
       meilisearch = mkIf config.services.meilisearch.enable {
         name = "Meilisearch";
         icon = "services.meilisearch";
