@@ -197,7 +197,7 @@ let
         service: /* html */ ''
           <div tw="flex flex-col mx-4 mt-2 rounded-lg p-2">
             <div tw="flex flex-row items-center">
-              ${mkImage "w-12 h-12 mr-4 rounded-lg" (config.lib.icons.get service.icon)}
+              ${mkImage "w-12 h-12 mr-4" (config.lib.icons.get service.icon)}
               <div tw="flex flex-col grow">
                 <h1 tw="text-lg font-bold m-0">${service.name}</h1>
                 ${optionalString (service.info != "") ''<p tw="text-sm m-0 pr-6">${service.info}</p>''}
