@@ -440,11 +440,11 @@ in
         name = "MPD";
         icon = "services.mpd";
         details.listen.text = "${
-          if (config.services.mpd.network.listenAddress == "any") then
+          if (config.services.mpd.settings.bind_to_address == "any") then
             "0.0.0.0"
           else
-            config.services.mpd.network.listenAddress
-        }:${toString config.services.mpd.network.port}";
+            config.services.mpd.settings.bind_to_address
+        }:${toString config.services.mpd.settings.port}";
       };
 
       navidrome = mkIf config.services.navidrome.enable {
