@@ -45,6 +45,13 @@
               };
             };
 
+            virtualisation.oci-containers.backend = "docker";
+            virtualisation.oci-containers.containers = {
+              test = {
+                image = "test/test:latest";
+              };
+            };
+
             # We can change our own node's topology settings from here:
             topology.self.name = "🧱  Small Firewall";
             topology.self.interfaces.wg0 = {
@@ -107,6 +114,18 @@
                   rocketPort = 8012;
                   domain = "https://anothervault.example.com/";
                   # ...
+                };
+              };
+
+              virtualisation.oci-containers.backend = "podman";
+              virtualisation.oci-containers.containers = {
+                test = {
+                  image = "test/test@digest";
+
+                  ports = [ "4242:80" ];
+
+                  volumes = [ "/test:/mnt" ];
+
                 };
               };
 
