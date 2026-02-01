@@ -217,6 +217,7 @@ let
               <p tw="text-sm m-0">${guest.guestType}</p>
             </div>
           </div>
+          ${optionalString (guest.services ? _guestInfo) (serviceDetails guest.services._guestInfo)}
         </div>
       '';
 
