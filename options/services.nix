@@ -40,9 +40,10 @@ f {
                     description = "The name of this service";
                     type = types.str;
                     default =
-                      if submod.config.serviceId != null
-                      then config.serviceRegistry.${submod.config.serviceId}.name
-                      else submod.config.id;
+                      if submod.config.serviceId != null then
+                        config.serviceRegistry.${submod.config.serviceId}.name
+                      else
+                        submod.config.id;
                   };
 
                   hidden = mkOption {
@@ -55,14 +56,18 @@ f {
                     description = "The icon for this service. Must be a path to an image or a valid icon name (<category>.<name>).";
                     type = types.nullOr (types.either types.path types.str);
                     default =
-                      if submod.config.serviceId != null
-                      then (config.serviceRegistry.${submod.config.serviceId}.icon or null)
-                      else null;
+                      if submod.config.serviceId != null then
+                        (config.serviceRegistry.${submod.config.serviceId}.icon or null)
+                      else
+                        null;
                   };
 
                   source = mkOption {
                     description = "The source of this service, e.g. the extractor that provides it";
-                    type = types.enum ["nixos" "oci"];
+                    type = types.enum [
+                      "nixos"
+                      "oci"
+                    ];
                     default = "nixos";
                   };
 
@@ -119,16 +124,14 @@ f {
     assertions = flatten (
       flip map (attrValues config.nodes) (
         node:
-          flip map (attrValues node.services) (
-            service: [
-              (config.lib.assertions.iconValid
-                service.icon "nodes.${node.id}.services.${service.id}")
-              (mkIf (service.serviceId != null && !hasPrefix "restic-backup-" service.serviceId) {
-                assertion = config.serviceRegistry ? ${service.serviceId};
-                message = "serviceId '${service.serviceId}' for nodes.${node.id}.services.${service.id} is not defined in topology.serviceRegistry";
-              })
-            ]
-          )
-      ));
-    };
-  }
+        flip map (attrValues node.services) (service: [
+          (config.lib.assertions.iconValid service.icon "nodes.${node.id}.services.${service.id}")
+          (mkIf (service.serviceId != null && !hasPrefix "restic-backup-" service.serviceId) {
+            assertion = config.serviceRegistry ? ${service.serviceId};
+            message = "serviceId '${service.serviceId}' for nodes.${node.id}.services.${service.id} is not defined in topology.serviceRegistry";
+          })
+        ])
+      )
+    );
+  };
+}

@@ -996,7 +996,7 @@ in
         "navidrome"
       ];
       enabled = cfg: cfg.enable or false;
-      infoFn = cfg: mkIf (cfg.settings ? BaseUrl) cfg.settings.BaseUrl;
+      infoFn = cfg: mkIf (cfg.settings ? Address) cfg.settings.Address;
       detailsFn =
         cfg:
         mkIf cfg.openFirewall {
