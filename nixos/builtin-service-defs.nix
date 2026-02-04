@@ -336,8 +336,10 @@ in
       enabled = cfg: cfg.enable or false;
       infoFn = cfg: mkIf (cfg.settings ? server.ROOT_URL) cfg.settings.server.ROOT_URL;
       detailsFn = cfg: {
-        name =
-          if cfg.settings ? DEFAULT.APP_NAME then "Forgejo (${cfg.settings.DEFAULT.APP_NAME})" else "Forgejo";
+        name = {
+          text =
+            if cfg.settings ? DEFAULT.APP_NAME then "Forgejo (${cfg.settings.DEFAULT.APP_NAME})" else "Forgejo";
+        };
         listen = mkIf (
           (cfg.settings.server.HTTP_ADDR or null) != null && (cfg.settings.server.HTTP_PORT or null) != null
         ) { text = "${cfg.settings.server.HTTP_ADDR}:${toString cfg.settings.server.HTTP_PORT}"; };
@@ -358,8 +360,10 @@ in
       enabled = cfg: cfg.enable or false;
       infoFn = cfg: mkIf (cfg.settings ? server.ROOT_URL) cfg.settings.server.ROOT_URL;
       detailsFn = cfg: {
-        name =
-          if cfg.settings ? DEFAULT.APP_NAME then "gitea (${cfg.settings.DEFAULT.APP_NAME})" else "gitea";
+        name = {
+          text =
+            if cfg.settings ? DEFAULT.APP_NAME then "gitea (${cfg.settings.DEFAULT.APP_NAME})" else "gitea";
+        };
         listen = mkIf (
           (cfg.settings.server.HTTP_ADDR or null) != null && (cfg.settings.server.HTTP_PORT or null) != null
         ) { text = "${cfg.settings.server.HTTP_ADDR}:${toString cfg.settings.server.HTTP_PORT}"; };
