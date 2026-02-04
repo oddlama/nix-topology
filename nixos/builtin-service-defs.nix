@@ -129,7 +129,7 @@ in
           mapAttrsToList (name: v: {
             inherit name;
             value = {
-              text = "${v.settings.server.host}:${toString v.settings.server.port}";
+              text = v.settings.server.address or "${v.settings.server.host}:${toString v.settings.server.port}";
             };
           }) instances
         );
@@ -340,9 +340,12 @@ in
           text =
             if cfg.settings ? DEFAULT.APP_NAME then "Forgejo (${cfg.settings.DEFAULT.APP_NAME})" else "Forgejo";
         };
-        listen = mkIf (
-          (cfg.settings.server.HTTP_ADDR or null) != null && (cfg.settings.server.HTTP_PORT or null) != null
-        ) { text = "${cfg.settings.server.HTTP_ADDR}:${toString cfg.settings.server.HTTP_PORT}"; };
+        listen =
+          let
+            addr = cfg.settings.server.HTTP_ADDR or null;
+            port = cfg.settings.server.HTTP_PORT or null;
+          in
+          mkIf (addr != null && port != null) { text = "${addr}:${toString port}"; };
       };
     };
     oci = {
@@ -364,9 +367,12 @@ in
           text =
             if cfg.settings ? DEFAULT.APP_NAME then "gitea (${cfg.settings.DEFAULT.APP_NAME})" else "gitea";
         };
-        listen = mkIf (
-          (cfg.settings.server.HTTP_ADDR or null) != null && (cfg.settings.server.HTTP_PORT or null) != null
-        ) { text = "${cfg.settings.server.HTTP_ADDR}:${toString cfg.settings.server.HTTP_PORT}"; };
+        listen =
+          let
+            addr = cfg.settings.server.HTTP_ADDR or null;
+            port = cfg.settings.server.HTTP_PORT or null;
+          in
+          mkIf (addr != null && port != null) { text = "${addr}:${toString port}"; };
       };
     };
     oci = {
@@ -408,14 +414,17 @@ in
       ];
       enabled = cfg: cfg.enable or false;
       infoFn = cfg: cfg.settings.server.root_url;
-      detailsFn = cfg: {
-        listen = mkIf (
-          (cfg.settings.server.http_addr or null) != null && (cfg.settings.server.http_port or null) != null
-        ) { text = "${cfg.settings.server.http_addr}:${toString cfg.settings.server.http_port}"; };
-        plugins = mkIf ((cfg.declarativePlugins or null) != null) {
-          text = concatStringsSep "\n" (map (p: p.name) cfg.declarativePlugins);
+      detailsFn =
+        cfg:
+        let
+          addr = cfg.settings.server.http_addr or null;
+          port = cfg.settings.server.http_port or null;
+          plugins = cfg.declarativePlugins or null;
+        in
+        {
+          listen = mkIf (addr != null && port != null) { text = "${addr}:${toString port}"; };
+          plugins = mkIf (plugins != null) { text = concatStringsSep "\n" (map (p: p.name) plugins); };
         };
-      };
     };
     oci = {
       repos = [
@@ -813,16 +822,15 @@ in
       enabled = cfg: cfg.enable or false;
       detailsFn =
         cfg:
-        mkIf
-          (
-            (cfg.configuration.server.http_listen_address or null) != null
-            && (cfg.configuration.server.http_listen_port or null) != null
-          )
-          {
-            listen = {
-              text = "${cfg.configuration.server.http_listen_address}:${toString cfg.configuration.server.http_listen_port}";
-            };
+        let
+          addr = cfg.configuration.server.http_listen_address or null;
+          port = cfg.configuration.server.http_listen_port or null;
+        in
+        mkIf (addr != null && port != null) {
+          listen = {
+            text = "${addr}:${toString port}";
           };
+        };
     };
     oci = {
       repos = [ "grafana/loki" ];
@@ -1190,7 +1198,12 @@ in
         "paperless"
       ];
       enabled = cfg: cfg.enable or false;
-      infoFn = cfg: mkIf ((cfg.settings.PAPERLESS_URL or null) != null) cfg.settings.PAPERLESS_URL;
+      infoFn =
+        cfg:
+        let
+          url = cfg.settings.PAPERLESS_URL or null;
+        in
+        mkIf (url != null) url;
       detailsFn = cfg: {
         listen = {
           text = "${cfg.address}:${toString cfg.port}";
