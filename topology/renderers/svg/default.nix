@@ -246,7 +246,7 @@ let
               node.interfaces != { }
             ) ''<div tw="flex flex-row flex-wrap items-center my-2 mx-3">''}
             ${concatLines (map mkInterface (attrValues node.interfaces))}
-            ${optionalString (node.interfaces != { }) ''</div>''}
+            ${optionalString (node.interfaces != { }) "</div>"}
 
             ${concatLines (map mkGuest guests)}
             ${optionalString (guests != [ ]) spacingMt2}

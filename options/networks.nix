@@ -130,7 +130,7 @@ f {
             }
             // optionalAttrs config.topology.isMainModule {
               default = lazyValue computedStyles.${networkSubmod.config.id};
-              defaultText = ''<one of the unused predefined styles>'';
+              defaultText = "<one of the unused predefined styles>";
             };
 
           cidrv4 = mkOption {
