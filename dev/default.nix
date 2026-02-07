@@ -93,5 +93,39 @@
       };
 
       devShells.default = config.pre-commit.devShell;
+
+      checks = inputs.nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
+        service-defs =
+          let
+            checkPkgs = import inputs.nixpkgs {
+              inherit system;
+              overlays = [ self.overlays.default ];
+              config.allowUnfree = true;
+            };
+
+            nixos = inputs.nixpkgs.lib.nixosSystem {
+              inherit system;
+              modules = [
+                self.nixosModules.default
+                ../tests/service-defs/test-module.nix
+              ];
+            };
+
+            topology = import self {
+              pkgs = checkPkgs;
+              modules = [ { nixosConfigurations.test-services = nixos; } ];
+            };
+          in
+          checkPkgs.runCommand "check-service-defs"
+            {
+              topologyOutput = topology.config.output;
+              nixosToplevel = nixos.config.system.build.toplevel;
+            }
+            ''
+              echo "Topology output: $topologyOutput"
+              ls -la "$topologyOutput"
+              touch $out
+            '';
+      };
     };
 }

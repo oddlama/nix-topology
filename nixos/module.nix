@@ -21,7 +21,9 @@ let
     "nodes"
     "networks"
     "icons"
+    "serviceRegistry"
   ];
+  serviceDefs = import ./builtin-service-defs.nix { inherit lib; };
 in
 {
   imports = [
@@ -44,6 +46,7 @@ in
         # The config should only be applied on the toplevel topology module,
         # not for each nixos node.
         config = { };
+        config.topology.serviceRegistry = serviceDefs;
       }
     )
   );
