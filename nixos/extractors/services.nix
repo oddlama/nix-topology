@@ -160,6 +160,16 @@ in
         icon = "services.fail2ban";
       };
 
+      firefly-iii =
+        let
+          address = config.services.firefly-iii.settings.APP_URL or null;
+        in
+        mkIf config.services.firefly-iii.enable {
+          name = "Firefly III";
+          icon = "services.firefly-iii";
+          info = mkIf (address != null) address;
+        };
+
       firefox-syncserver = mkIf config.services.firefox-syncserver.enable (
         {
           name = "Firefox Syncserver";
