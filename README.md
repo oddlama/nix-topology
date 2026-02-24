@@ -193,7 +193,6 @@ Yep, there's still a lot that could be added or improved.
 
 #### Information Gathering (Extractors)
 
-- Podman / docker harvesting
 - networking.interfaces extractor
 - Disks (from disko) + render
 - Impermanence render?
