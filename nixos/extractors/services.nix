@@ -345,6 +345,7 @@ in
         };
       };
 
+      # TODO: Remove old options when 26.11 is released
       kanidm = mkIf (config.services.kanidm.server.enable or config.services.kanidm.enableServer) {
         name = "Kanidm";
         icon = "services.kanidm";
