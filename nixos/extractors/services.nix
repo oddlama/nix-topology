@@ -107,7 +107,7 @@ in
             # Turn the (possibly multiple) strings in the list into a single string
             concatStringsSep " " (
               # Remove the prefix and suffix, so only the list of hosts are left
-              builtins.map (line: removePrefix "reverse_proxy " (removeSuffix " {" line)) (
+              map (line: removePrefix "reverse_proxy " (removeSuffix " {" line)) (
                 # Filter out lines that don't start with reverse_proxy
                 filter (line: hasPrefix "reverse_proxy " line) (
                   splitString "\n" config.services.caddy.virtualHosts.${name}.extraConfig
@@ -239,14 +239,12 @@ in
           info = config.services.grafana.settings.server.root_url;
           details = {
             listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
-            plugins = mkIf (plugins != null) {
-              text = concatStringsSep "\n" (builtins.map (p: p.name) plugins);
-            };
+            plugins = mkIf (plugins != null) { text = concatStringsSep "\n" (map (p: p.name) plugins); };
           };
         };
 
       harmonia =
-        mkIf (config.services.harmonia.enable || (config.services.harmonia-dev.cache.enable or false))
+        mkIf (config.services.harmonia.cache.enable || (config.services.harmonia-dev.cache.enable or false))
           {
             name = "Harmonia";
             icon = "services.not-available";
@@ -421,7 +419,7 @@ in
           info = mkIf (address != null) address;
           details.listen.text = mkIf (
             listener != null
-          ) "${builtins.head listener.bind_addresses}:${builtins.toString listener.port}";
+          ) "${builtins.head listener.bind_addresses}:${toString listener.port}";
         };
 
       mautrix-signal =
@@ -432,7 +430,7 @@ in
         mkIf config.services.mautrix-signal.enable {
           name = "mautrix-signal";
           icon = "services.mautrix-signal";
-          details.listen.text = mkIf (address != null && port != null) "${address}:${builtins.toString port}";
+          details.listen.text = mkIf (address != null && port != null) "${address}:${toString port}";
         };
 
       mautrix-telegram =
@@ -443,7 +441,7 @@ in
         mkIf config.services.mautrix-telegram.enable {
           name = "mautrix-telegram";
           icon = "services.mautrix-telegram";
-          details.listen.text = mkIf (address != null && port != null) "${address}:${builtins.toString port}";
+          details.listen.text = mkIf (address != null && port != null) "${address}:${toString port}";
         };
 
       mautrix-whatsapp =
@@ -454,7 +452,7 @@ in
         mkIf config.services.mautrix-whatsapp.enable {
           name = "mautrix-whatsapp";
           icon = "services.mautrix-whatsapp";
-          details.listen.text = mkIf (address != null && port != null) "${address}:${builtins.toString port}";
+          details.listen.text = mkIf (address != null && port != null) "${address}:${toString port}";
         };
 
       meilisearch = mkIf config.services.meilisearch.enable {
