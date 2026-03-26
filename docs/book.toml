@@ -1,6 +1,5 @@
 [book]
 authors = ["oddlama"]
 language = "en"
-multilingual = false
 src = "src"
 title = "nix-topology"
