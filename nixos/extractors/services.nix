@@ -88,6 +88,12 @@ in
           );
         };
 
+      bentopdf = mkIf config.services.bentopdf.enable {
+        name = "BentoPDF";
+        icon = "services.bentopdf";
+        info = "https://${config.services.bentopdf.domain}";
+      };
+
       blocky = mkIf config.services.blocky.enable {
         name = "Blocky";
         icon = "services.blocky";
