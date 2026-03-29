@@ -88,7 +88,7 @@ in
           );
         };
 
-      bentopdf = mkIf config.services.bentopdf.enable {
+      bentopdf = mkIf (config.services.bentopdf.enable or false) {
         name = "BentoPDF";
         icon = "services.bentopdf";
         info = "https://${config.services.bentopdf.domain}";
