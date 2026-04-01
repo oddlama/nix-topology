@@ -12,6 +12,7 @@ let
     forEach
     head
     imap0
+    imap1
     length
     listToAttrs
     mapAttrs
@@ -569,6 +570,23 @@ in
           in
           mkMerge reverseProxies;
       };
+
+      ntpd-rs =
+        let
+          ntpServers = config.services.ntpd-rs.settings.server or [ ];
+        in
+        mkIf (config.services.ntpd-rs.enable && ntpServers != [ ]) {
+          name = "NTPd-rs";
+          icon = "services.ntpd-rs";
+          details = listToAttrs (
+            flip imap1 ntpServers (
+              i: server: {
+                name = "server ${toString i} listen";
+                value.text = server.listen;
+              }
+            )
+          );
+        };
 
       oauth2-proxy = mkIf config.services.oauth2-proxy.enable {
         name = "OAuth2 Proxy";
