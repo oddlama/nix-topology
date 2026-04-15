@@ -11,6 +11,7 @@ let
     forEach
     head
     imap0
+    imap1
     listToAttrs
     mapAttrs
     mapAttrsToList
@@ -90,7 +91,7 @@ in
           ];
         };
 
-      bentopdf = mkIf config.services.bentopdf.enable {
+      bentopdf = mkIf (config.services.bentopdf.enable or false) {
         name = "BentoPDF";
         icon = "services.bentopdf";
         info = "https://${config.services.bentopdf.domain}";
@@ -473,12 +474,28 @@ in
           details.listen.text = mkIf (address != null && port != null) "${address}:${toString port}";
         };
 
+      mealie = mkIf config.services.mealie.enable {
+        name = "Mealie";
+        icon = "services.mealie";
+        details.listen.text = "${config.services.mealie.listenAddress}:${toString config.services.mealie.port}";
+      };
+
       meilisearch = mkIf config.services.meilisearch.enable {
         name = "Meilisearch";
         icon = "services.meilisearch";
         details.listen.text = "${config.services.meilisearch.listenAddress}:${toString config.services.meilisearch.listenPort}";
       };
 
+      mimir =
+        let
+          address = config.services.mimir.configuration.server.http_listen_address or null;
+          port = config.services.mimir.configuration.server.http_listen_port or null;
+        in
+        mkIf config.services.mimir.enable {
+          name = "Mimir";
+          icon = "services.mimir";
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
+        };
       mosquitto =
         let
           listeners = forEach config.services.mosquitto.listeners (l: rec {
@@ -559,6 +576,23 @@ in
           in
           mkMerge reverseProxies;
       };
+
+      ntpd-rs =
+        let
+          ntpServers = config.services.ntpd-rs.settings.server or [ ];
+        in
+        mkIf (config.services.ntpd-rs.enable && ntpServers != [ ]) {
+          name = "NTPd-rs";
+          icon = "services.ntpd-rs";
+          details = listToAttrs (
+            flip imap1 ntpServers (
+              i: server: {
+                name = "server ${toString i} listen";
+                value.text = server.listen;
+              }
+            )
+          );
+        };
 
       oauth2-proxy = mkIf config.services.oauth2-proxy.enable {
         name = "OAuth2 Proxy";
@@ -732,6 +766,17 @@ in
         details.listen.text = "${config.services.tabby.host}:${toString config.services.tabby.port}";
       };
 
+      tempo =
+        let
+          address = config.services.tempo.settings.server.http_listen_address or null;
+          port = config.services.tempo.settings.server.http_listen_port or null;
+        in
+        mkIf config.services.tempo.enable {
+          name = "Tempo";
+          icon = "services.tempo";
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${port}"; };
+        };
+
       tor = mkIf config.services.tor.enable {
         name = "Tor";
         icon = "services.tor";
@@ -794,6 +839,15 @@ in
           info = mkIf (domain != null) domain;
           details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
         };
+
+      vikunja = mkIf config.services.vikunja.enable {
+        name = "Vikunja";
+        icon = "services.vikunja";
+        info = "${config.services.vikunja.frontendScheme}://${config.services.vikunja.frontendHostname}";
+        details.listen = mkIf (config.services.vikunja ? address) {
+          text = "${config.services.vikunja.address}:${toString config.services.vikunja.port}";
+        };
+      };
 
       zigbee2mqtt =
         let
