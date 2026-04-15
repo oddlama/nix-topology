@@ -480,6 +480,12 @@ in
           details.listen.text = mkIf (address != null && port != null) "${address}:${toString port}";
         };
 
+      mealie = mkIf config.services.mealie.enable {
+        name = "Mealie";
+        icon = "services.mealie";
+        details.listen.text = "${config.services.mealie.listenAddress}:${toString config.services.mealie.port}";
+      };
+
       meilisearch = mkIf config.services.meilisearch.enable {
         name = "Meilisearch";
         icon = "services.meilisearch";
