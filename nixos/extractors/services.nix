@@ -492,6 +492,16 @@ in
         details.listen.text = "${config.services.meilisearch.listenAddress}:${toString config.services.meilisearch.listenPort}";
       };
 
+      mimir =
+        let
+          address = config.services.mimir.configuration.server.http_listen_address or null;
+          port = config.services.mimir.configuration.server.http_listen_port or null;
+        in
+        mkIf config.services.mimir.enable {
+          name = "Mimir";
+          icon = "services.mimir";
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
+        };
       mosquitto =
         let
           listeners = flip map config.services.mosquitto.listeners (l: rec {
