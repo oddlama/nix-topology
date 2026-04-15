@@ -776,6 +776,17 @@ in
         details.listen.text = "${config.services.tabby.host}:${toString config.services.tabby.port}";
       };
 
+      tempo =
+        let
+          address = config.services.tempo.settings.server.http_listen_address or null;
+          port = config.services.tempo.settings.server.http_listen_port or null;
+        in
+        mkIf config.services.tempo.enable {
+          name = "Tempo";
+          icon = "services.tempo";
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${port}"; };
+        };
+
       tor =
         let
           _tor = config.services.tor;
