@@ -633,6 +633,12 @@ in
         info = "port: ${concatStringsSep ", " (map toString config.services.openssh.ports)}";
       };
 
+      outline = mkIf config.services.outline.enable {
+        name = "Outline";
+        icon = "services.outline";
+        details.listen.text = "${config.services.outline.publicUrl}";
+      };
+
       owncast = mkIf config.services.owncast.enable {
         name = "Owncast";
         icon = "services.owncast";
