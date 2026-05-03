@@ -5,7 +5,6 @@ let
     genAttrs
     concatLines
     concatStringsSep
-    elemAt
     filterAttrs
     flatten
     flip
@@ -13,7 +12,6 @@ let
     head
     imap0
     imap1
-    length
     listToAttrs
     mapAttrs
     mapAttrsToList
@@ -24,6 +22,7 @@ let
     optional
     optionalString
     optionalAttrs
+    pipe
     replaceStrings
     splitString
     removePrefix
@@ -79,14 +78,17 @@ in
         mkIf (instances != { }) {
           name = "Authelia";
           icon = "services.authelia";
-          details = listToAttrs (
-            mapAttrsToList (name: v: {
-              inherit name;
-              value.text = "${lib.strings.removeSuffix "/" (
-                lib.strings.removePrefix "tcp://" v.settings.server.address
-              )}";
-            }) instances
-          );
+          details = pipe instances [
+            (mapAttrsToList (
+              name: v: {
+                inherit name;
+                value.text = "${lib.strings.removeSuffix "/" (
+                  lib.strings.removePrefix "tcp://" v.settings.server.address
+                )}";
+              }
+            ))
+            listToAttrs
+          ];
         };
 
       bentopdf = mkIf (config.services.bentopdf.enable or false) {
@@ -98,29 +100,31 @@ in
       blocky = mkIf config.services.blocky.enable {
         name = "Blocky";
         icon = "services.blocky";
-        details = listToAttrs (
-          mapAttrsToList (n: v: {
-            name = "listen.${n}";
-            value.text = toString v;
-          }) config.services.blocky.settings.ports
-        );
+        details = pipe config.services.blocky.settings.ports [
+          (mapAttrsToList (
+            n: v: {
+              name = "listen.${n}";
+              value.text = toString v;
+            }
+          ))
+          listToAttrs
+        ];
       };
 
       caddy = mkIf config.services.caddy.enable {
         name = "Caddy";
         icon = "services.caddy";
         details = genAttrs (mapAttrsToList (name: _: name) config.services.caddy.virtualHosts) (name: {
-          text =
+          text = pipe config.services.caddy.virtualHosts.${name}.extraConfig [
+            # Separate lines of string into list
+            (splitString "\n")
+            # Filter out lines that don't start with reverse_proxy
+            (filter (line: hasPrefix "reverse_proxy " line))
+            # Remove the prefix and suffix, so only the list of hosts are left
+            (map (line: removePrefix "reverse_proxy " (removeSuffix " {" line)))
             # Turn the (possibly multiple) strings in the list into a single string
-            concatStringsSep " " (
-              # Remove the prefix and suffix, so only the list of hosts are left
-              map (line: removePrefix "reverse_proxy " (removeSuffix " {" line)) (
-                # Filter out lines that don't start with reverse_proxy
-                filter (line: hasPrefix "reverse_proxy " line) (
-                  splitString "\n" config.services.caddy.virtualHosts.${name}.extraConfig
-                )
-              )
-            ); # Separate lines of string into list
+            (concatStringsSep " ")
+          ];
         });
       };
 
@@ -193,23 +197,18 @@ in
           info = mkIf (address != null) address;
         };
 
-      firefox-syncserver = mkIf config.services.firefox-syncserver.enable (
-        {
-          name = "Firefox Syncserver";
-          icon = "services.firefox-syncserver";
-          details.listen.text = "${
-            config.services.firefox-syncserversettings.host or "127.0.0.1"
-          }:${toString config.services.firefox-syncserver.settings.port}";
-        }
-        // (optionalAttrs config.services.firefox-syncserver.singleNode.enable {
-          info = config.services.firefox-syncserver.singleNode.url;
-        })
-      );
+      firefox-syncserver = mkIf config.services.firefox-syncserver.enable {
+        name = "Firefox Syncserver";
+        icon = "services.firefox-syncserver";
+        info = mkIf config.services.firefox-syncserver.singleNode.enable config.services.firefox-syncserver.singleNode.url;
+        details.listen.text = "${
+          config.services.firefox-syncserversettings.host or "127.0.0.1"
+        }:${toString config.services.firefox-syncserver.settings.port}";
+      };
 
       forgejo =
         let
-          address = config.services.forgejo.settings.server.HTTP_ADDR or null;
-          port = config.services.forgejo.settings.server.HTTP_PORT or null;
+          inherit (config.services.forgejo.settings.server) HTTP_ADDR HTTP_PORT ROOT_URL;
         in
         mkIf config.services.forgejo.enable {
           name =
@@ -218,16 +217,13 @@ in
             else
               "Forgejo";
           icon = "services.forgejo";
-          info = mkIf (
-            config.services.forgejo.settings ? server.ROOT_URL
-          ) config.services.forgejo.settings.server.ROOT_URL;
-          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
+          info = ROOT_URL;
+          details.listen.text = "${HTTP_ADDR}:${toString HTTP_PORT}";
         };
 
       gitea =
         let
-          address = config.services.gitea.settings.server.HTTP_ADDR or null;
-          port = config.services.gitea.settings.server.HTTP_PORT or null;
+          inherit (config.services.gitea.settings.server) HTTP_ADDR HTTP_PORT ROOT_URL;
         in
         mkIf config.services.gitea.enable {
           name =
@@ -236,10 +232,8 @@ in
             else
               "gitea";
           icon = "services.gitea";
-          info = mkIf (
-            config.services.gitea.settings ? server.ROOT_URL
-          ) config.services.gitea.settings.server.ROOT_URL;
-          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
+          info = ROOT_URL;
+          details.listen.text = "${HTTP_ADDR}:${toString HTTP_PORT}";
         };
 
       glance = mkIf config.services.glance.enable {
@@ -252,17 +246,16 @@ in
 
       grafana =
         let
-          address = config.services.grafana.settings.server.http_addr or null;
-          port = config.services.grafana.settings.server.http_port or null;
+          inherit (config.services.grafana.settings.server) http_addr http_port root_url;
           plugins = config.services.grafana.declarativePlugins;
         in
         mkIf config.services.grafana.enable {
           name = "Grafana";
           icon = "services.grafana";
-          info = config.services.grafana.settings.server.root_url;
+          info = root_url;
           details = {
-            listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
-            plugins = mkIf (plugins != null) { text = concatStringsSep "\n" (map (p: p.name) plugins); };
+            listen.text = "${http_addr}:${toString http_port}";
+            plugins = mkIf (plugins != null) { text = concatLines (map (p: p.name) plugins); };
           };
         };
 
@@ -280,33 +273,30 @@ in
         name = "Headscale";
         icon = "services.headscale";
         info = config.services.headscale.settings.server_url;
-        details = {
-          listen.text = "${config.services.headscale.address}:${toString config.services.headscale.port}";
-        };
+        details.listen.text = "${config.services.headscale.address}:${toString config.services.headscale.port}";
       };
 
       hickory-dns =
         let
           hickorySettings = config.services.hickory-dns.settings;
-          concatWithPort = addr: "${addr}:${toString hickorySettings.listen_port}";
+          listIps = ips: toString (map (addr: "${addr}:${toString hickorySettings.listen_port}") ips);
         in
         mkIf config.services.hickory-dns.enable {
           name = "Hickory DNS";
           icon = "services.hickory-dns";
           details = {
-            listen_ipv4.text = toString (map concatWithPort hickorySettings.listen_addrs_ipv4);
-            listen_ipv6.text = toString (map concatWithPort hickorySettings.listen_addrs_ipv6);
+            listen_ipv4.text = listIps hickorySettings.listen_addrs_ipv4;
+            listen_ipv6.text = listIps hickorySettings.listen_addrs_ipv6;
           };
         };
 
       home-assistant = mkIf config.services.home-assistant.enable {
         name = "Home Assistant";
         icon = "services.home-assistant";
-        details.listen.text = toString (
-          flip map config.services.home-assistant.config.http.server_host (
-            addr: "${addr}:${toString config.services.home-assistant.config.http.server_port}"
-          )
-        );
+        details.listen.text = pipe config.services.home-assistant.config.http.server_host [
+          (map (addr: "${addr}:${toString config.services.home-assistant.config.http.server_port}"))
+          toString
+        ];
       };
 
       hydra = mkIf config.services.hydra.enable {
@@ -321,7 +311,7 @@ in
         icon = "services.i2p";
       };
 
-      immich = mkIf (config.services.immich.enable or false) {
+      immich = mkIf config.services.immich.enable {
         name = "Immich";
         icon = "services.immich";
         details.listen = mkIf config.services.immich.openFirewall {
@@ -344,21 +334,24 @@ in
       jellyfin = mkIf config.services.jellyfin.enable {
         name = "Jellyfin";
         icon = "services.jellyfin";
-        details = listToAttrs (
-          mapAttrsToList
-            (n: v: {
-              name = "listen.${n}";
-              value.text = "0.0.0.0:${toString v}";
-            })
-            (
-              optionalAttrs config.services.jellyfin.openFirewall {
-                http = 8096;
-                https = 8920;
-                service-discovery = 1900;
-                client-discovery = 7359;
-              }
-            )
-        );
+        details =
+          pipe
+            {
+              http = 8096;
+              https = 8920;
+              service-discovery = 1900;
+              client-discovery = 7359;
+            }
+            [
+              (optionalAttrs config.services.jellyfin.openFirewall)
+              (mapAttrsToList (
+                n: v: {
+                  name = "listen.${n}";
+                  value.text = "0.0.0.0:${toString v}";
+                }
+              ))
+              listToAttrs
+            ];
       };
 
       jellyseerr = mkIf config.services.jellyseerr.enable {
@@ -436,8 +429,8 @@ in
 
       matrix-synapse =
         let
-          address = config.services.matrix-synapse.settings.public_baseurl or null;
-          listener = builtins.head config.services.matrix-synapse.settings.listeners or null;
+          address = config.services.matrix-synapse.settings.public_baseurl;
+          listener = builtins.head config.services.matrix-synapse.settings.listeners;
         in
         mkIf config.services.matrix-synapse.enable {
           name = "Matrix (Synapse)";
@@ -505,22 +498,23 @@ in
         };
       mosquitto =
         let
-          listeners = flip map config.services.mosquitto.listeners (l: rec {
-            address = if l.address == null then "[::]" else l.address;
+          listeners = forEach config.services.mosquitto.listeners (l: rec {
+            address = l.address or "[::]";
             listen = if l.port == 0 then address else "${address}:${toString l.port}";
           });
         in
         mkIf config.services.mosquitto.enable {
           name = "Mosquitto";
           icon = "services.mosquitto";
-          details = listToAttrs (
-            flip imap0 listeners (
+          details = pipe listeners [
+            (imap0 (
               i: l: {
                 name = "listen[${toString i}]";
                 value.text = l.listen;
               }
-            )
-          );
+            ))
+            listToAttrs
+          ];
         };
 
       mpd = mkIf config.services.mpd.enable {
@@ -575,11 +569,7 @@ in
                       else
                         location.proxyPass;
                   in
-                  optional (path == "/" && location.proxyPass != null) {
-                    ${server} = {
-                      text = passTo;
-                    };
-                  }
+                  optional (path == "/" && location.proxyPass != null) { ${server}.text = passTo; }
                 )
               )
             );
@@ -649,12 +639,12 @@ in
 
       paperless-ngx =
         let
-          url = config.services.paperless.settings.PAPERLESS_URL or null;
+          inherit (config.services.paperless.settings) domain;
         in
         mkIf config.services.paperless.enable {
           name = "Paperless-ngx";
           icon = "services.paperless-ngx";
-          info = mkIf (url != null) url;
+          info = mkIf (domain != null) "https://${domain}";
           details.listen.text = "${config.services.paperless.address}:${toString config.services.paperless.port}";
         };
 
@@ -793,15 +783,11 @@ in
           details.listen = mkIf (address != null && port != null) { text = "${address}:${port}"; };
         };
 
-      tor =
-        let
-          _tor = config.services.tor;
-        in
-        mkIf _tor.enable {
-          name = "Tor";
-          icon = "services.tor";
-          info = mkIf _tor.relay.enable "Role: ${_tor.relay.role}";
-        };
+      tor = mkIf config.services.tor.enable {
+        name = "Tor";
+        icon = "services.tor";
+        info = mkIf config.services.tor.relay.enable "Role: ${config.services.tor.relay.role}";
+      };
 
       traefik =
         let
@@ -810,9 +796,9 @@ in
         mkIf config.services.traefik.enable {
           name = "Traefik";
           icon = "services.traefik";
-          details = mkIf (length (attrNames dynCfg) > 0) (
+          details = mkIf ((attrNames dynCfg) != [ ]) (
             let
-              formatOutput = mapAttrsToList (
+              formatOutput = flip mapAttrsToList dynCfg.http.routers (
                 routerName: routerAttrs:
                 let
                   getServiceUrl =
@@ -820,15 +806,13 @@ in
                     let
                       service = dynCfg.http.services.${toString serviceName}.loadBalancer.servers or [ ];
                     in
-                    if length service > 0 then (elemAt service 0).url else "invalid service";
+                    if service != [ ] then (head service).url else "invalid service";
                   passText = toString (getServiceUrl routerAttrs.service);
                 in
                 {
-                  ${toString routerName} = {
-                    text = passText;
-                  };
+                  ${toString routerName}.text = passText;
                 }
-              ) dynCfg.http.routers;
+              );
             in
             mkMerge formatOutput
           );
@@ -836,13 +820,12 @@ in
 
       transmission =
         let
-          address = config.services.transmission.settings.rpc-bind-address or null;
-          port = config.services.transmission.settings.rpc-port or null;
+          inherit (config.services.transmission.settings) rpc-bind-address rpc-port;
         in
         mkIf config.services.transmission.enable {
           name = "Transmission";
           icon = "services.transmission";
-          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
+          details.listen.text = "${rpc-bind-address}:${toString rpc-port}";
         };
 
       vaultwarden =
@@ -888,8 +871,10 @@ in
         mkIf config.services.zigbee2mqtt.enable {
           name = "Zigbee2MQTT";
           icon = "services.zigbee2mqtt";
-          details.listen = mkIf (listen != null) { text = listen; };
-          details.mqtt = mkIf (mqttServer != null) { text = mqttServer; };
+          details = {
+            listen = mkIf (listen != null) { text = listen; };
+            mqtt = mkIf (mqttServer != null) { text = mqttServer; };
+          };
         };
 
       zipline = mkIf config.services.zipline.enable {
