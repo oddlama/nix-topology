@@ -354,13 +354,16 @@ in
             ];
       };
 
-      jellyseerr = mkIf config.services.jellyseerr.enable {
-        name = "Jellyseerr";
-        icon = "services.jellyseerr";
-        details.listen = mkIf config.services.jellyseerr.openFirewall {
-          text = "0.0.0.0:${toString config.services.jellyseerr.port}";
+      seerr =
+        let
+          # TODO: remove old option when 26.11 releases
+          cfg = config.services.seerr or config.services.jellyseerr;
+        in
+        mkIf cfg.enable {
+          name = "Seerr";
+          icon = "services.seerr";
+          details.listen = mkIf cfg.openFirewall { text = "0.0.0.0:${toString cfg.port}"; };
         };
-      };
 
       # TODO: Remove old options when 26.11 is released
       kanidm = mkIf (config.services.kanidm.server.enable or config.services.kanidm.enableServer) {
