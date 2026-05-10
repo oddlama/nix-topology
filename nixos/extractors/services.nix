@@ -354,7 +354,7 @@ in
             ];
       };
 
-      seer =
+      seerr =
         let
           # TODO: remove old option when 26.11 releases
           cfg = config.services.seerr or config.services.jellyseerr;
