@@ -20,6 +20,9 @@ _: {
         { };
   };
   test = {
+    minimalConfig = {
+      services.seerr.enable = true;
+    };
     # Via the deprecated `jellyseerr` alias, which must not show up as a separate service
     config = {
       services.jellyseerr = {

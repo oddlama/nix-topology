@@ -11,6 +11,12 @@ in
     detailsFn = _: { };
   };
   test = {
+    minimalConfig = {
+      services.nextcloud = {
+        enable = true;
+        hostName = "cloud.example.com";
+      };
+    };
     config = {
       services.nextcloud = {
         enable = true;

@@ -11,6 +11,13 @@ _: {
     };
   };
   test = {
+    minimalConfig = {
+      services.hydra = {
+        enable = true;
+        hydraURL = "https://hydra.example.com";
+        notificationSender = "hydra@example.com";
+      };
+    };
     config = {
       services.hydra = {
         enable = true;

@@ -22,6 +22,10 @@ in
     };
   };
   test = {
+    minimalConfig = {
+      imports = [ databaseType ];
+      services.firefox-syncserver.enable = true;
+    };
     config = {
       imports = [ databaseType ];
       services.firefox-syncserver = {

@@ -9,6 +9,9 @@ _: {
     detailsFn = _: { };
   };
   test = {
+    minimalConfig = {
+      services.harmonia.enable = true;
+    };
     # `services.harmonia-dev` must register as "harmonia", not separately
     config =
       { lib, ... }:

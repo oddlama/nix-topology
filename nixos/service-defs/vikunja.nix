@@ -17,6 +17,13 @@ in
       };
   };
   test = {
+    minimalConfig = {
+      services.vikunja = {
+        enable = true;
+        frontendScheme = "https";
+        frontendHostname = "tasks.example.com";
+      };
+    };
     config = {
       services.vikunja = {
         enable = true;

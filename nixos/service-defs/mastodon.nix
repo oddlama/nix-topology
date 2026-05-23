@@ -7,6 +7,13 @@ _: {
     detailsFn = _: { };
   };
   test = {
+    minimalConfig = {
+      services.mastodon = {
+        enable = true;
+        localDomain = "social.example.com";
+        smtp.fromAddress = "noreply@example.com";
+      };
+    };
     config = {
       services.mastodon = {
         enable = true;

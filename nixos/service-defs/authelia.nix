@@ -29,6 +29,13 @@ in
       );
   };
   test = {
+    minimalConfig = {
+      services.authelia.instances.main = {
+        enable = true;
+        secrets.jwtSecretFile = "/dev/null";
+        secrets.storageEncryptionKeyFile = "/dev/null";
+      };
+    };
     config = {
       services.authelia.instances.main = {
         enable = true;

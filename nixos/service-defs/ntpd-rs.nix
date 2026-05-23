@@ -21,6 +21,13 @@ in
       );
   };
   test = {
+    # Only shown when acting as an NTP server
+    minimalConfig = {
+      services.ntpd-rs = {
+        enable = true;
+        settings.server = [ { listen = "0.0.0.0:123"; } ];
+      };
+    };
     config = {
       services.ntpd-rs = {
         enable = true;

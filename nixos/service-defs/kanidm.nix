@@ -12,6 +12,15 @@ _: {
     };
   };
   test = {
+    minimalConfig = {
+      services.kanidm = {
+        enableServer = true;
+        serverSettings = {
+          origin = "https://idm.example.com";
+          domain = "example.com";
+        };
+      };
+    };
     config = {
       services.kanidm = {
         enableServer = true;

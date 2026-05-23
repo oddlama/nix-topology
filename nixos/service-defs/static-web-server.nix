@@ -13,6 +13,12 @@ _: {
     };
   };
   test = {
+    minimalConfig = {
+      services.static-web-server = {
+        enable = true;
+        root = "/var/www";
+      };
+    };
     config = {
       services.static-web-server = {
         enable = true;

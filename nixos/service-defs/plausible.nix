@@ -21,6 +21,15 @@ in
     infoFn = cfg: cfg.server.baseUrl;
   };
   test = {
+    minimalConfig = {
+      services.plausible = {
+        enable = true;
+        server = {
+          baseUrl = "https://plausible.example.com";
+          secretKeybaseFile = "/dev/null";
+        };
+      };
+    };
     config = {
       services.plausible = {
         enable = true;

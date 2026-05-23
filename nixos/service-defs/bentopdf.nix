@@ -6,6 +6,12 @@ _: {
     infoFn = cfg: "https://${cfg.domain}";
   };
   test = {
+    minimalConfig = {
+      services.bentopdf = {
+        enable = true;
+        domain = "pdf.example.com";
+      };
+    };
     config = {
       services.bentopdf = {
         enable = true;
