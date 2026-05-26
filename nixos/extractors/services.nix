@@ -783,7 +783,7 @@ in
         mkIf config.services.tempo.enable {
           name = "Tempo";
           icon = "services.tempo";
-          details.listen = mkIf (address != null && port != null) { text = "${address}:${port}"; };
+          details.listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
         };
 
       tor = mkIf config.services.tor.enable {
