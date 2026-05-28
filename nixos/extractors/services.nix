@@ -642,7 +642,7 @@ in
 
       paperless-ngx =
         let
-          inherit (config.services.paperless.settings) domain;
+          inherit (config.services.paperless) domain;
         in
         mkIf config.services.paperless.enable {
           name = "Paperless-ngx";
