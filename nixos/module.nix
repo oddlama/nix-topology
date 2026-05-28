@@ -10,7 +10,9 @@ let
     flatten
     flip
     genAttrs
+    mapAttrs
     mkAliasOptionModule
+    mkDefault
     mkMerge
     mkOption
     optional
@@ -21,7 +23,9 @@ let
     "nodes"
     "networks"
     "icons"
+    "serviceRegistry"
   ];
+  serviceDefs = import ./service-defs { inherit lib; };
 in
 {
   imports = [
@@ -99,6 +103,7 @@ in
         lib.topology = import ../topology/helpers.nix lib;
         # Ensure a node exists for this host
         topology.nodes.${config.topology.id}.deviceType = "nixos";
+        topology.serviceRegistry = mapAttrs (_: mapAttrs (_: mkDefault)) serviceDefs;
       }
     ]
     ++ flip map toplevelRelevantOptions (opt: {

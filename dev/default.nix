@@ -12,7 +12,44 @@
       pkgs,
       ...
     }:
+    let
+      inherit (pkgs) lib;
+      pkgsStable = import inputs.nixpkgs-stable {
+        inherit system;
+        overlays = [ self.overlays.default ];
+      };
+      mkServiceDefChecks =
+        { suffix, testPkgs }:
+        lib.mapAttrs'
+          (name: value: {
+            name = "${name}${suffix}";
+            inherit value;
+          })
+          (
+            import ./service-def-tests.nix {
+              inherit self system;
+              pkgs = testPkgs;
+            }
+          );
+    in
     {
+      checks = lib.optionalAttrs (lib.hasSuffix "-linux" system) (
+        {
+          service-extraction = import ./service-extraction-test.nix { inherit self pkgs system; };
+          service-registry-override = import ./service-registry-override-test.nix {
+            inherit self pkgs system;
+          };
+          svg-render = import ./svg-render-test.nix { inherit self pkgs system; };
+        }
+        // mkServiceDefChecks {
+          suffix = "";
+          testPkgs = pkgs;
+        }
+        // mkServiceDefChecks {
+          suffix = "-stable";
+          testPkgs = pkgsStable;
+        }
+      );
       _module.args.pkgs = import inputs.nixpkgs {
         inherit system;
         overlays = [ self.overlays.default ];
@@ -62,6 +99,7 @@
           # Various
           prettier = {
             enable = true;
+            package = pkgs.prettier;
             excludes = [
               "*package-lock.json"
               "*package.json"

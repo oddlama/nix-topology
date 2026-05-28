@@ -58,7 +58,7 @@ in
       description = "The derivation containing the rendered output";
       type = types.path;
       readOnly = true;
-      defaultText = literalExpression ''config.renderers.${config.renderer}.output'';
+      defaultText = literalExpression "config.renderers.${config.renderer}.output";
     };
 
     lib = lib.mkOption {
@@ -160,6 +160,7 @@ in
       nodes = aggregate [ "nodes" ];
       networks = aggregate [ "networks" ];
       icons = aggregate [ "icons" ];
+      serviceRegistry = aggregate [ "serviceRegistry" ];
 
       lib.topology = import ./helpers.nix lib;
     };
