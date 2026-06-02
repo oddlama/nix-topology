@@ -642,12 +642,14 @@ in
 
       paperless-ngx =
         let
-          inherit (config.services.paperless.settings) domain;
+          domain = config.services.paperless.settings.domain or null;
+          paperlessUrl = config.services.paperless.settings.PAPERLESS_URL or null;
+          url = if domain != null then "https://${domain}" else paperlessUrl;
         in
         mkIf config.services.paperless.enable {
           name = "Paperless-ngx";
           icon = "services.paperless-ngx";
-          info = mkIf (domain != null) "https://${domain}";
+          info = mkIf (url != null) url;
           details.listen.text = "${config.services.paperless.address}:${toString config.services.paperless.port}";
         };
 
