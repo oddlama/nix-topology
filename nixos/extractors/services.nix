@@ -354,26 +354,19 @@ in
             ];
       };
 
-      seerr =
-        let
-          # TODO: remove old option when 26.11 releases
-          cfg = config.services.seerr or config.services.jellyseerr;
-        in
-        mkIf cfg.enable {
-          name = "Seerr";
-          icon = "services.seerr";
-          details.listen = mkIf cfg.openFirewall { text = "0.0.0.0:${toString cfg.port}"; };
+      seerr = mkIf config.services.seerr.enable {
+        name = "Seerr";
+        icon = "services.seerr";
+        details.listen = mkIf config.services.seerr.openFirewall {
+          text = "0.0.0.0:${toString config.services.seerr.port}";
         };
+      };
 
-      # TODO: Remove old options when 26.11 is released
-      kanidm = mkIf (config.services.kanidm.server.enable or config.services.kanidm.enableServer) {
+      kanidm = mkIf config.services.kanidm.server.enable {
         name = "Kanidm";
         icon = "services.kanidm";
-        info =
-          config.services.kanidm.server.settings.origin or config.services.kanidm.serverSettings.origin;
-        details.listen.text =
-          config.services.kanidm.server.settings.bindaddress
-            or config.services.kanidm.serverSettings.bindaddress;
+        info = config.services.kanidm.server.settings.origin;
+        details.listen.text = config.services.kanidm.server.settings.bindaddress;
       };
 
       kavita = mkIf config.services.kavita.enable {
