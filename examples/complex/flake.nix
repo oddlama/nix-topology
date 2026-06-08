@@ -70,69 +70,66 @@
       nixosConfigurations.host2 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
-          (
-            { config, ... }:
-            {
-              networking.hostName = "host2";
+          ({ config, ... }: {
+            networking.hostName = "host2";
 
-              # This host has a wireless connection, as indicated by the wlp prefix
-              systemd.network.enable = true;
-              systemd.network.networks.eth0 = {
-                matchConfig.Name = "eth0";
-                address = [ "192.168.1.100/24" ];
-              };
+            # This host has a wireless connection, as indicated by the wlp prefix
+            systemd.network.enable = true;
+            systemd.network.networks.eth0 = {
+              matchConfig.Name = "eth0";
+              address = [ "192.168.1.100/24" ];
+            };
 
-              # Containers will automatically be rendered if they import the topology module!
-              containers.vaultwarden.macvlans = [ "vm-vaultwarden" ];
-              containers.vaultwarden.config = {
-                imports = [ nix-topology.nixosModules.default ];
-                networking.hostName = "host2-vaultwarden";
-                # This node host's a vaultwarden instance, which nix-topology
-                # will automatically pick up on
-                services.vaultwarden = {
-                  enable = true;
-                  config = {
-                    rocketAddress = "0.0.0.0";
-                    rocketPort = 8012;
-                    domain = "https://vault.example.com/";
-                    # ...
-                  };
-                };
-              };
-
+            # Containers will automatically be rendered if they import the topology module!
+            containers.vaultwarden.macvlans = [ "vm-vaultwarden" ];
+            containers.vaultwarden.config = {
+              imports = [ nix-topology.nixosModules.default ];
+              networking.hostName = "host2-vaultwarden";
+              # This node host's a vaultwarden instance, which nix-topology
+              # will automatically pick up on
               services.vaultwarden = {
                 enable = true;
                 config = {
                   rocketAddress = "0.0.0.0";
                   rocketPort = 8012;
-                  domain = "https://anothervault.example.com/";
+                  domain = "https://vault.example.com/";
                   # ...
                 };
               };
+            };
 
-              containers.test.config = {
-                imports = [ nix-topology.nixosModules.default ];
-                networking.hostName = "host2-test-with-a-long-name";
+            services.vaultwarden = {
+              enable = true;
+              config = {
+                rocketAddress = "0.0.0.0";
+                rocketPort = 8012;
+                domain = "https://anothervault.example.com/";
+                # ...
               };
+            };
 
-              # We can change our own node's topology settings from here:
-              topology.self = {
-                name = "☄️  Powerful host2";
-                hardware.info = "2U Server with loads of RAM and a really long description";
-                interfaces.wg0 = {
-                  addresses = [ "10.0.0.2" ];
-                  # Rendering virtual connections such as wireguard connections can sometimes
-                  # clutter the view. So by hiding them we will only see the connections
-                  # in the network centric view
-                  renderer.hidePhysicalConnections = true;
-                  virtual = true; # doesn't change the immediate render yet, but makes the network-centric view a little more readable
-                  type = "wireguard"; # changes the icon
-                  # No need to add the network wg0 explicitly, it will automatically be propagated via the connection.
-                  physicalConnections = [ (config.lib.topology.mkConnection "host1" "wg0") ];
-                };
+            containers.test.config = {
+              imports = [ nix-topology.nixosModules.default ];
+              networking.hostName = "host2-test-with-a-long-name";
+            };
+
+            # We can change our own node's topology settings from here:
+            topology.self = {
+              name = "☄️  Powerful host2";
+              hardware.info = "2U Server with loads of RAM and a really long description";
+              interfaces.wg0 = {
+                addresses = [ "10.0.0.2" ];
+                # Rendering virtual connections such as wireguard connections can sometimes
+                # clutter the view. So by hiding them we will only see the connections
+                # in the network centric view
+                renderer.hidePhysicalConnections = true;
+                virtual = true; # doesn't change the immediate render yet, but makes the network-centric view a little more readable
+                type = "wireguard"; # changes the icon
+                # No need to add the network wg0 explicitly, it will automatically be propagated via the connection.
+                physicalConnections = [ (config.lib.topology.mkConnection "host1" "wg0") ];
               };
-            }
-          )
+            };
+          })
           nix-topology.nixosModules.default
         ];
       };

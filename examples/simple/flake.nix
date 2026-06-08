@@ -61,36 +61,33 @@
       nixosConfigurations.host2 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
-          (
-            { config, ... }:
-            {
-              networking.hostName = "host2";
+          ({ config, ... }: {
+            networking.hostName = "host2";
 
-              # This host has a wireless connection, as indicated by the wlp prefix
-              systemd.network.enable = true;
-              systemd.network.networks.wlp3s0 = {
-                matchConfig.Name = "wlp3s0";
-                address = [ "192.168.178.42/24" ];
-              };
+            # This host has a wireless connection, as indicated by the wlp prefix
+            systemd.network.enable = true;
+            systemd.network.networks.wlp3s0 = {
+              matchConfig.Name = "wlp3s0";
+              address = [ "192.168.178.42/24" ];
+            };
 
-              # We can change our own node's topology settings from here:
-              topology.self = {
-                name = "🥔  Potato host2";
-                #         ^^-- utf8 small space, required to not collapse spaces
-                hardware.info = "It's running on a potato, i swear";
-                interfaces.wg0 = {
-                  addresses = [ "10.0.0.2" ];
-                  # Rendering virtual connections such as wireguard connections can sometimes
-                  # clutter the view. So by hiding them we will only see the connections
-                  # in the network centric view
-                  renderer.hidePhysicalConnections = true;
-                  type = "wireguard"; # changes the icon
-                  # No need to add the network wg0 explicitly, it will automatically be propagated via the connection.
-                  physicalConnections = [ (config.lib.topology.mkConnection "host1" "wg0") ];
-                };
+            # We can change our own node's topology settings from here:
+            topology.self = {
+              name = "🥔  Potato host2";
+              #         ^^-- utf8 small space, required to not collapse spaces
+              hardware.info = "It's running on a potato, i swear";
+              interfaces.wg0 = {
+                addresses = [ "10.0.0.2" ];
+                # Rendering virtual connections such as wireguard connections can sometimes
+                # clutter the view. So by hiding them we will only see the connections
+                # in the network centric view
+                renderer.hidePhysicalConnections = true;
+                type = "wireguard"; # changes the icon
+                # No need to add the network wg0 explicitly, it will automatically be propagated via the connection.
+                physicalConnections = [ (config.lib.topology.mkConnection "host1" "wg0") ];
               };
-            }
-          )
+            };
+          })
           nix-topology.nixosModules.default
         ];
       };
