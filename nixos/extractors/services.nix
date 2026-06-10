@@ -626,6 +626,16 @@ in
         info = config.services.oauth2-proxy.httpAddress;
       };
 
+      oink = mkIf config.services.oink.enable {
+        name = "Oink";
+        icon = "services.oink";
+        details.domains.text = toString (
+          forEach config.services.oink.domains (
+            entry: if (entry.subdomain or "") == "" then entry.domain else "${entry.subdomain}.${entry.domain}"
+          )
+        );
+      };
+
       ollama = mkIf config.services.ollama.enable {
         name = "Ollama";
         icon = "services.ollama";
