@@ -119,11 +119,12 @@ in
             # Separate lines of string into list
             (splitString "\n")
             # Filter out lines that don't start with reverse_proxy
-            (filter (line: hasPrefix "reverse_proxy " line))
+            (filter (hasPrefix "reverse_proxy "))
             # Remove the prefix and suffix, so only the list of hosts are left
-            (map (line: removePrefix "reverse_proxy " (removeSuffix " {" line)))
+            (map (removeSuffix " {"))
+            (map (removePrefix "reverse_proxy "))
             # Turn the (possibly multiple) strings in the list into a single string
-            (concatStringsSep " ")
+            toString
           ];
         });
       };
@@ -164,12 +165,15 @@ in
           let
             addresses = config.services.dnsmasq.settings.address or [ ];
           in
-          listToAttrs (
-            forEach (forEach addresses (x: (splitString "/" (removePrefix "/" x)))) (x: {
+          pipe addresses [
+            (map (removePrefix "/"))
+            (map (splitString "/"))
+            (map (x: {
               name = head x;
               value.text = head (tail x);
-            })
-          );
+            }))
+            listToAttrs
+          ];
       };
 
       esphome = mkIf config.services.esphome.enable {
