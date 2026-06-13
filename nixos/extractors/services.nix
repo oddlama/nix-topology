@@ -228,7 +228,7 @@ in
         icon = "services.firefox-syncserver";
         info = mkIf config.services.firefox-syncserver.singleNode.enable config.services.firefox-syncserver.singleNode.url;
         details.listen.text = "${
-          config.services.firefox-syncserversettings.host or "127.0.0.1"
+          config.services.firefox-syncserver.settings.host or "127.0.0.1"
         }:${toString config.services.firefox-syncserver.settings.port}";
       };
 
