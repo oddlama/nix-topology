@@ -261,7 +261,7 @@ in
 
       harmonia =
         mkIf
-          (config.services.harmonia.cache.enable or config.services.harmonia-dev.cache.enable
+          (config.services.harmonia-dev.cache.enable or config.services.harmonia.cache.enable
             or config.services.harmonia.enable or false
           )
           {
