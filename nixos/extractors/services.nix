@@ -260,10 +260,7 @@ in
         };
 
       harmonia =
-        mkIf
-          (config.services.harmonia.cache.enable or config.services.harmonia-dev.cache.enable
-            or config.services.harmonia.enable or false
-          )
+        mkIf (config.services.harmonia-dev.cache.enable or config.services.harmonia.cache.enable)
           {
             name = "Harmonia";
             icon = "services.not-available";
