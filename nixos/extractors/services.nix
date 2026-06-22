@@ -172,6 +172,12 @@ in
           );
       };
 
+      echoip = mkIf config.services.echoip.enable {
+        name = "Echoip";
+        icon = "services.not-available";
+        details.listen.text = config.services.echoip.listenAddress;
+      };
+
       esphome = mkIf config.services.esphome.enable {
         name = "ESPHome";
         icon = "services.esphome";
