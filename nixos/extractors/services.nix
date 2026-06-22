@@ -664,6 +664,22 @@ in
         details.listen.text = "${config.services.plausible.server.listenAddress}:${toString config.services.plausible.server.port}";
       };
 
+      mysql =
+        let
+          name = lib.getName config.services.mysql.package;
+        in
+        mkIf config.services.mysql.enable (
+          if name == "mariadb-server" then
+            {
+              name = "MariaDB";
+              icon = "services.mariadb";
+            }
+          else
+            {
+              name = "MySQL";
+              icon = "services.mysql";
+            }
+        );
       postgresql = mkIf config.services.postgresql.enable {
         name = "PostgreSQL";
         icon = "services.postgresql";
