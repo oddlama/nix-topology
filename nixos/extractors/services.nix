@@ -97,6 +97,26 @@ in
         info = "https://${config.services.bentopdf.domain}";
       };
 
+      bind9 =
+        let
+          cfg = config.services.bind;
+          replaceAny = addr: replacement: if addr == "any" then replacement else addr;
+        in
+        mkIf cfg.enable {
+          name = "Bind9";
+          icon = "services.bind9";
+          details = {
+            listen_ipv4.text = toString (
+              map (address: "${replaceAny address "0.0.0.0"}:${toString cfg.listenOnPort}") cfg.listenOn
+            );
+            listen_ipv6 = lib.mkIf (!cfg.ipv4Only) {
+              text = toString (
+                map (address: "${replaceAny address "[::]"}:${toString cfg.listenOnIpv6Port}") cfg.listenOnIpv6
+              );
+            };
+          };
+        };
+
       blocky = mkIf config.services.blocky.enable {
         name = "Blocky";
         icon = "services.blocky";
