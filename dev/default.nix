@@ -12,7 +12,15 @@
       pkgs,
       ...
     }:
+    let
+      inherit (pkgs) lib;
+    in
     {
+      checks = lib.optionalAttrs (lib.hasSuffix "-linux" system) {
+        service-extraction = import ./service-extraction-test.nix { inherit self pkgs system; };
+        svg-render = import ./svg-render-test.nix { inherit self pkgs system; };
+      };
+
       _module.args.pkgs = import inputs.nixpkgs {
         inherit system;
         overlays = [ self.overlays.default ];
