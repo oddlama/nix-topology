@@ -14,8 +14,19 @@ in
 f {
   options.nodes = mkOption {
     type = types.attrsOf (
-      types.submodule {
+      types.submodule (nodeSubmod: {
         options = {
+          serviceRegistry = mkOption {
+            description = ''
+              The registry that serviceIds of this node's services are resolved against.
+              NixOS hosts set this to their own topology.serviceRegistry.
+            '';
+            internal = true;
+            default =
+              if config.topology.isMainModule then config.serviceRegistry else config.topology.serviceRegistry;
+            type = types.lazyAttrsOf types.raw;
+          };
+
           services = mkOption {
             description = "Defines a service that is running on this node.";
             default = { };
@@ -29,9 +40,24 @@ f {
                     default = submod.config._module.args.name;
                   };
 
+                  serviceId = mkOption {
+                    description = "The id of the service as defined in topology.serviceRegistry.<service-id>";
+                    type = types.nullOr types.str;
+                    default = null;
+                  };
+
                   name = mkOption {
                     description = "The name of this service";
                     type = types.str;
+                    default =
+                      let
+                        registryName =
+                          if submod.config.serviceId != null then
+                            nodeSubmod.config.serviceRegistry.${submod.config.serviceId}.name or ""
+                          else
+                            "";
+                      in
+                      if registryName != "" then registryName else submod.config.id;
                   };
 
                   hidden = mkOption {
@@ -43,7 +69,11 @@ f {
                   icon = mkOption {
                     description = "The icon for this service. Must be a path to an image or a valid icon name (<category>.<name>).";
                     type = types.nullOr (types.either types.path types.str);
-                    default = null;
+                    default =
+                      if submod.config.serviceId != null then
+                        (nodeSubmod.config.serviceRegistry.${submod.config.serviceId}.icon or null)
+                      else
+                        null;
                   };
 
                   info = mkOption {
@@ -82,16 +112,19 @@ f {
                 };
 
                 config = {
-                  # Set the default icon, if an icon exists with a matching name
-                  icon = mkIf (config.topology.isMainModule && config.icons.services ? ${submod.config.id}) (
-                    mkDefault ("services." + submod.config.id)
-                  );
+                  # Set the default icon, if an icon exists with a matching name.
+                  # Services with a serviceId get theirs from the registry instead.
+                  icon = mkIf (
+                    config.topology.isMainModule
+                    && submod.config.serviceId == null
+                    && config.icons.services ? ${submod.config.id}
+                  ) (mkDefault ("services." + submod.config.id));
                 };
               })
             );
           };
         };
-      }
+      })
     );
   };
 
@@ -101,6 +134,10 @@ f {
         node:
         flip map (attrValues node.services) (service: [
           (config.lib.assertions.iconValid service.icon "nodes.${node.id}.services.${service.id}")
+          (mkIf (service.serviceId != null) {
+            assertion = node.serviceRegistry ? ${service.serviceId};
+            message = "serviceId '${service.serviceId}' for nodes.${node.id}.services.${service.id} is not defined in topology.serviceRegistry";
+          })
         ])
       )
     );
