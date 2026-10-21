@@ -289,6 +289,11 @@ in
           };
         };
 
+      haproxy = mkIf config.services.haproxy.enable {
+        name = "HAProxy";
+        icon = "services.haproxy";
+      };
+
       harmonia =
         mkIf
           (config.services.harmonia-dev.cache.enable or config.services.harmonia.cache.enable
