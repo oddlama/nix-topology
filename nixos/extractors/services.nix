@@ -887,6 +887,16 @@ in
           details.listen.text = "${rpc-bind-address}:${toString rpc-port}";
         };
 
+      unbound = mkIf config.services.unbound.enable {
+        name = "Unbound";
+        icon = "services.unbound";
+        details.listen.text = toString (
+          map (
+            interface: "${interface}:${toString config.services.unbound.settings.server.port or 53}"
+          ) config.services.unbound.settings.server.interface
+        );
+      };
+
       vaultwarden =
         let
           domain =
