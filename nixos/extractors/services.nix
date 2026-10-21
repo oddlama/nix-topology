@@ -349,6 +349,17 @@ in
         };
       };
 
+      immich-public-proxy = mkIf config.services.immich-public-proxy.enable {
+        name = "Immich Public Proxy";
+        icon = "services.immich-public-proxy";
+        info = mkIf (
+          config.services.immich.settings.server.externalDomain != ""
+        ) config.services.immich.settings.server.externalDomain;
+        details.listen = mkIf config.services.immich-public-proxy.openFirewall {
+          text = "localhost:${toString config.services.immich-public-proxy.port}";
+        };
+      };
+
       influxdb2 = mkIf config.services.influxdb2.enable {
         name = "InfluxDB v2";
         icon = "services.influxdb2";
