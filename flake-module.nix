@@ -35,8 +35,7 @@ in
     };
 
     perSystem = flake-parts-lib.mkPerSystemOption (
-      { lib, pkgs, ... }:
-      {
+      { lib, pkgs, ... }: {
         options.topology = {
           nixosConfigurations = mkOption {
             type = types.lazyAttrsOf types.unspecified;

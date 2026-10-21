@@ -47,13 +47,11 @@
         };
       };
 
-      perSystem =
-        { pkgs, ... }:
-        {
-          packages.docs = pkgs.callPackage ./pkgs/docs.nix {
-            flakeInputs = inputs;
-            flakeOutputs = self;
-          };
+      perSystem = { pkgs, ... }: {
+        packages.docs = pkgs.callPackage ./pkgs/docs.nix {
+          flakeInputs = inputs;
+          flakeOutputs = self;
         };
+      };
     };
 }

@@ -1,5 +1,4 @@
-{ inputs, self, ... }:
-{
+{ inputs, self, ... }: {
   imports = with inputs; [
     git-hooks-nix.flakeModule
     treefmt-nix.flakeModule
