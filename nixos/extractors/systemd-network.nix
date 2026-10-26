@@ -48,12 +48,17 @@ in
       concatLists (
         flip mapAttrsToList config.systemd.network.netdevs (
           _unit: netdev:
-          optional (netdev ? netdevConfig.Name) {
-            ${netdev.netdevConfig.Name} = {
-              virtual = mkDefault true;
-              type = mkIf (netdev ? netdevConfig.Kind) netdev.netdevConfig.Kind;
-            };
-          }
+          flip map
+            (
+              optional (netdev ? netdevConfig.Name) netdev.netdevConfig.Name
+              ++ optional (netdev ? peerConfig.Name) netdev.peerConfig.Name
+            )
+            (name: {
+              ${name} = {
+                virtual = mkDefault true;
+                type = mkIf (netdev ? netdevConfig.Kind) netdev.netdevConfig.Kind;
+              };
+            })
         )
       )
       # Add interface configuration based on systemd.network.networks
