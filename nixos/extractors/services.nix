@@ -474,6 +474,17 @@ in
           ) "${builtins.head listener.bind_addresses}:${toString listener.port}";
         };
 
+      mautrix-discord =
+        let
+          address = config.services.mautrix-discord.settings.appservice.hostname or null;
+          port = config.services.mautrix-discord.settings.appservice.port or null;
+        in
+        mkIf config.services.mautrix-discord.enable {
+          name = "mautrix-discord";
+          icon = "services.mautrix-discord";
+          details.listen.text = mkIf (address != null && port != null) "${address}:${toString port}";
+        };
+
       mautrix-signal =
         let
           address = config.services.mautrix-signal.settings.appservice.hostname or null;
