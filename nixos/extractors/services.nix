@@ -14,11 +14,13 @@ let
     imap1
     listToAttrs
     mapAttrs
+    mapAttrs'
     mapAttrsToList
     mkDefault
     mkEnableOption
     mkIf
     mkMerge
+    nameValuePair
     optional
     optionalString
     optionalAttrs
@@ -942,6 +944,20 @@ in
         details.listen.text = "${config.services.zipline.settings.CORE_HOSTNAME}:${toString config.services.zipline.settings.CORE_PORT}";
       };
     }
+    // flip mapAttrs' (filterAttrs (_: cfg: cfg.enable) config.services.mautrix-meta.instances) (
+      instanceName: cfg:
+      let
+        address = cfg.settings.appservice.hostname or null;
+        port = cfg.settings.appservice.port or null;
+        mode = cfg.settings.network.mode or null;
+      in
+      nameValuePair "mautrix-meta-${instanceName}" {
+        name = "mautrix-meta (${instanceName})";
+        icon = if mode == "instagram" then "services.mautrix-meta-instagram" else "services.mautrix-meta";
+        info = mkIf (mode != null) mode;
+        details.listen.text = mkIf (address != null && port != null) "${address}:${toString port}";
+      }
+    )
     // flip mapAttrs config.services.restic.backups (
       backupName: cfg: {
         name = "Restic backup '${backupName}'";
