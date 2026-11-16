@@ -31,6 +31,20 @@ let
           enable = true;
           port = 9090;
         };
+
+        # Two services sharing a serviceId, both must be listed in the services overview
+        services.restic.backups = {
+          alpha = {
+            repository = "/mnt/alpha";
+            passwordFile = "/run/secrets/restic";
+            paths = [ "/srv/alpha" ];
+          };
+          bravo = {
+            repository = "/mnt/bravo";
+            passwordFile = "/run/secrets/restic";
+            paths = [ "/srv/bravo" ];
+          };
+        };
       }
     ];
   };
@@ -42,6 +56,7 @@ let
 
   elkOutput = topologyEval.config.renderers.elk.output;
   svgOutput = topologyEval.config.renderers.svg.output;
+  servicesOverview = topologyEval.config.lib.renderers.svg.services.mkOverview;
 in
 pkgs.runCommandLocal "svg-render-test" { nativeBuildInputs = with pkgs; [ libxml2 ]; } ''
   echo "=== SVG Render Integration Test ==="
@@ -76,6 +91,12 @@ pkgs.runCommandLocal "svg-render-test" { nativeBuildInputs = with pkgs; [ libxml
   grep -q "Grafana" "${svgOutput}/nodes/svg-test-host.svg" || (echo "FAIL: 'Grafana' not found in node SVG"; exit 1)
   grep -q "Prometheus" "${svgOutput}/nodes/svg-test-host.svg" || (echo "FAIL: 'Prometheus' not found in node SVG"; exit 1)
   grep -q "grafana.example.com" "${svgOutput}/nodes/svg-test-host.svg" || (echo "FAIL: 'grafana.example.com' not found in node SVG"; exit 1)
+
+  echo "Checking services overview lists all services sharing a serviceId..."
+  # Text is split into one element per word, so compare the text content only
+  sed 's/<[^>]*>//g' "${servicesOverview}" > overview.txt
+  grep -q "/mnt/alpha" overview.txt || (echo "FAIL: restic backup 'alpha' not found in services overview"; exit 1)
+  grep -q "/mnt/bravo" overview.txt || (echo "FAIL: restic backup 'bravo' not found in services overview"; exit 1)
 
   echo "=== All SVG render tests passed ==="
   echo "ok" > $out

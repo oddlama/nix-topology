@@ -11,6 +11,7 @@
   - [Useful helpers](./helpers.md)
   - [Adding Connections](./connections.md)
   - [Adding Nodes](./nodes.md)
+  - [Adding Services](./services.md)
   - [Adding Networks](./networks.md)
 - [Topology Options](./topology-options.md)
 

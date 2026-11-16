@@ -160,6 +160,8 @@ in
       nodes = aggregate [ "nodes" ];
       networks = aggregate [ "networks" ];
       icons = aggregate [ "icons" ];
+      # Not collected from hosts: a host's registry only applies to its own services
+      serviceRegistry = import ../nixos/service-defs { inherit lib; };
 
       lib.topology = import ./helpers.nix lib;
     };
