@@ -58,7 +58,7 @@ in
       description = "The derivation containing the rendered output";
       type = types.path;
       readOnly = true;
-      defaultText = literalExpression ''config.renderers.${config.renderer}.output'';
+      defaultText = literalExpression "config.renderers.${config.renderer}.output";
     };
 
     lib = lib.mkOption {
