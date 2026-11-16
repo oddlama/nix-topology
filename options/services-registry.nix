@@ -8,8 +8,9 @@ let
   };
 
   fnArgsDoc = ''
-    The function is called with an attribute set containing `cfg` (the value at `path`)
-    and `config` (the whole NixOS configuration). Always accept further arguments
+    The function is called with an attribute set containing `cfg` (the value at `path`,
+    or the instance's value if `instances` is set), `instance` (the name of the instance,
+    or null) and `config` (the whole NixOS configuration). Always accept further arguments
     with `...`, as more may be added in the future.
   '';
   serviceSubmodule = { name, ... }: {
@@ -46,6 +47,17 @@ let
               default = null;
               example = "services.grafana";
               description = "The NixOS option path for this service. Services whose path doesn't exist in a host's nixpkgs are skipped.";
+            };
+            instances = mkOption {
+              type = types.bool;
+              default = false;
+              example = true;
+              description = ''
+                Whether the value at `path` is an attribute set of instances, such as
+                `services.restic.backups`. If set, one service is created for each instance
+                with the id `<service-id>-<instance>`, and the functions below are called for
+                each instance.
+              '';
             };
             enabled = mkOption {
               type = fnType;

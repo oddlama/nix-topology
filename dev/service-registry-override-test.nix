@@ -301,6 +301,33 @@ let
     (setInfoFn (_: "two"))
   ]);
 
+  # --- Scenario 12: Services from `nixos.instances` can be overridden like any other ---
+  nodeI = nixosSystem {
+    inherit system;
+    modules = baseModules ++ [
+      {
+        networking.hostName = "node-i";
+        services.restic.backups.home = {
+          repository = "/mnt/backup";
+          passwordFile = "/run/secrets/restic";
+          paths = [ "/home" ];
+        };
+        topology.self.services.restic-backup-home = {
+          name = "Home backup";
+          icon = "services.grafana";
+        };
+      }
+    ];
+  };
+  instanceOverride = builtins.tryEval (
+    let
+      s = nodeI.config.topology.self.services.restic-backup-home;
+    in
+    {
+      inherit (s) name icon serviceId;
+    }
+  );
+
   # --- Scenario 11: Home Assistant settings that newer nixpkgs don't default ---
   haDetails = (import ../nixos/service-defs/home-assistant.nix { inherit lib; }).nixos.detailsFn;
   haListen = haConfig: (haDetails { cfg.config = haConfig; }).listen.text;
@@ -406,6 +433,17 @@ let
     }
     {
       assertion =
+        instanceOverride.success
+        &&
+          instanceOverride.value == {
+            name = "Home backup";
+            icon = "services.grafana";
+            serviceId = "restic-backup";
+          };
+      message = "instance override: expected the overridden name and icon, got ${builtins.toJSON instanceOverride}";
+    }
+    {
+      assertion =
         haListen { http = { }; } == "0.0.0.0:8123 :::8123"
         && haListen { http.server_host = "::1"; } == "::1:8123";
       message = "home-assistant: expected Home Assistant's default listen addresses without http.server_host/server_port";
@@ -432,5 +470,6 @@ else
     echo "  - Manual serviceId on a NixOS host uses the host's registry, typos are reported: OK"
     echo "  - Function fields are stored as-is and must be functions: OK"
     echo "  - Home Assistant without http.server_host/server_port: OK"
+    echo "  - Services from nixos.instances can be overridden: OK"
     echo "ok" > $out
   ''

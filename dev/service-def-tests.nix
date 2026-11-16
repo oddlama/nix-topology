@@ -50,10 +50,21 @@ let
       testSpec = serviceDef.test or { };
       optionPath = lib.splitString "." serviceDef.nixos.path;
 
+      # Services with `nixos.instances` are named `<service>-<instance>`,
+      # the instance to check is set by `test.instance`
+      instanced = serviceDef.nixos.instances or false;
+      serviceKey =
+        if !instanced then
+          serviceName
+        else if testSpec ? instance && testSpec ? config then
+          "${serviceName}-${testSpec.instance}"
+        else
+          throw "Service def test '${serviceName}' failed: services with `nixos.instances` need `test.config` and `test.instance`";
+
       defaultConfig = lib.setAttrByPath optionPath { enable = true; };
       serviceConfig = testSpec.config or defaultConfig;
       # Enabling the service with only the settings NixOS requires must work
-      minimalConfig = testSpec.minimalConfig or defaultConfig;
+      minimalConfig = testSpec.minimalConfig or (if instanced then serviceConfig else defaultConfig);
 
       eval = nixosSystem {
         inherit system;
@@ -77,7 +88,7 @@ let
 
       # `test.expect` compares fields of this service; `details.<section>` is that section's text
       expect = testSpec.expect or { };
-      service = forced.${serviceName} or null;
+      service = forced.${serviceKey} or null;
       actual =
         field:
         if lib.hasPrefix "details." field then
@@ -101,7 +112,7 @@ let
 
       assertions = [
         {
-          assertion = minimalServices ? ${serviceName};
+          assertion = minimalServices ? ${serviceKey};
           message = "service does not appear when enabled with its minimal config";
         }
       ]
@@ -110,7 +121,7 @@ let
       failedAssertions = builtins.filter (a: !a.assertion) assertions;
       failureMessages = map (a: a.message) failedAssertions;
 
-      appearsWhenDisabled = disabledServices ? ${serviceName};
+      appearsWhenDisabled = disabledServices ? ${serviceKey};
     in
     if !optionExists optionPath && !allowMissingOptions then
       throw "Service def test '${serviceName}' failed: option path '${serviceDef.nixos.path}' does not exist"

@@ -2,8 +2,9 @@
 let
   inherit (lib)
     attrByPath
-    listToAttrs
+    concatLists
     mapAttrsToList
+    listToAttrs
     mkDefault
     mkEnableOption
     mkIf
@@ -12,60 +13,61 @@ let
 
   inherit (config.topology) serviceRegistry;
 
-  # Generate restic backup services dynamically
-  resticBackupServices = mapAttrsToList (backupName: cfg: {
-    name = "restic-backup-" + backupName;
-    value = {
-      name = "Restic backup '${backupName}'";
-      icon = "services.restic";
+  # A single service. `args` is passed to all registry functions.
+  mkService =
+    id: spec: args:
+    let
+      specNix = spec.nixos;
+    in
+    mkIf (specNix.enabled args) {
+      serviceId = id;
 
-      info = mkIf (cfg.repository != null) cfg.repository;
-      details = {
-        paths = {
-          text = toString cfg.paths;
-        };
-      };
+      # Undefined when the registry has no name, so the default falls back to the id
+      name = mkIf (specNix.nameFn != null || spec.name != "") (
+        mkDefault (if specNix.nameFn != null then specNix.nameFn args else spec.name)
+      );
+      icon = mkDefault (if specNix.iconFn != null then specNix.iconFn args else spec.icon);
+      hidden = mkDefault spec.hidden;
+      info =
+        let
+          val = specNix.infoFn args;
+        in
+        # Undefined when empty: info is types.lines, "" would add an empty line
+        mkIf (val != null && val != "") val;
+      details = specNix.detailsFn args;
     };
-  }) (config.services.restic.backups or { });
 
-  mkServiceFor =
+  # All services of a registry entry, as a list of name-value pairs: none without
+  # a NixOS path, one per instance with `nixos.instances`, and one otherwise
+  servicesFor =
     id: spec:
     let
-      specNix = spec.nixos or null;
+      specNix = spec.nixos;
+      # Empty if the option doesn't exist in this nixpkgs, which disables the service
+      cfg = attrByPath (splitString "." specNix.path) { } config;
     in
-    mkIf (specNix != null && specNix.path != null) (
-      let
-        cfg = attrByPath (splitString "." specNix.path) { } config;
-        # Arguments passed to all registry functions
-        args = { inherit cfg config; };
-        enabled = specNix.enabled args;
-      in
-      mkIf enabled {
-        serviceId = id;
+    if specNix.path == null then
+      [ ]
+    else if specNix.instances then
+      mapAttrsToList (instance: instanceCfg: {
+        name = "${id}-${instance}";
+        value = mkService id spec {
+          inherit config instance;
+          cfg = instanceCfg;
+        };
+      }) cfg
+    else
+      [
+        {
+          name = id;
+          value = mkService id spec {
+            inherit cfg config;
+            instance = null;
+          };
+        }
+      ];
 
-        # Undefined when the registry has no name, so the default falls back to the id
-        name = mkIf (specNix.nameFn != null || spec.name != "") (
-          mkDefault (if specNix.nameFn != null then specNix.nameFn args else spec.name)
-        );
-        icon = mkDefault (if specNix.iconFn != null then specNix.iconFn args else spec.icon);
-        hidden = mkDefault (spec.hidden or false);
-        info =
-          let
-            val = if specNix ? infoFn then specNix.infoFn args else null;
-          in
-          # Undefined when empty: info is types.lines, "" would add an empty line
-          mkIf (val != null && val != "") val;
-        details = specNix.detailsFn args;
-      }
-    );
-
-  generated = listToAttrs (
-    (mapAttrsToList (id: spec: {
-      name = id;
-      value = mkServiceFor id spec;
-    }) serviceRegistry)
-    ++ resticBackupServices
-  );
+  generated = listToAttrs (concatLists (mapAttrsToList servicesFor serviceRegistry));
 in
 {
   options.topology.extractors.services.enable = mkEnableOption "topology service extractor" // {
