@@ -2,14 +2,13 @@ _: {
   name = "Harmonia";
   icon = "services.not-available";
   nixos = {
+    path = "services.harmonia";
     # Also covers `services.harmonia-dev` from harmonia's flake module
-    path = "services";
-    enabled =
-      { cfg, ... }: cfg.harmonia-dev.cache.enable or cfg.harmonia.cache.enable or cfg.harmonia.enable or false;
+    enabled = { cfg, config, ... }: config.services.harmonia-dev.cache.enable or cfg.cache.enable;
   };
   test = {
     minimalConfig = {
-      services.harmonia.enable = true;
+      services.harmonia.cache.enable = true;
     };
     # `services.harmonia-dev` must register as "harmonia", not separately
     config = { lib, ... }: {
