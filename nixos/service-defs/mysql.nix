@@ -12,8 +12,7 @@ in
   icon = "services.mysql";
   nixos = {
     path = "services.mysql";
-    nameFn = cfg: if isMariadb cfg then "MariaDB" else "MySQL";
-    iconFn = cfg: if isMariadb cfg then "services.mariadb" else "services.mysql";
-    detailsFn = _: { };
+    nameFn = { cfg, ... }: if isMariadb cfg then "MariaDB" else "MySQL";
+    iconFn = { cfg, ... }: if isMariadb cfg then "services.mariadb" else "services.mysql";
   };
 }

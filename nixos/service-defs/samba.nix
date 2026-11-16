@@ -13,7 +13,7 @@ in
   nixos = {
     path = "services.samba";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         shares = remove "global" (attrNames cfg.settings);
       in

@@ -10,7 +10,7 @@ in
     # `config` is null when configuration.yaml is managed outside of nix. Newer nixpkgs
     # don't default http.server_host/server_port, so use Home Assistant's own defaults.
     detailsFn =
-      cfg:
+      { cfg, ... }:
       if cfg.config == null then
         { }
       else

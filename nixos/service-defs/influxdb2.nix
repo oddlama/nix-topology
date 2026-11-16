@@ -3,7 +3,7 @@ _: {
   icon = "services.influxdb2";
   nixos = {
     path = "services.influxdb2";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = cfg.settings.http-bind-address or "localhost:8086";
       };

@@ -4,10 +4,10 @@ _: {
   nixos = {
     path = "services.gitea";
     nameFn =
-      cfg:
+      { cfg, ... }:
       if cfg.settings ? DEFAULT.APP_NAME then "gitea (${cfg.settings.DEFAULT.APP_NAME})" else "gitea";
-    infoFn = cfg: cfg.settings.server.ROOT_URL;
-    detailsFn = cfg: {
+    infoFn = { cfg, ... }: cfg.settings.server.ROOT_URL;
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.settings.server.HTTP_ADDR}:${toString cfg.settings.server.HTTP_PORT}";
       };

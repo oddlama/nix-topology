@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.deluge";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         daemonPort = cfg.config.daemon_port or 58846;
         webPort = cfg.web.port or null;

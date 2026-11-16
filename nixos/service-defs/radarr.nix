@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.radarr";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       mkIf cfg.openFirewall {
         listen = {
           text = "0.0.0.0:7878";

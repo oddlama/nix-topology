@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.scrutiny";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       mkIf cfg.openFirewall {
         listen = {
           text = "${cfg.settings.web.listen.host}:${toString cfg.settings.web.listen.port}";

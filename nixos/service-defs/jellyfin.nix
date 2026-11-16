@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.jellyfin";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       listToAttrs (
         mapAttrsToList
           (n: v: {

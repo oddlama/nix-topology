@@ -3,7 +3,7 @@ _: {
   icon = "services.prometheus";
   nixos = {
     path = "services.prometheus";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.listenAddress}:${toString cfg.port}";
       };

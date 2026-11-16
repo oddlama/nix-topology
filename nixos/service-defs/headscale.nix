@@ -3,8 +3,8 @@ _: {
   icon = "services.headscale";
   nixos = {
     path = "services.headscale";
-    infoFn = cfg: cfg.settings.server_url;
-    detailsFn = cfg: {
+    infoFn = { cfg, ... }: cfg.settings.server_url;
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.address}:${toString cfg.port}";
       };

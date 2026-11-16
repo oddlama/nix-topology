@@ -3,7 +3,7 @@ _: {
   icon = "services.bentopdf";
   nixos = {
     path = "services.bentopdf";
-    infoFn = cfg: "https://${cfg.domain}";
+    infoFn = { cfg, ... }: "https://${cfg.domain}";
   };
   test = {
     minimalConfig = {

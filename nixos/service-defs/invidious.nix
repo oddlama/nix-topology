@@ -3,7 +3,7 @@ _: {
   icon = "services.invidious";
   nixos = {
     path = "services.invidious";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.address}:${toString cfg.port}";
       };

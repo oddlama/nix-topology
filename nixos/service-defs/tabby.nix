@@ -3,7 +3,7 @@ _: {
   icon = "services.tabby";
   nixos = {
     path = "services.tabby";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.host}:${toString cfg.port}";
       };

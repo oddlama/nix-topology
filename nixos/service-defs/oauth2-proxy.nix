@@ -3,8 +3,7 @@ _: {
   icon = "services.oauth2-proxy";
   nixos = {
     path = "services.oauth2-proxy";
-    infoFn = cfg: cfg.httpAddress;
-    detailsFn = _: { };
+    infoFn = { cfg, ... }: cfg.httpAddress;
   };
   test = {
     config = {

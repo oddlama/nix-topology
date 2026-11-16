@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.adguardhome";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         address = cfg.host or null;
         port = cfg.port or null;

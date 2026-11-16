@@ -3,7 +3,7 @@ _: {
   icon = "services.esphome";
   nixos = {
     path = "services.esphome";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text =
           if cfg.enableUnixSocket or false then

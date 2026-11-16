@@ -3,7 +3,7 @@ _: {
   icon = "services.firefly-iii";
   nixos = {
     path = "services.firefly-iii";
-    infoFn = cfg: cfg.settings.APP_URL or null;
+    infoFn = { cfg, ... }: cfg.settings.APP_URL or null;
   };
   test = {
     config = {

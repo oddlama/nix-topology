@@ -3,7 +3,7 @@ _: {
   icon = "services.kavita";
   nixos = {
     path = "services.kavita";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "0.0.0.0:${toString cfg.settings.Port}";
       };

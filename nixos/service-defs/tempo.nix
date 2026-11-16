@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.tempo";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         address = cfg.settings.server.http_listen_address or null;
         port = cfg.settings.server.http_listen_port or null;

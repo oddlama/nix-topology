@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.mautrix-whatsapp";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         address = cfg.settings.appservice.hostname or null;
         port = cfg.settings.appservice.port or null;

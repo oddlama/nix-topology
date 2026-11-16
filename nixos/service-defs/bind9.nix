@@ -8,7 +8,7 @@ in
   icon = "services.bind9";
   nixos = {
     path = "services.bind";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen_ipv4.text = toString (
         map (address: "${replaceAny address "0.0.0.0"}:${toString cfg.listenOnPort}") cfg.listenOn
       );

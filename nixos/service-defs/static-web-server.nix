@@ -3,7 +3,7 @@ _: {
   icon = "devices.nixos";
   nixos = {
     path = "services.static-web-server";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = toString cfg.listen;
       };

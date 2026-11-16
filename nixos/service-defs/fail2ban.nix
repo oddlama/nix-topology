@@ -3,7 +3,6 @@ _: {
   icon = "services.fail2ban";
   nixos = {
     path = "services.fail2ban";
-    detailsFn = _: { };
   };
   test = {
     config = {

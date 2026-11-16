@@ -15,7 +15,7 @@ in
   nixos = {
     path = "services.dnsmasq";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         addresses = cfg.settings.address or [ ];
       in

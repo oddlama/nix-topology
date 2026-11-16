@@ -3,8 +3,7 @@ _: {
   icon = "services.mastodon";
   nixos = {
     path = "services.mastodon";
-    infoFn = cfg: "https://${cfg.localDomain}";
-    detailsFn = _: { };
+    infoFn = { cfg, ... }: "https://${cfg.localDomain}";
   };
   test = {
     minimalConfig = {

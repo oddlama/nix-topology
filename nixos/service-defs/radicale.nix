@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.radicale";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       mkIf (cfg.settings ? server.hosts) {
         listen = {
           text = toString cfg.settings.server.hosts;

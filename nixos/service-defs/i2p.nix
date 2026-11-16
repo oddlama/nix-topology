@@ -3,7 +3,6 @@ _: {
   icon = "services.i2p";
   nixos = {
     path = "services.i2pd";
-    detailsFn = _: { };
   };
   test = {
     config = {

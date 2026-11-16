@@ -7,9 +7,9 @@ in
   icon = "services.grafana";
   nixos = {
     path = "services.grafana";
-    infoFn = cfg: cfg.settings.server.root_url;
+    infoFn = { cfg, ... }: cfg.settings.server.root_url;
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         addr = cfg.settings.server.http_addr or null;
         port = cfg.settings.server.http_port or null;

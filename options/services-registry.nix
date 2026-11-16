@@ -6,6 +6,12 @@ let
   fnType = types.addCheck types.raw builtins.isFunction // {
     description = "function";
   };
+
+  fnArgsDoc = ''
+    The function is called with an attribute set containing `cfg` (the value at `path`)
+    and `config` (the whole NixOS configuration). Always accept further arguments
+    with `...`, as more may be added in the future.
+  '';
   serviceSubmodule = { name, ... }: {
     options = {
       serviceId = mkOption {
@@ -39,32 +45,35 @@ let
               type = types.nullOr types.str;
               default = null;
               example = "services.grafana";
-              description = "The NixOS option path for this service";
+              description = "The NixOS option path for this service. Services whose path doesn't exist in a host's nixpkgs are skipped.";
             };
             enabled = mkOption {
               type = fnType;
-              default = cfg: cfg.enable or false;
-              description = "A function that determines if this service is enabled for a given NixOS configuration at the service's path";
+              default = { cfg, ... }: cfg.enable or false;
+              defaultText = lib.literalExpression "{ cfg, ... }: cfg.enable or false";
+              description = "A function that determines if this service is enabled. ${fnArgsDoc}";
             };
             nameFn = mkOption {
               type = types.nullOr fnType;
               default = null;
-              description = "An optional function that dynamically computes the service name from config. Takes precedence over the static `name` when set.";
+              description = "An optional function that dynamically computes the service name. Takes precedence over the static `name` when set. ${fnArgsDoc}";
             };
             iconFn = mkOption {
               type = types.nullOr fnType;
               default = null;
-              description = "An optional function that dynamically computes the service icon from config. Takes precedence over the static `icon` when set.";
+              description = "An optional function that dynamically computes the service icon. Takes precedence over the static `icon` when set. ${fnArgsDoc}";
             };
             infoFn = mkOption {
               type = fnType;
               default = _: "";
-              description = "A function that returns a string with additional high-profile information about this service, usually the url or listen address. Most likely shown directly below the name.";
+              defaultText = lib.literalExpression ''_: ""'';
+              description = "A function that returns a string with additional high-profile information about this service, usually the url or listen address. Most likely shown directly below the name. ${fnArgsDoc}";
             };
             detailsFn = mkOption {
               type = fnType;
               default = _: { };
-              description = "A function that returns additional detail sections that should be shown to the user";
+              defaultText = lib.literalExpression "_: { }";
+              description = "A function that returns additional detail sections that should be shown to the user. ${fnArgsDoc}";
             };
           };
         };

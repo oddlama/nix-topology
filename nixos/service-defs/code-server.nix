@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.code-server";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         host = cfg.host or null;
         port = cfg.port or null;

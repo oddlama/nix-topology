@@ -12,8 +12,8 @@ in
   icon = "services.firefox-syncserver";
   nixos = {
     path = "services.firefox-syncserver";
-    infoFn = cfg: if cfg.singleNode.enable or false then cfg.singleNode.url else null;
-    detailsFn = cfg: {
+    infoFn = { cfg, ... }: if cfg.singleNode.enable or false then cfg.singleNode.url else null;
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.settings.host or "127.0.0.1"}:${toString cfg.settings.port}";
       };

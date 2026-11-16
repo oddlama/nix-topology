@@ -5,8 +5,7 @@ _: {
     # Also covers `services.harmonia-dev` from harmonia's flake module
     path = "services";
     enabled =
-      cfg: cfg.harmonia-dev.cache.enable or cfg.harmonia.cache.enable or cfg.harmonia.enable or false;
-    detailsFn = _: { };
+      { cfg, ... }: cfg.harmonia-dev.cache.enable or cfg.harmonia.cache.enable or cfg.harmonia.enable or false;
   };
   test = {
     minimalConfig = {

@@ -13,9 +13,9 @@ in
   icon = "services.authelia";
   nixos = {
     path = "services.authelia";
-    enabled = cfg: (filterAttrs (_: v: v.enable) (cfg.instances or { })) != { };
+    enabled = { cfg, ... }: (filterAttrs (_: v: v.enable) (cfg.instances or { })) != { };
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         instances = filterAttrs (_: v: v.enable) cfg.instances;
       in

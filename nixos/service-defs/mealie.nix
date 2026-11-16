@@ -3,7 +3,7 @@ _: {
   icon = "services.mealie";
   nixos = {
     path = "services.mealie";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.listenAddress}:${toString cfg.port}";
       };

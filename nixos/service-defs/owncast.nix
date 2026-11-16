@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.owncast";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       mkIf cfg.openFirewall {
         listen = {
           text = "${cfg.listen}:${toString cfg.port}";

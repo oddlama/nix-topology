@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.sonarr";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       mkIf cfg.openFirewall {
         listen = {
           text = "0.0.0.0:8989";

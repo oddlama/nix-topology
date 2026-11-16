@@ -3,8 +3,7 @@ _: {
   icon = "services.tor";
   nixos = {
     path = "services.tor";
-    infoFn = cfg: if cfg.relay.enable or false then "Role: ${cfg.relay.role}" else null;
-    detailsFn = _: { };
+    infoFn = { cfg, ... }: if cfg.relay.enable or false then "Role: ${cfg.relay.role}" else null;
   };
   test = {
     config = {

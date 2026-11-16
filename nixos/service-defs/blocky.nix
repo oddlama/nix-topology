@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.blocky";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       listToAttrs (
         mapAttrsToList (n: v: {
           name = "listen.${n}";

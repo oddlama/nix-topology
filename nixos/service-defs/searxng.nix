@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.searx";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         address = cfg.settings.server.bind_address or null;
         port = cfg.settings.server.port or null;

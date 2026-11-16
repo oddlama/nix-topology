@@ -7,8 +7,7 @@ in
   icon = "services.nextcloud";
   nixos = {
     path = "services.nextcloud";
-    infoFn = cfg: "http${optionalString cfg.https "s"}://${cfg.hostName}";
-    detailsFn = _: { };
+    infoFn = { cfg, ... }: "http${optionalString cfg.https "s"}://${cfg.hostName}";
   };
   test = {
     minimalConfig = {

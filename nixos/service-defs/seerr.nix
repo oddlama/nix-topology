@@ -4,9 +4,9 @@ _: {
   nixos = {
     # Also covers `services.jellyseerr`, the only option before nixpkgs 26.05
     path = "services";
-    enabled = cfg: (cfg.seerr or cfg.jellyseerr or { }).enable or false;
+    enabled = { cfg, ... }: (cfg.seerr or cfg.jellyseerr or { }).enable or false;
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         seerr = cfg.seerr or cfg.jellyseerr;
       in

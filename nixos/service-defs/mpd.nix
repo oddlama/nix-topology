@@ -4,7 +4,7 @@ _: {
   nixos = {
     path = "services.mpd";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         addr =
           if cfg ? settings then

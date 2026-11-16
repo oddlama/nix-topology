@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.transmission";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         address = cfg.settings.rpc-bind-address or null;
         port = cfg.settings.rpc-port or null;

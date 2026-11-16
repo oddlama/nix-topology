@@ -16,7 +16,7 @@ in
   nixos = {
     path = "services.nginx";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         reverseProxies = flatten (
           flip mapAttrsToList (cfg.virtualHosts or { }) (

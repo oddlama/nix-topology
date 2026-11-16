@@ -3,8 +3,8 @@ _: {
   icon = "devices.nixos";
   nixos = {
     path = "services.hydra";
-    infoFn = cfg: cfg.hydraURL;
-    detailsFn = cfg: {
+    infoFn = { cfg, ... }: cfg.hydraURL;
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.listenHost}:${toString cfg.port}";
       };

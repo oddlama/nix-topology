@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.komga";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       mkIf cfg.openFirewall {
         listen = {
           text = "0.0.0.0:${toString cfg.settings.server.port}";

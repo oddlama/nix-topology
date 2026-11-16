@@ -8,13 +8,13 @@ in
   nixos = {
     path = "services.vaultwarden";
     infoFn =
-      cfg:
+      { cfg, ... }:
       let
         domain = cfg.config.domain or cfg.config.DOMAIN or null;
       in
       mkIf (domain != null) domain;
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         address = cfg.config.rocketAddress or cfg.config.ROCKET_ADDRESS or null;
         port = cfg.config.rocketPort or cfg.config.ROCKET_PORT or null;

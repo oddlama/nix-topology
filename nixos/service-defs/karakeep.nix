@@ -3,7 +3,6 @@ _: {
   icon = "services.karakeep";
   nixos = {
     path = "services.karakeep";
-    detailsFn = _: { };
   };
   test = {
     config = {

@@ -7,7 +7,7 @@ in
   icon = "services.postgresql";
   nixos = {
     path = "services.postgresql";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = mkIf (cfg.enableTCPIP or false) { text = "0.0.0.0:${toString cfg.settings.port}"; };
     };
   };

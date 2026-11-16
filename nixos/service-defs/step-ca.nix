@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.step-ca";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       mkIf cfg.openFirewall {
         listen = {
           text = "${cfg.address}:${toString cfg.port}";

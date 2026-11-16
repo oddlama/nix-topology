@@ -7,9 +7,9 @@ in
   icon = "services.ntpd-rs";
   nixos = {
     path = "services.ntpd-rs";
-    enabled = cfg: cfg.enable && (cfg.settings.server or [ ]) != [ ];
+    enabled = { cfg, ... }: cfg.enable && (cfg.settings.server or [ ]) != [ ];
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         ntpServers = cfg.settings.server or [ ];
       in

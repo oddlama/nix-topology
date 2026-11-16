@@ -3,9 +3,9 @@ _: {
   icon = "services.navidrome";
   nixos = {
     path = "services.navidrome";
-    infoFn = cfg: cfg.settings.BaseUrl or null;
+    infoFn = { cfg, ... }: cfg.settings.BaseUrl or null;
     detailsFn =
-      cfg:
+      { cfg, ... }:
       if cfg.openFirewall then
         {
           listen = {

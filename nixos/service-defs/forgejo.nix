@@ -4,10 +4,10 @@ _: {
   nixos = {
     path = "services.forgejo";
     nameFn =
-      cfg:
+      { cfg, ... }:
       if cfg.settings ? DEFAULT.APP_NAME then "Forgejo (${cfg.settings.DEFAULT.APP_NAME})" else "Forgejo";
-    infoFn = cfg: cfg.settings.server.ROOT_URL;
-    detailsFn = cfg: {
+    infoFn = { cfg, ... }: cfg.settings.server.ROOT_URL;
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.settings.server.HTTP_ADDR}:${toString cfg.settings.server.HTTP_PORT}";
       };

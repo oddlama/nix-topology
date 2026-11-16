@@ -18,7 +18,7 @@ in
   nixos = {
     path = "services.caddy";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       genAttrs (mapAttrsToList (name: _: name) (cfg.virtualHosts or { })) (name: {
         text = concatStringsSep " " (
           map (line: removePrefix "reverse_proxy " (removeSuffix " {" line)) (

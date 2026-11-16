@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.glance";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       mkIf cfg.openFirewall {
         listen = {
           text = "${cfg.settings.server.host}:${toString cfg.settings.server.port}";

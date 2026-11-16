@@ -3,7 +3,7 @@ _: {
   icon = "devices.nixos";
   nixos = {
     path = "services.nix-serve";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.bindAddress}:${toString cfg.port}";
       };

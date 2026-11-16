@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.plausible";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         listenAddress = cfg.server.listenAddress or null;
         port = cfg.server.port or null;
@@ -18,7 +18,7 @@ in
           text = "${listenAddress}:${toString port}";
         };
       };
-    infoFn = cfg: cfg.server.baseUrl;
+    infoFn = { cfg, ... }: cfg.server.baseUrl;
   };
   test = {
     minimalConfig = {

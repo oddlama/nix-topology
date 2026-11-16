@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.coder";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         listenAddress = cfg.listenAddress or null;
       in
@@ -17,7 +17,7 @@ in
           text = listenAddress;
         };
       };
-    infoFn = cfg: cfg.accessUrl;
+    infoFn = { cfg, ... }: cfg.accessUrl;
   };
   test = {
     config = {

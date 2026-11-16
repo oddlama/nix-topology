@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.stirling-pdf";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         address = cfg.environment.SERVER_HOST or null;
         port = cfg.environment.SERVER_PORT or null;

@@ -7,7 +7,7 @@ in
   icon = "services.hickory-dns";
   nixos = {
     path = "services.hickory-dns";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen_ipv4 = {
         text = toString (
           map (addr: "${addr}:${toString cfg.settings.listen_port}") cfg.settings.listen_addrs_ipv4

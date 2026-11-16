@@ -4,12 +4,12 @@ _: {
   nixos = {
     path = "services.paperless";
     infoFn =
-      cfg:
+      { cfg, ... }:
       let
         domain = cfg.domain or null;
       in
       if domain != null then "https://${domain}" else null;
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.address}:${toString cfg.port}";
       };

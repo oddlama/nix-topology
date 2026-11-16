@@ -13,7 +13,7 @@ in
   nixos = {
     path = "services.mosquitto";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       listToAttrs (
         flip imap0
           (flip map cfg.listeners (l: rec {

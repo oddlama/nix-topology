@@ -7,9 +7,9 @@ in
   icon = "services.vikunja";
   nixos = {
     path = "services.vikunja";
-    infoFn = cfg: "${cfg.frontendScheme}://${cfg.frontendHostname}";
+    infoFn = { cfg, ... }: "${cfg.frontendScheme}://${cfg.frontendHostname}";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       mkIf (cfg ? address) {
         listen = {
           text = "${cfg.address}:${toString cfg.port}";

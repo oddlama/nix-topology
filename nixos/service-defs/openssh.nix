@@ -8,8 +8,7 @@ in
   hidden = true;
   nixos = {
     path = "services.openssh";
-    infoFn = cfg: "port: ${concatStringsSep ", " (map toString cfg.ports)}";
-    detailsFn = _: { };
+    infoFn = { cfg, ... }: "port: ${concatStringsSep ", " (map toString cfg.ports)}";
   };
   test = {
     config = {

@@ -3,7 +3,7 @@ _: {
   icon = "services.zipline";
   nixos = {
     path = "services.zipline";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.settings.CORE_HOSTNAME}:${toString cfg.settings.CORE_PORT}";
       };

@@ -14,7 +14,7 @@ in
   nixos = {
     path = "services.traefik";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         dynCfg = cfg.dynamicConfigOptions;
         routers = dynCfg.http.routers or { };

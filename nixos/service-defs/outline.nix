@@ -3,7 +3,7 @@ _: {
   icon = "services.outline";
   nixos = {
     path = "services.outline";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.publicUrl}";
       };

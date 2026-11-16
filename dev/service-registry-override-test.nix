@@ -303,7 +303,7 @@ let
 
   # --- Scenario 11: Home Assistant settings that newer nixpkgs don't default ---
   haDetails = (import ../nixos/service-defs/home-assistant.nix { inherit lib; }).nixos.detailsFn;
-  haListen = config: (haDetails { inherit config; }).listen.text;
+  haListen = haConfig: (haDetails { cfg.config = haConfig; }).listen.text;
 
   assertions = [
     # Per-node: node-a has custom name, node-b has default

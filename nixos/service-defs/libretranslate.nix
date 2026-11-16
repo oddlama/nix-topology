@@ -3,7 +3,7 @@ _: {
   icon = "services.libretranslate";
   nixos = {
     path = "services.libretranslate";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.host}:${toString cfg.port}";
       };

@@ -3,7 +3,7 @@ _: {
   icon = "services.languagetool";
   nixos = {
     path = "services.languagetool";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "127.0.0.1:${toString cfg.port}";
       };

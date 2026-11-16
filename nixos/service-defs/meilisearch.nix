@@ -3,7 +3,7 @@ _: {
   icon = "services.meilisearch";
   nixos = {
     path = "services.meilisearch";
-    detailsFn = cfg: {
+    detailsFn = { cfg, ... }: {
       listen = {
         text = "${cfg.listenAddress}:${toString cfg.listenPort}";
       };

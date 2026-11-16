@@ -7,9 +7,9 @@ in
   icon = "services.matrix";
   nixos = {
     path = "services.matrix-synapse";
-    infoFn = cfg: cfg.settings.public_baseurl;
+    infoFn = { cfg, ... }: cfg.settings.public_baseurl;
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         listener = head (cfg.settings.listeners or [ ]);
       in

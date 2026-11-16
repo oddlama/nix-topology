@@ -3,7 +3,6 @@ _: {
   icon = "services.alloy";
   nixos = {
     path = "services.alloy";
-    detailsFn = _: { };
   };
   test = {
     config = {

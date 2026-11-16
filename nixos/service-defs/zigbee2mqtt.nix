@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.zigbee2mqtt";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         mqttServer = cfg.settings.mqtt.server or null;
         address = cfg.settings.frontend.host or null;

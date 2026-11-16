@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.mimir";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       let
         address = cfg.configuration.server.http_listen_address or null;
         port = cfg.configuration.server.http_listen_port or null;

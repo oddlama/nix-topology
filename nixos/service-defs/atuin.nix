@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.atuin";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       mkIf cfg.openFirewall {
         listen = {
           text = "${cfg.host}:${toString cfg.port}";

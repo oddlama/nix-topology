@@ -36,24 +36,26 @@ let
     mkIf (specNix != null && specNix.path != null) (
       let
         cfg = attrByPath (splitString "." specNix.path) { } config;
-        enabled = specNix.enabled cfg;
+        # Arguments passed to all registry functions
+        args = { inherit cfg config; };
+        enabled = specNix.enabled args;
       in
       mkIf enabled {
         serviceId = id;
 
         # Undefined when the registry has no name, so the default falls back to the id
         name = mkIf (specNix.nameFn != null || spec.name != "") (
-          mkDefault (if specNix.nameFn != null then specNix.nameFn cfg else spec.name)
+          mkDefault (if specNix.nameFn != null then specNix.nameFn args else spec.name)
         );
-        icon = mkDefault (if specNix.iconFn != null then specNix.iconFn cfg else spec.icon);
+        icon = mkDefault (if specNix.iconFn != null then specNix.iconFn args else spec.icon);
         hidden = mkDefault (spec.hidden or false);
         info =
           let
-            val = if specNix ? infoFn then specNix.infoFn cfg else null;
+            val = if specNix ? infoFn then specNix.infoFn args else null;
           in
           # Undefined when empty: info is types.lines, "" would add an empty line
           mkIf (val != null && val != "") val;
-        details = specNix.detailsFn cfg;
+        details = specNix.detailsFn args;
       }
     );
 

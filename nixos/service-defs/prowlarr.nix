@@ -8,7 +8,7 @@ in
   nixos = {
     path = "services.prowlarr";
     detailsFn =
-      cfg:
+      { cfg, ... }:
       mkIf cfg.openFirewall {
         listen = {
           text = "0.0.0.0:9696";

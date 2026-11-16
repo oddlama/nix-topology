@@ -3,9 +3,9 @@ _: {
   icon = "services.kanidm";
   nixos = {
     path = "services.kanidm";
-    enabled = cfg: cfg.server.enable or cfg.enableServer or false;
-    infoFn = cfg: cfg.server.settings.origin or cfg.serverSettings.origin;
-    detailsFn = cfg: {
+    enabled = { cfg, ... }: cfg.server.enable or cfg.enableServer or false;
+    infoFn = { cfg, ... }: cfg.server.settings.origin or cfg.serverSettings.origin;
+    detailsFn = { cfg, ... }: {
       listen = {
         text = cfg.server.settings.bindaddress or cfg.serverSettings.bindaddress;
       };
