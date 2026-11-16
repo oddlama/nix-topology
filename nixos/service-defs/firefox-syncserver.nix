@@ -1,13 +1,11 @@
 { lib }:
 let
   # `database.type` is required on newer nixpkgs and doesn't exist on older ones
-  databaseType =
-    { options, ... }:
-    {
-      services.firefox-syncserver = lib.optionalAttrs (
-        options.services.firefox-syncserver.database ? type
-      ) { database.type = "postgresql"; };
-    };
+  databaseType = { options, ... }: {
+    services.firefox-syncserver = lib.optionalAttrs (
+      options.services.firefox-syncserver.database ? type
+    ) { database.type = "postgresql"; };
+  };
 in
 {
   name = "Firefox Syncserver";

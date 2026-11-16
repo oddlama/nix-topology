@@ -13,13 +13,11 @@ _: {
       services.harmonia.enable = true;
     };
     # `services.harmonia-dev` must register as "harmonia", not separately
-    config =
-      { lib, ... }:
-      {
-        # Declared by harmonia's flake module
-        options.services.harmonia-dev.cache.enable = lib.mkEnableOption "harmonia-dev";
-        config.services.harmonia-dev.cache.enable = true;
-      };
+    config = { lib, ... }: {
+      # Declared by harmonia's flake module
+      options.services.harmonia-dev.cache.enable = lib.mkEnableOption "harmonia-dev";
+      config.services.harmonia-dev.cache.enable = true;
+    };
     expect = {
       name = "Harmonia";
     };
