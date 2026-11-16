@@ -97,7 +97,17 @@ let
 in
 f {
   options.serviceRegistry = mkOption {
-    description = "A registry of known services containing all metadata (name, icon, visibility flags) plus extractor-specific discovery, info, and details functions used by the graph renderers.";
+    description = ''
+      A registry of known services containing all metadata (name, icon, visibility flags)
+      plus extractor-specific discovery, info, and details functions used by the graph renderers.
+      Services refer to an entry with `serviceId`, and the services extractor adds a service
+      for each entry whose `nixos` settings match a NixOS host's configuration.
+
+      Each NixOS host has its own registry under `topology.serviceRegistry`, which applies to the
+      services of that host. The registry in the global topology module only applies to
+      nodes that aren't NixOS hosts, such as routers. To change an entry for all NixOS hosts,
+      define it in a NixOS module that all of them import.
+    '';
     type = types.attrsOf (types.submodule serviceSubmodule);
     default = { };
   };

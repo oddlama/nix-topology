@@ -5,7 +5,8 @@ First of all, here's a very quick overview over the codebase:
 - `examples/` each folder in here should contain a `flake.nix` as a user would write it for their configuration.
   Each such example flake will automatically be evaluated and rendered in the documentation.
 - `icons/` contains all the service, device and interface icons. Placing a new file here will automatically register it.
-- `nixos/` contains anything related to the provided NixOS module. Mostly information extractors.
+- `nixos/` contains anything related to the provided NixOS module. Mostly information extractors,
+  and the service registry in `nixos/service-defs/` with one file per known service.
 - `options/` contains shared options. Shared means that all of these options will be present
   both in the global topology module and also in each NixOS module under the `topology` option,
   which will be merged into the global topology. If you need NixOS specific options (like extractors) or topology specific options (like renderers)
@@ -19,8 +20,8 @@ First of all, here's a very quick overview over the codebase:
 I'm generally happy to accept any extractor, but please make sure they meet the following criteria:
 
 - It must provide an `enable` option so it can be disabled. It may be enabled by default, if it is a no-op
-  for systems that don't use the relevant parts. The services extractor for example guards all assignments
-  behind `mkIf config.services.<service_name>.enable` to make sure that it works for systems that don't use a particular service.
+  for systems that don't use the relevant parts. The services extractor for example only adds services
+  whose `enable` option is set, and skips services whose options don't exist in the host's nixpkgs.
 - The default settings of an extractor (or any part of it) should try not to cause clutter in the generated cards.
   Take for example OpenSSH which is usually enabled on all machines. Showing it by default would cause a lot of unnecessary clutter,
   so it should be guarded behind an additional option that is disabled by default. Same goes for common local services like smartd, fwupd, ...
@@ -54,40 +55,88 @@ The file will automatically be included by the main NixOS module.
 
 ## Adding a service to the services extractor
 
-To add a new service to the services extractor, all you need to do is
-to add the relevant attribute to the body of the extractor. Please keep them sorted alphabetically.
+To add a new service, all you need to do is to create a new file `nixos/service-defs/<service_name>.nix`.
+It will be picked up automatically, and the file name is the id of the service.
 
 Imagine we want to add support for vaultwarden, we would start by extracting some information,
 while making sure there's a sensible fallback value at all times if the value isn't set.
 Don't depend on any value being set, only observe what the user has actually configured!
 
 ```nix
-vaultwarden = let
-  # Extract domain, address and port if they were set
-  domain = config.services.vaultwarden.config.domain or config.services.vaultwarden.config.DOMAIN or null;
-  address = config.services.vaultwarden.config.rocketAddress or config.services.vaultwarden.config.ROCKET_ADDRESS or null;
-  port = config.services.vaultwarden.config.rocketPort or config.services.vaultwarden.config.ROCKET_PORT or null;
+{ lib }:
+let
+  inherit (lib) mkIf;
 in
-  # Only assign anything if the service is enabled
-  mkIf config.services.vaultwarden.enable {
-    # The service's proper name.
-    name = "Vaultwarden";
-    # An icon from the icon registry. We will add a new icon for the service later.
-    icon = "services.vaultwarden";
+{
+  # The service's proper name.
+  name = "Vaultwarden";
+  # An icon from the icon registry. We will add a new icon for the service later.
+  icon = "services.vaultwarden";
+  nixos = {
+    # The NixOS option path of the service. It's shown if `<path>.enable` is set,
+    # use `enabled = { cfg, config, ... }: ...;` if you need a different condition.
+    # All functions receive the value at `path` as `cfg` and the whole configuration as `config`.
+    path = "services.vaultwarden";
     # One line of information that should be shown below the service name.
     # Usually this should be the hosted domain name (if it is known), or very very important information.
-    # For vaultwarden, we the domain in the config. If you are unsure for your service, just leave
+    # For vaultwarden, we use the domain from the config. If you are unsure for your service, just leave
     # it out so users can set it manually via topology.self.services.<service>.info = "...";
-    info = mkIf (domain != null) domain;
+    infoFn =
+      { cfg, ... }:
+      let
+        domain = cfg.config.domain or cfg.config.DOMAIN or null;
+      in
+      mkIf (domain != null) domain;
     # In details you can add more information specific to the service.
     # Currently I tried to include a `listen` detail for any service listening on an address/port.
     # Samba for example shows the configured shares and nginx the configured reverse proxies.
     # If you are unsure what to do here, just leave it out.
-    details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+    detailsFn =
+      { cfg, ... }:
+      let
+        address = cfg.config.rocketAddress or cfg.config.ROCKET_ADDRESS or null;
+        port = cfg.config.rocketPort or cfg.config.ROCKET_PORT or null;
+      in
+      {
+        listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
+      };
   };
+  # Every service is tested by evaluating a NixOS configuration with nixpkgs unstable and stable.
+  test = {
+    # The configuration to test with, `<path>.enable = true;` if not set.
+    config = {
+      services.vaultwarden = {
+        enable = true;
+        config = {
+          domain = "https://vault.example.com";
+          rocketAddress = "0.0.0.0";
+          rocketPort = 8222;
+        };
+      };
+    };
+    # The expected fields of the service with `test.config`, `details.<name>` is the text of that detail.
+    expect = {
+      name = "Vaultwarden";
+      info = "https://vault.example.com";
+      details.listen = "0.0.0.0:8222";
+    };
+    # Optional: the service must also appear when enabled with only the settings NixOS requires.
+    # Set this if `<path>.enable = true;` alone isn't enough. Defaults to `<path>.enable = true;`.
+    # minimalConfig = { ... };
+    # Optional: additional assertions, given all extracted services of `test.config`.
+    # assertions = services: [ { assertion = ...; message = "..."; } ];
+  };
+}
 ```
 
-Now we still need to add an icon to the registry, but then the extractor is finished.
+If a service can have multiple instances under one option (like `services.restic.backups`), set `nixos.instances = true;`.
+Then one service is created per instance with the id `<service_name>-<instance>`, the functions get the instance's value
+as `cfg` and its name as `instance`, and the test needs `test.instance` to select the instance to check.
+
+You can run the test of your service with `nix build .#checks.x86_64-linux.service-def-<service_name>`,
+and on nixpkgs stable with `nix build .#checks.x86_64-linux.service-def-<service_name>-stable`.
+
+Now we still need to add an icon to the registry, but then the service is finished.
 nix-topology supports svg, png and jpeg files, but we prefer SVG wherever possible.
 Usually you should be able to find the original logo of any project in their main repository
 on GitHub by searching for `.svg` by pressing <kbd>t</kbd>.
