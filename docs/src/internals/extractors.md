@@ -6,23 +6,41 @@ All extractors can be disabled individually, and you can define your own extract
 
 The most prominent extractor is probably the services extractor, which adds service
 icons and information for each known service that is enabled on a NixOS host.
-Usually they just consist of one mkIf to show the service if it is enabled.
-For example have a look at the vaultwarden service extractor, which is one of the more
-complex ones (it's still quite simple):
+The services it knows about are defined in the service registry, with one file per service in `nixos/service-defs/`.
+Usually an entry just consists of a name, an icon and the NixOS option path of the service,
+which is shown if its `enable` option is set. For example have a look at the vaultwarden entry,
+which is one of the more complex ones (it's still quite simple):
 
 ```nix
-vaultwarden = let
-  domain = config.services.vaultwarden.config.domain or config.services.vaultwarden.config.DOMAIN or null;
-  address = config.services.vaultwarden.config.rocketAddress or config.services.vaultwarden.config.ROCKET_ADDRESS or null;
-  port = config.services.vaultwarden.config.rocketPort or config.services.vaultwarden.config.ROCKET_PORT or null;
+{ lib }:
+let
+  inherit (lib) mkIf;
 in
-  mkIf config.services.vaultwarden.enable {
-    name = "Vaultwarden";
-    icon = "services.vaultwarden";
-    info = mkIf (domain != null) domain;
-    details.listen = mkIf (address != null && port != null) {text = "${address}:${toString port}";};
+{
+  name = "Vaultwarden";
+  icon = "services.vaultwarden";
+  nixos = {
+    path = "services.vaultwarden";
+    infoFn =
+      { cfg, ... }:
+      let
+        domain = cfg.config.domain or cfg.config.DOMAIN or null;
+      in
+      mkIf (domain != null) domain;
+    detailsFn =
+      { cfg, ... }:
+      let
+        address = cfg.config.rocketAddress or cfg.config.ROCKET_ADDRESS or null;
+        port = cfg.config.rocketPort or cfg.config.ROCKET_PORT or null;
+      in
+      {
+        listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
+      };
   };
+}
 ```
+
+The registry can also be extended from your own configuration, see [Adding Services](../services.md).
 
 If you want to add support for new services, feel free to create a PR. Contributions are wholeheartedly welcome!
 There's more information in the [Development Chapter](./development.html).
