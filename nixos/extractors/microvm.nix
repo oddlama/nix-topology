@@ -16,7 +16,7 @@ let
     f:
     flip mapAttrsToList config.microvm.vms (
       vmName: vm:
-      f (if vm.flake != null then vm.flake.nixosConfigurations.${vmName}.config else vm.config.config)
+      f (if vm.flake != null then vm.flake.nixosConfigurations.${vmName}.config else if vm.evaluatedConfig != null then vm.evaluatedConfig.config else vm.config.config)
     );
 in
 {
