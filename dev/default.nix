@@ -48,6 +48,7 @@
             inherit self system;
             pkgs = pkgsStable;
           };
+          oci-image-corpus = import ./oci-image-corpus-test.nix { inherit pkgs; };
           oci-image-ref = import ./oci-image-ref-test.nix { inherit pkgs; };
           service-extraction = import ./service-extraction-test.nix { inherit self pkgs system; };
           service-registry-override = import ./service-registry-override-test.nix {
