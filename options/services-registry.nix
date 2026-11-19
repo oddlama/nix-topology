@@ -13,6 +13,14 @@ let
     or null) and `config` (the whole NixOS configuration). Always accept further arguments
     with `...`, as more may be added in the future.
   '';
+  ociFnArgsDoc = ''
+    The function is called with an attribute set containing `cfg` (the container's raw
+    backend configuration, such as `virtualisation.oci-containers.containers.<name>`),
+    `container` (a normalized description of the container, the same for all backends:
+    `{ name, backend, image = { reference, registry, repository, tag, digest }, ports,
+    labels, environment, volumes }`) and `config` (the whole NixOS configuration).
+    Always accept further arguments with `...`, as more may be added in the future.
+  '';
   serviceSubmodule = { name, ... }: {
     options = {
       serviceId = mkOption {
@@ -91,6 +99,58 @@ let
         };
         default = { };
         description = "NixOS-specific metadata for this service";
+      };
+
+      oci = mkOption {
+        type = types.submodule {
+          options = {
+            repos = mkOption {
+              type = types.listOf types.str;
+              default = [ ];
+              example = [
+                "jellyfin"
+                "registry.lan/mirror/jellyfin"
+              ];
+              description = ''
+                Image repositories of this service. A container whose image matches one of them
+                becomes a service of this entry. A pattern matches when its path components equal
+                the trailing components of the image's repository, so `jellyfin` matches
+                `jellyfin/jellyfin`, `lscr.io/linuxserver/jellyfin` and
+                `registry.lan/proxy/jellyfin/jellyfin`, but not `jellyfin-vue`. Tags, digests and the
+                registry are ignored, unless the pattern starts with a registry (a first component with a
+                `.` or `:`, or `localhost`), which then has to match too. If several entries match, the
+                most specific pattern wins: one with a registry, then the one with more components.
+
+                Lists from several definitions are concatenated, so you can add repositories to a built-in
+                entry. Use `lib.mkForce` to replace them.
+              '';
+            };
+            nameFn = mkOption {
+              type = types.nullOr fnType;
+              default = null;
+              description = "An optional function that dynamically computes the service name. Takes precedence over the static `name` when set. ${ociFnArgsDoc}";
+            };
+            iconFn = mkOption {
+              type = types.nullOr fnType;
+              default = null;
+              description = "An optional function that dynamically computes the service icon. Takes precedence over the static `icon` when set. ${ociFnArgsDoc}";
+            };
+            infoFn = mkOption {
+              type = fnType;
+              default = _: "";
+              defaultText = lib.literalExpression ''_: ""'';
+              description = "A function that returns a string with additional high-profile information about this service. Takes precedence over the extractor's `infoFn` when it returns a non-empty string. ${ociFnArgsDoc}";
+            };
+            detailsFn = mkOption {
+              type = fnType;
+              default = _: { };
+              defaultText = lib.literalExpression "_: { }";
+              description = "A function that returns additional detail sections, merged over the extractor's details. ${ociFnArgsDoc}";
+            };
+          };
+        };
+        default = { };
+        description = "Metadata for OCI containers of this service, used by the oci-container extractor";
       };
     };
   };
