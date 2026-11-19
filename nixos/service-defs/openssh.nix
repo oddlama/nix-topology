@@ -10,6 +10,7 @@ in
     path = "services.openssh";
     infoFn = { cfg, ... }: "port: ${concatStringsSep ", " (map toString cfg.ports)}";
   };
+  oci.repos = [ "openssh-server" ];
   test = {
     config = {
       services.openssh = {

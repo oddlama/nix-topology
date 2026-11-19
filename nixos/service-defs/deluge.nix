@@ -20,6 +20,10 @@ in
         webUI = mkIf (cfg.web.enable && webPort != null) { text = "0.0.0.0:${toString webPort}"; };
       };
   };
+  oci.repos = [
+    "deluge"
+    "arch-deluge"
+  ];
   test = {
     config = {
       services.deluge = {

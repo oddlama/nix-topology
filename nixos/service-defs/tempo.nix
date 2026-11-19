@@ -19,6 +19,7 @@ in
         };
       };
   };
+  oci.repos = [ "grafana/tempo" ];
   test = {
     config = {
       services.tempo = {

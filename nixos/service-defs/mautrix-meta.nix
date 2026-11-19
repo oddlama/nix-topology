@@ -28,6 +28,7 @@ in
         };
       };
   };
+  oci.repos = [ "mautrix/meta" ];
   test = {
     instance = "instagram";
     config = {

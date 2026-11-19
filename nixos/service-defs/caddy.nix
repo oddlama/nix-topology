@@ -29,6 +29,7 @@ in
         );
       });
   };
+  oci.repos = [ "caddy" ];
   test = {
     config = {
       services.caddy = {

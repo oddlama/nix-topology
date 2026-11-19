@@ -19,6 +19,7 @@ in
       };
     infoFn = { cfg, ... }: cfg.accessUrl;
   };
+  oci.repos = [ "coder/coder" ];
   test = {
     config = {
       services.coder = {

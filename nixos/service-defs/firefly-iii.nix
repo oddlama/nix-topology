@@ -5,6 +5,7 @@ _: {
     path = "services.firefly-iii";
     infoFn = { cfg, ... }: cfg.settings.APP_URL or null;
   };
+  oci.repos = [ "fireflyiii/core" ];
   test = {
     config = {
       services.firefly-iii = {

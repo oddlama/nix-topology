@@ -15,6 +15,7 @@ _: {
       else
         { };
   };
+  oci.repos = [ "navidrome" ];
   test = {
     config = {
       services.navidrome = {

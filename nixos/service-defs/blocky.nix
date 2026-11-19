@@ -18,6 +18,7 @@ in
         }) (cfg.settings.ports or { })
       );
   };
+  oci.repos = [ "blocky" ];
   test = {
     config = {
       services.blocky = {

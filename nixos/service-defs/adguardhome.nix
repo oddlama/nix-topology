@@ -19,6 +19,7 @@ in
         };
       };
   };
+  oci.repos = [ "adguardhome" ];
   test = {
     config = {
       services.adguardhome = {

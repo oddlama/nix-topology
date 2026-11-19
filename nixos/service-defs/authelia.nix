@@ -28,6 +28,7 @@ in
         }) instances
       );
   };
+  oci.repos = [ "authelia" ];
   test = {
     minimalConfig = {
       services.authelia.instances.main = {

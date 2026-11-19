@@ -5,6 +5,7 @@ _: {
     path = "services.bentopdf";
     infoFn = { cfg, ... }: "https://${cfg.domain}";
   };
+  oci.repos = [ "bentopdf" ];
   test = {
     minimalConfig = {
       services.bentopdf = {

@@ -5,6 +5,7 @@ _: {
     path = "services.oauth2-proxy";
     infoFn = { cfg, ... }: cfg.httpAddress;
   };
+  oci.repos = [ "oauth2-proxy" ];
   test = {
     config = {
       services.oauth2-proxy = {

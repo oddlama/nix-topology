@@ -27,6 +27,10 @@ in
           )
       );
   };
+  oci.repos = [
+    "jellyfin"
+    "arch-jellyfin"
+  ];
   test = {
     config = {
       services.jellyfin = {

@@ -16,6 +16,10 @@ in
         };
       };
   };
+  oci.repos = [
+    "vikunja"
+    "vikunja/api"
+  ];
   test = {
     minimalConfig = {
       services.vikunja = {

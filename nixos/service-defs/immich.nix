@@ -15,6 +15,10 @@ in
         };
       };
   };
+  oci.repos = [
+    "immich-server"
+    "immich"
+  ];
   test = {
     config = {
       services.immich = {

@@ -19,6 +19,10 @@ in
       };
     };
   };
+  oci.repos = [
+    "mozilla/syncstorage-rs"
+    "mozilla/syncserver"
+  ];
   test = {
     minimalConfig = {
       imports = [ databaseType ];

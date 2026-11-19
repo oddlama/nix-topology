@@ -9,6 +9,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "invidious" ];
   test = {
     config = {
       services.invidious = {

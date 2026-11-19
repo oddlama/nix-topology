@@ -23,6 +23,7 @@ in
         };
       };
   };
+  oci.repos = [ "samba" ];
   test = {
     config = {
       services.samba = {

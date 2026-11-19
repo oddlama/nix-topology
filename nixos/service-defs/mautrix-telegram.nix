@@ -19,6 +19,7 @@ in
         };
       };
   };
+  oci.repos = [ "mautrix/telegram" ];
   test = {
     config = {
       services.mautrix-telegram = {

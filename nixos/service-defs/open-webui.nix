@@ -15,6 +15,7 @@ in
         };
       };
   };
+  oci.repos = [ "open-webui" ];
   test = {
     config = {
       services.open-webui = {

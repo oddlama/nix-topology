@@ -11,6 +11,17 @@ in
       listen = mkIf (cfg.enableTCPIP or false) { text = "0.0.0.0:${toString cfg.settings.port}"; };
     };
   };
+  oci.repos = [
+    "postgres"
+    "postgresql"
+    "postgis"
+    "pgvector"
+    "pgvecto-rs"
+    "vchord-postgres"
+    "cloudnative-vectorchord"
+    "timescaledb"
+    "timescaledb-ha"
+  ];
   test = {
     config = {
       services.postgresql = {

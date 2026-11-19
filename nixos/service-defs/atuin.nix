@@ -15,6 +15,7 @@ in
         };
       };
   };
+  oci.repos = [ "atuin" ];
   test = {
     config = {
       services.atuin = {

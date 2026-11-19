@@ -9,6 +9,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "zipline" ];
   test = {
     config = {
       services.zipline = {

@@ -42,6 +42,10 @@ in
       in
       mkMerge reverseProxies;
   };
+  oci.repos = [
+    "nginx"
+    "nginx-unprivileged"
+  ];
   test = {
     config = {
       services.nginx = {

@@ -13,6 +13,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "gitea" ];
   test = {
     config = {
       services.gitea = {

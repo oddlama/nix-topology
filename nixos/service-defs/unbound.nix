@@ -14,6 +14,7 @@ _: {
         };
       };
   };
+  oci.repos = [ "unbound" ];
   test = {
     config = {
       services.unbound = {

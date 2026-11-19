@@ -15,6 +15,7 @@ in
         };
       };
   };
+  oci.repos = [ "owncast" ];
   test = {
     config = {
       services.owncast = {

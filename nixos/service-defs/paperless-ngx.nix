@@ -15,6 +15,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "paperless-ngx" ];
   test = {
     config = {
       services.paperless = {

@@ -11,6 +11,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "kanidm/server" ];
   test = {
     minimalConfig = {
       services.kanidm.server = {

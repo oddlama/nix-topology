@@ -15,6 +15,10 @@ in
         };
       };
   };
+  oci.repos = [
+    "radarr"
+    "arch-radarr"
+  ];
   test = {
     config = {
       services.radarr = {

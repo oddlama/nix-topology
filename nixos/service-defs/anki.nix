@@ -15,6 +15,7 @@ in
         };
       };
   };
+  oci.repos = [ "anki-sync-server" ];
   test = {
     config = {
       services.anki-sync-server = {

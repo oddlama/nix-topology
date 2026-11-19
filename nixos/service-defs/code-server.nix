@@ -19,6 +19,7 @@ in
         };
       };
   };
+  oci.repos = [ "code-server" ];
   test = {
     config = {
       services.code-server = {

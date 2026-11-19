@@ -23,6 +23,11 @@ in
         listen = mkIf (address != null && port != null) { text = "${address}:${toString port}"; };
       };
   };
+  oci.repos = [
+    "vaultwarden"
+    "vaultwarden/server"
+    "bitwardenrs/server"
+  ];
   test = {
     config = {
       services.vaultwarden = {

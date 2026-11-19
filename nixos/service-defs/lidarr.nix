@@ -15,6 +15,10 @@ in
         };
       };
   };
+  oci.repos = [
+    "lidarr"
+    "arch-lidarr"
+  ];
   test = {
     config = {
       services.lidarr = {

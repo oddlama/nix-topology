@@ -9,6 +9,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "kavita" ];
   test = {
     config = {
       services.kavita = {

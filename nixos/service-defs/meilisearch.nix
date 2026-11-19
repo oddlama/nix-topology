@@ -9,6 +9,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "meilisearch" ];
   test = {
     config = {
       services.meilisearch = {

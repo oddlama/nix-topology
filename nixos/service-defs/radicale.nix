@@ -15,6 +15,10 @@ in
         };
       };
   };
+  oci.repos = [
+    "radicale"
+    "docker-radicale"
+  ];
   test = {
     config = {
       services.radicale = {

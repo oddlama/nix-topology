@@ -14,6 +14,7 @@ in
       listen = mkIf cfg.openFirewall { text = "localhost:${toString cfg.port}"; };
     };
   };
+  oci.repos = [ "immich-public-proxy" ];
   test = {
     # Without Immich on the same host
     minimalConfig = {

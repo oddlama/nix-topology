@@ -19,6 +19,7 @@ in
         };
       };
   };
+  oci.repos = [ "mautrix/whatsapp" ];
   test = {
     config = {
       services.mautrix-whatsapp = {

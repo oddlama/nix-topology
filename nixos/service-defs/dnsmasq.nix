@@ -28,6 +28,7 @@ in
         })
       );
   };
+  oci.repos = [ "dnsmasq" ];
   test = {
     config = {
       services.dnsmasq = {

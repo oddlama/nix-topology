@@ -17,6 +17,10 @@ _: {
         listen.text = "${addr}:${toString port}";
       };
   };
+  oci.repos = [
+    "mpd"
+    "mpd-alsa"
+  ];
   test = {
     config = {
       services.mpd = {

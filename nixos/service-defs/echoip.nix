@@ -5,4 +5,5 @@ _: {
     path = "services.echoip";
     detailsFn = { cfg, ... }: { listen.text = cfg.listenAddress; };
   };
+  oci.repos = [ "echoip" ];
 }

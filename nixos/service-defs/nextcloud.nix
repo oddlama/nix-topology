@@ -9,6 +9,10 @@ in
     path = "services.nextcloud";
     infoFn = { cfg, ... }: "http${optionalString cfg.https "s"}://${cfg.hostName}";
   };
+  oci.repos = [
+    "nextcloud"
+    "nextcloud/all-in-one"
+  ];
   test = {
     minimalConfig = {
       services.nextcloud = {

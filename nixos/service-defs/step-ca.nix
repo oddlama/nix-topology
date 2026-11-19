@@ -15,6 +15,7 @@ in
         };
       };
   };
+  oci.repos = [ "step-ca" ];
   test = {
     config = {
       services.step-ca = {

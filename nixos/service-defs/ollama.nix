@@ -15,6 +15,7 @@ in
         };
       };
   };
+  oci.repos = [ "ollama" ];
   test = {
     config = {
       services.ollama = {

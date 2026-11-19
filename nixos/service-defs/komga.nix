@@ -15,6 +15,7 @@ in
         };
       };
   };
+  oci.repos = [ "komga" ];
   test = {
     config = {
       services.komga = {

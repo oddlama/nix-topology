@@ -20,6 +20,10 @@ in
       };
     infoFn = { cfg, ... }: cfg.server.baseUrl;
   };
+  oci.repos = [
+    "plausible/analytics"
+    "plausible/community-edition"
+  ];
   test = {
     minimalConfig = {
       services.plausible = {

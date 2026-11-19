@@ -20,6 +20,11 @@ in
         plugins = mkIf (plugins != null) { text = concatLines (map (p: p.name) plugins); };
       };
   };
+  oci.repos = [
+    "grafana"
+    "grafana-oss"
+    "grafana-enterprise"
+  ];
   test = {
     config = {
       services.grafana = {

@@ -4,6 +4,7 @@ _: {
   nixos = {
     path = "services.alloy";
   };
+  oci.repos = [ "grafana/alloy" ];
   test = {
     config = {
       services.alloy = {
