@@ -129,6 +129,34 @@ in
 }
 ```
 
+If the service is also distributed as a container image, add the image's repositories to `oci.repos`.
+Use the shortest pattern that identifies the service: a pattern matches the last path components of an image,
+so `jellyfin` matches `jellyfin/jellyfin` mirrored anywhere, as well as rebuilds like `lscr.io/linuxserver/jellyfin`.
+Bare names are only for distinctive project names (`jellyfin`, `paperless-ngx`, `immich-server`). If the last component is
+generic, qualify it with its namespace (`vaultwarden/server`, `kanidm/server`, `mautrix/signal`), and never include a registry.
+The `oci.nameFn`, `oci.iconFn`, `oci.infoFn` and `oci.detailsFn` functions work like the `nixos` ones,
+but get the container as `container` and its options as `cfg`:
+
+```nix
+  oci.repos = [
+    "vaultwarden"
+    "vaultwarden/server"
+  ];
+```
+
+The tests check that each pattern, used as an image, resolves to this entry and no other.
+To test the `oci` functions, add the containers and the expected fields of their services by container name:
+
+```nix
+  test.oci = {
+    containers.db.image = "mariadb:11";
+    expect.db = {
+      name = "MariaDB";
+      icon = "services.mariadb";
+    };
+  };
+```
+
 If a service can have multiple instances under one option (like `services.restic.backups`), set `nixos.instances = true;`.
 Then one service is created per instance with the id `<service_name>-<instance>`, the functions get the instance's value
 as `cfg` and its name as `instance`, and the test needs `test.instance` to select the instance to check.

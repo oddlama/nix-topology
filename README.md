@@ -17,6 +17,7 @@ Most of the work is done by the included NixOS module which automatically collec
   - 🍵 Known configured services
   - 🖥️ Guests from [microvm.nix](https://github.com/astro/microvm.nix)
   - 🖥️ Guests from nixos containers
+  - 🐳 Known services in OCI containers (docker and podman)
   - 🌐 Network information from kea
 - 🗺️ Renders both a main diagram (physical connections) and a network-centric diagram
 - ➡️ Automatically propagates assigned networks through your connections
@@ -193,7 +194,6 @@ Yep, there's still a lot that could be added or improved.
 
 #### Information Gathering (Extractors)
 
-- Podman / docker harvesting
 - networking.interfaces extractor
 - Disks (from disko) + render
 - Impermanence render?
