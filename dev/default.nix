@@ -38,6 +38,7 @@
     {
       checks = lib.optionalAttrs (lib.hasSuffix "-linux" system) (
         {
+          oci-image-ref = import ./oci-image-ref-test.nix { inherit pkgs; };
           service-extraction = import ./service-extraction-test.nix { inherit self pkgs system; };
           service-registry-override = import ./service-registry-override-test.nix {
             inherit self pkgs system;
