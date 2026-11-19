@@ -38,6 +38,16 @@
     {
       checks = lib.optionalAttrs (lib.hasSuffix "-linux" system) (
         {
+          oci-container = import ./oci-container-test.nix { inherit self pkgs system; };
+          oci-container-stable = import ./oci-container-test.nix {
+            inherit self system;
+            pkgs = pkgsStable;
+          };
+          oci-container-warning = import ./oci-container-warning-test.nix { inherit self pkgs system; };
+          oci-container-warning-stable = import ./oci-container-warning-test.nix {
+            inherit self system;
+            pkgs = pkgsStable;
+          };
           oci-image-ref = import ./oci-image-ref-test.nix { inherit pkgs; };
           service-extraction = import ./service-extraction-test.nix { inherit self pkgs system; };
           service-registry-override = import ./service-registry-override-test.nix {

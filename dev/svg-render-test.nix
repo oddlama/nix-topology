@@ -32,6 +32,13 @@ let
           port = 9090;
         };
 
+        # Containers matched by the oci-container extractor
+        virtualisation.oci-containers.containers.jellyfin = {
+          image = "lscr.io/linuxserver/jellyfin:10.10.3";
+          ports = [ "8096:8096" ];
+        };
+        topology.serviceRegistry.jellyfin.oci.repos = [ "jellyfin" ];
+
         # Two services sharing a serviceId, both must be listed in the services overview
         services.restic.backups = {
           alpha = {
@@ -92,11 +99,18 @@ pkgs.runCommandLocal "svg-render-test" { nativeBuildInputs = with pkgs; [ libxml
   grep -q "Prometheus" "${svgOutput}/nodes/svg-test-host.svg" || (echo "FAIL: 'Prometheus' not found in node SVG"; exit 1)
   grep -q "grafana.example.com" "${svgOutput}/nodes/svg-test-host.svg" || (echo "FAIL: 'grafana.example.com' not found in node SVG"; exit 1)
 
+  echo "Checking per-node SVG contains the container's service..."
+  grep -q "Jellyfin" "${svgOutput}/nodes/svg-test-host.svg" || (echo "FAIL: 'Jellyfin' not found in node SVG"; exit 1)
+  grep -q "Jellyfin" "${elkOutput}/main.svg" || (echo "FAIL: 'Jellyfin' not found in main.svg"; exit 1)
+  sed 's/<[^>]*>//g' "${svgOutput}/nodes/svg-test-host.svg" > node.txt
+  grep -q "linuxserver/jellyfin" node.txt || (echo "FAIL: container image not found in node SVG"; exit 1)
+
   echo "Checking services overview lists all services sharing a serviceId..."
   # Text is split into one element per word, so compare the text content only
   sed 's/<[^>]*>//g' "${servicesOverview}" > overview.txt
   grep -q "/mnt/alpha" overview.txt || (echo "FAIL: restic backup 'alpha' not found in services overview"; exit 1)
   grep -q "/mnt/bravo" overview.txt || (echo "FAIL: restic backup 'bravo' not found in services overview"; exit 1)
+  grep -q "Jellyfin" overview.txt || (echo "FAIL: container 'Jellyfin' not found in services overview"; exit 1)
 
   echo "=== All SVG render tests passed ==="
   echo "ok" > $out
