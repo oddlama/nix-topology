@@ -9,28 +9,98 @@ let
     attrValues
     concatLines
     concatMap
+    concatMapStrings
     filter
     flip
     groupBy
     hasSuffix
     head
+    isList
     length
+    listToAttrs
     mkOption
+    nameValuePair
     optionalString
     sort
-    splitString
-    tail
     types
+    unique
     ;
 
-  fileBase64 =
-    file:
+  # The HTML carries this marker where an icon goes, and the build of the drawing replaces it with
+  # the icon's contents. Evaluation then never reads an icon, which would build it, and this
+  # works with `allow-import-from-derivation = false`.
+  iconMarker =
+    file: "@icon-${builtins.substring 0 16 (builtins.hashString "sha256" (toString file))}@";
+
+  # All icons a drawing can show by their marker.
+  iconFiles =
     let
-      out = pkgs.runCommand "base64" { } ''
-        ${pkgs.coreutils}/bin/base64 -w0 < ${file} > $out
-      '';
+      # An icon that doesn't resolve is left out here and throws in the card that shows it, so a
+      # bad icon on one entity doesn't stop the drawings of the others.
+      get =
+        icon:
+        let
+          result = builtins.tryEval (config.lib.icons.get icon);
+        in
+        if result.success then result.value else null;
+      nodes = attrValues config.nodes;
     in
-    "${out}";
+    listToAttrs (
+      map (file: nameValuePair (iconMarker file) file) (
+        unique (
+          filter (file: file != null) (
+            map (net: get net.icon) (attrValues config.networks)
+            ++ concatMap (
+              node:
+              [
+                (get node.icon)
+                (get node.deviceIcon)
+                node.hardware.image
+              ]
+              ++ map (interface: get interface.icon) (attrValues node.interfaces)
+              ++ map (service: get service.icon) (filter (service: !service.hidden) (attrValues node.services))
+            ) nodes
+          )
+        )
+      )
+    );
+
+  # Writes the text that replaces the marker of an icon into `icon`.
+  iconContents =
+    file:
+    if hasSuffix ".svg" file then
+      ''
+        ${lib.getExe pkgs.gawk} 'BEGIN { RS = "^$" }
+          {
+            start = index($0, "<svg ")
+            if (!start) { print "no <svg in " FILENAME > "/dev/stderr"; exit 1 }
+            rest = substr($0, start + 5)
+            next_svg = index(rest, "<svg ")
+            if (next_svg) rest = substr(rest, 1, next_svg - 1)
+            end = index(rest, "</svg>")
+            if (end) rest = substr(rest, 1, end - 1)
+            printf "%s", rest
+          }' ${file} > icon
+      ''
+    else
+      ''
+        ${pkgs.coreutils}/bin/base64 -w0 < ${file} > icon
+      '';
+
+  # Replaces the marker of an icon in `card.html`.
+  inlineIcon = marker: file: ''
+    ${iconContents file}
+    ${lib.getExe pkgs.gawk} -v marker=${marker} 'BEGIN { RS = "^$"; getline contents < "icon" }
+      {
+        rest = $0
+        while ((at = index(rest, marker)) > 0) {
+          printf "%s%s", substr(rest, 1, at - 1), contents
+          rest = substr(rest, at + length(marker))
+        }
+        printf "%s", rest
+      }' card.html > card.html.new
+    mv card.html.new card.html
+  '';
 
   htmlToSvgCommand = inFile: outFile: args: ''
     ${lib.getExe pkgs.html-to-svg} \
@@ -44,8 +114,12 @@ let
   renderHtmlToSvg =
     card: name:
     let
+      markers = unique (map head (filter isList (builtins.split "(@icon-[0-9a-f]{16}@)" card.html)));
       out = pkgs.runCommand "${name}.svg" { } ''
-        ${htmlToSvgCommand (pkgs.writeText "${name}.html" card.html) "$out" card}
+        cp ${pkgs.writeText "${name}.html" card.html} card.html
+        chmod u+w card.html
+        ${concatMapStrings (marker: inlineIcon marker iconFiles.${marker}) markers}
+        ${htmlToSvgCommand "card.html" "$out" card}
       '';
     in
     "${out}";
@@ -58,15 +132,11 @@ let
           <div tw="flex flex-none bg-[#000000] ${twAttrs}"></div>
         ''
       else if hasSuffix ".svg" file then
-        let
-          withoutPrefix = head (tail (splitString "<svg " (builtins.readFile file)));
-          content = head (splitString "</svg>" withoutPrefix);
-        in
-        ''<svg tw="${twAttrs}" ${content}</svg>''
+        ''<svg tw="${twAttrs}" ${iconMarker file}</svg>''
       else if hasSuffix ".png" file then
-        ''<img tw="object-contain ${twAttrs}" src="data:image/png;base64,${builtins.readFile (fileBase64 file)}"/>''
+        ''<img tw="object-contain ${twAttrs}" src="data:image/png;base64,${iconMarker file}"/>''
       else if hasSuffix ".jpg" file || hasSuffix ".jpeg" file then
-        ''<img tw="object-contain ${twAttrs}" src="data:image/jpeg;base64,${builtins.readFile (fileBase64 file)}"/>''
+        ''<img tw="object-contain ${twAttrs}" src="data:image/jpeg;base64,${iconMarker file}"/>''
       else
         builtins.throw "Unsupported icon file type: ${file}";
 
