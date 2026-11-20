@@ -21,6 +21,7 @@ let
     in
     mkIf (specNix.enabled args) {
       serviceId = id;
+      source = "nixos";
 
       # Undefined when the registry has no name, so the default falls back to the id
       name = mkIf (specNix.nameFn != null || spec.name != "") (

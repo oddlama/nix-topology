@@ -188,8 +188,9 @@ let
     };
 
   /**
-    Builds the services of the containers, one `<prefix>-<container>` service per
-    container whose image matches an entry of the registry. Services with the same
+    Builds the services of the containers, one `<source>-<container>` service per
+    container whose image matches an entry of the registry. `source` names the
+    extractor, it's the services' `source` and the prefix of their ids. Services with the same
     name get the container's name appended. Returns
     `{ services, unmatched }`, where `unmatched` is a list of `{ name, image }`.
   */
@@ -200,7 +201,7 @@ let
       config,
       infoFn,
       detailsFn,
-      prefix ? "oci",
+      source ? "oci",
     }:
     let
       entries = lib.filterAttrs (_: repos: repos != [ ]) (
@@ -244,9 +245,10 @@ let
           info = if registryInfo != null && registryInfo != "" then registryInfo else infoFn args;
         in
         {
-          name = "${prefix}-${c.name}";
+          name = "${source}-${c.name}";
           value = {
             inherit (c) serviceId;
+            inherit source;
             name = mkDefault name;
             icon = mkDefault (if specOci.iconFn != null then specOci.iconFn args else spec.icon);
             hidden = mkDefault spec.hidden;

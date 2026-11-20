@@ -177,9 +177,10 @@ let
     ])
     (expectEq "podman services" (lib.attrNames podmanServices) (lib.attrNames dockerServices))
     (expectEq "jellyfin service"
-      (pick [ "serviceId" "name" "icon" "hidden" "info" ] dockerServices.oci-jellyfin)
+      (pick [ "serviceId" "source" "name" "icon" "hidden" "info" ] dockerServices.oci-jellyfin)
       {
         serviceId = "jellyfin";
+        source = "oci";
         name = "Jellyfin";
         icon = "services.jellyfin";
         hidden = false;
@@ -252,12 +253,18 @@ let
 
     # In the topology
     (expectEq "NixOS service and container side by side"
-      (lib.mapAttrs (_: s: s.serviceId) (
+      (lib.mapAttrs (_: s: { inherit (s) serviceId source; }) (
         lib.filterAttrs (n: _: n == "grafana" || n == "oci-grafana") topologyNodes.host-mixed.services
       ))
       {
-        grafana = "grafana";
-        oci-grafana = "grafana";
+        grafana = {
+          serviceId = "grafana";
+          source = "nixos";
+        };
+        oci-grafana = {
+          serviceId = "grafana";
+          source = "oci";
+        };
       }
     )
     (expectEq "nested container's service on the guest node"
