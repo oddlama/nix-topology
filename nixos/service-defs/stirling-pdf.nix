@@ -19,6 +19,10 @@ in
         };
       };
   };
+  oci.repos = [
+    "stirling-pdf"
+    "s-pdf"
+  ];
   test = {
     config = {
       services.stirling-pdf = {

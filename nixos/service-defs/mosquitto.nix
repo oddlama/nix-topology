@@ -30,6 +30,10 @@ in
           )
       );
   };
+  oci.repos = [
+    "eclipse-mosquitto"
+    "alpine-mosquitto"
+  ];
   test = {
     config = {
       services.mosquitto = {

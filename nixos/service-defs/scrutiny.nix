@@ -15,6 +15,7 @@ in
         };
       };
   };
+  oci.repos = [ "scrutiny" ];
   test = {
     config = {
       services.scrutiny = {

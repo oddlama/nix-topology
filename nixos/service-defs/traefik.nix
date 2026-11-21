@@ -43,6 +43,7 @@ in
       else
         { };
   };
+  oci.repos = [ "traefik" ];
   test = {
     config = {
       services.traefik = {

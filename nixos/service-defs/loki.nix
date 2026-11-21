@@ -19,6 +19,7 @@ in
         };
       };
   };
+  oci.repos = [ "grafana/loki" ];
   test = {
     config = {
       services.loki = {

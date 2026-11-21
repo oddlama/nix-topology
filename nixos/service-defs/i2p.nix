@@ -4,6 +4,7 @@ _: {
   nixos = {
     path = "services.i2pd";
   };
+  oci.repos = [ "i2pd" ];
   test = {
     config = {
       services.i2pd = {

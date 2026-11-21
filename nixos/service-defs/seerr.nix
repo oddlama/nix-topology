@@ -11,6 +11,10 @@ in
       listen = mkIf cfg.openFirewall { text = "0.0.0.0:${toString cfg.port}"; };
     };
   };
+  oci.repos = [
+    "jellyseerr"
+    "seerr"
+  ];
   test = {
     config = {
       services.seerr = {

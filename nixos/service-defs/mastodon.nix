@@ -5,6 +5,7 @@ _: {
     path = "services.mastodon";
     infoFn = { cfg, ... }: "https://${cfg.localDomain}";
   };
+  oci.repos = [ "mastodon" ];
   test = {
     minimalConfig = {
       services.mastodon = {

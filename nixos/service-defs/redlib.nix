@@ -15,6 +15,7 @@ in
         };
       };
   };
+  oci.repos = [ "redlib" ];
   test = {
     config = {
       services.redlib = {

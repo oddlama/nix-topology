@@ -19,6 +19,7 @@ in
         listen = mkIf ((server.enable or false) && server ? listen_uri) { text = server.listen_uri; };
       };
   };
+  oci.repos = [ "crowdsec" ];
   test = {
     config =
       { options, ... }:

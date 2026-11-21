@@ -15,6 +15,10 @@ in
         };
       };
   };
+  oci.repos = [
+    "prowlarr"
+    "arch-prowlarr"
+  ];
   test = {
     config = {
       services.prowlarr = {

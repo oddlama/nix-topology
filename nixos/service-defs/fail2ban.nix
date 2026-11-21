@@ -4,6 +4,7 @@ _: {
   nixos = {
     path = "services.fail2ban";
   };
+  oci.repos = [ "fail2ban" ];
   test = {
     config = {
       services.fail2ban.enable = true;

@@ -19,6 +19,7 @@ in
         };
       };
   };
+  oci.repos = [ "mautrix/discord" ];
   test = {
     config = {
       services.mautrix-discord = {

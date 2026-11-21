@@ -9,6 +9,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "mealie" ];
   test = {
     config = {
       services.mealie = {

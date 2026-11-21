@@ -10,6 +10,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "headscale" ];
   test = {
     config = {
       services.headscale = {

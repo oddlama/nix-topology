@@ -113,6 +113,15 @@
               networking.hostName = "host2-test-with-a-long-name";
             };
 
+            # OCI containers are picked up if the service registry knows their image
+            virtualisation.oci-containers.containers = {
+              jellyfin = {
+                image = "lscr.io/linuxserver/jellyfin:10.10.7";
+                ports = [ "8096:8096" ];
+              };
+              jellyfin-db.image = "postgres:17";
+            };
+
             # We can change our own node's topology settings from here:
             topology.self = {
               name = "☄️  Powerful host2";

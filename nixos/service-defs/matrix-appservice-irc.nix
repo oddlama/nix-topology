@@ -17,6 +17,7 @@ in
         listen = mkIf (port != null) { text = "${address}:${toString port}"; };
       };
   };
+  oci.repos = [ "matrix-appservice-irc" ];
   test = {
     config = {
       services.matrix-appservice-irc = {

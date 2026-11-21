@@ -13,6 +13,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "esphome" ];
   test = {
     config = {
       services.esphome = {

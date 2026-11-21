@@ -20,6 +20,7 @@ in
       };
     };
   };
+  oci.repos = [ "hickory-dns" ];
   test = {
     config = {
       services.hickory-dns = {

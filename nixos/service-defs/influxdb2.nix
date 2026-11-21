@@ -9,6 +9,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "influxdb" ];
   test = {
     config = {
       services.influxdb2 = {

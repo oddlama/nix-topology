@@ -46,6 +46,12 @@ f {
                     default = null;
                   };
 
+                  source = mkOption {
+                    description = "The extractor that found this service, such as `nixos` or `oci`. Null for services defined by hand.";
+                    type = types.nullOr types.str;
+                    default = null;
+                  };
+
                   name = mkOption {
                     description = "The name of this service";
                     type = types.str;

@@ -13,6 +13,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "forgejo" ];
   test = {
     config = {
       services.forgejo = {

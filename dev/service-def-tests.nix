@@ -43,10 +43,106 @@ let
     in
     builtins.deepSeq s s;
 
+  ociLib = import ../nixos/oci-lib.nix { inherit lib; };
+  serviceDefs = lib.mapAttrs' (
+    filename: _:
+    lib.nameValuePair (lib.removeSuffix ".nix" filename) (
+      import (serviceDefDir + "/${filename}") { inherit lib; }
+    )
+  ) serviceFiles;
+  ociEntries = lib.filterAttrs (_: repos: repos != [ ]) (
+    lib.mapAttrs (_: def: def.oci.repos or [ ]) serviceDefs
+  );
+
+  # One container per pattern of every entry, named `<entry>-<n>`
+  ociContainers = lib.listToAttrs (
+    lib.concatLists (
+      lib.mapAttrsToList (
+        id: repos:
+        lib.imap0 (i: pattern: lib.nameValuePair "${id}-${toString i}" { image = pattern; }) repos
+      ) ociEntries
+    )
+  );
+  ociEval = nixosSystem {
+    inherit system;
+    modules = baseModules ++ [ { virtualisation.oci-containers.containers = ociContainers; } ];
+  };
+  ociServices =
+    let
+      s = ociEval.config.topology.self.services;
+    in
+    builtins.deepSeq s s;
+
+  # Each pattern, used as an image, resolves to its own entry without ties, and the
+  # entry gets a service for each of its containers and no others. That registry,
+  # tag and digest don't change matching is tested in oci-image-ref-test.nix.
+  ociAssertions =
+    serviceName:
+    let
+      repos = ociEntries.${serviceName} or [ ];
+      ownContainers = lib.imap0 (i: _: "${serviceName}-${toString i}") repos;
+      services = lib.attrNames (lib.filterAttrs (_: s: s.serviceId == serviceName) ociServices);
+    in
+    map (
+      pattern:
+      let
+        got = ociLib.bestMatches ociEntries (ociLib.parseImage pattern);
+      in
+      {
+        assertion = got == [ serviceName ];
+        message = "OCI image ${pattern} should resolve to ${serviceName}, got ${builtins.toJSON got}";
+      }
+    ) repos
+    ++ [
+      {
+        assertion = services == map (n: "oci-${n}") ownContainers;
+        message = "OCI containers of all entries: expected services ${
+          builtins.toJSON (map (n: "oci-${n}") ownContainers)
+        } for ${serviceName}, got ${builtins.toJSON services}";
+      }
+    ];
+
+  # `test.oci.containers` must give the services in `test.oci.expect`, by container name
+  ociTestAssertions =
+    serviceName: testOci:
+    let
+      services =
+        let
+          s =
+            (nixosSystem {
+              inherit system;
+              modules = baseModules ++ [ { virtualisation.oci-containers.containers = testOci.containers; } ];
+            }).config.topology.self.services;
+        in
+        builtins.deepSeq s s;
+    in
+    lib.concatLists (
+      lib.mapAttrsToList (
+        container: fields:
+        let
+          service = services."oci-${container}" or null;
+        in
+        if service == null then
+          [
+            {
+              assertion = false;
+              message = "test.oci: container ${container} has no service";
+            }
+          ]
+        else
+          lib.mapAttrsToList (field: want: {
+            assertion = service.${field} == want && service.serviceId == serviceName;
+            message = "test.oci: expected ${field} ${builtins.toJSON want} for container ${container}, got ${
+              builtins.toJSON service.${field}
+            } (serviceId ${service.serviceId})";
+          }) fields
+      ) testOci.expect
+    );
+
   mkServiceTest =
     serviceName:
     let
-      serviceDef = import (serviceDefDir + "/${serviceName}.nix") { inherit lib; };
+      serviceDef = serviceDefs.${serviceName};
       testSpec = serviceDef.test or { };
       optionPath = lib.splitString "." serviceDef.nixos.path;
 
@@ -117,7 +213,9 @@ let
         }
       ]
       ++ expectAssertions
-      ++ (if testSpec ? assertions then testSpec.assertions forced else [ ]);
+      ++ (if testSpec ? assertions then testSpec.assertions forced else [ ])
+      ++ ociAssertions serviceName
+      ++ lib.optionals (testSpec ? oci) (ociTestAssertions serviceName testSpec.oci);
       failedAssertions = builtins.filter (a: !a.assertion) assertions;
       failureMessages = map (a: a.message) failedAssertions;
 

@@ -20,6 +20,7 @@ in
         }) ntpServers
       );
   };
+  oci.repos = [ "ntpd-rs" ];
   test = {
     # Only shown when acting as an NTP server
     minimalConfig = {

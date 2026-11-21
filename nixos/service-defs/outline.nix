@@ -9,6 +9,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "outlinewiki/outline" ];
   test = {
     config = {
       services.outline = {

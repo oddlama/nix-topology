@@ -26,6 +26,7 @@ in
         mqtt = mkIf (mqttServer != null) { text = mqttServer; };
       };
   };
+  oci.repos = [ "zigbee2mqtt" ];
   test = {
     config = {
       services.zigbee2mqtt = {

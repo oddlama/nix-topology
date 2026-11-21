@@ -19,6 +19,7 @@ in
         };
       };
   };
+  oci.repos = [ "grafana/mimir" ];
   test = {
     config = {
       services.mimir = {

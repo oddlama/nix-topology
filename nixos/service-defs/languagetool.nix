@@ -9,6 +9,10 @@ _: {
       };
     };
   };
+  oci.repos = [
+    "languagetool"
+    "docker-languagetool"
+  ];
   test = {
     config = {
       services.languagetool = {

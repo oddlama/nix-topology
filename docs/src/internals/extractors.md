@@ -40,6 +40,11 @@ in
 }
 ```
 
+The oci-container extractor uses the same registry for the containers of `virtualisation.oci-containers`.
+An entry lists the images of its service in `oci.repos`, and a container whose image matches becomes a service
+with the id `oci-<container>`. Matching, parsing image references and building the services lives in `nixos/oci-lib.nix`,
+which doesn't depend on the container backend, so an extractor for another backend only has to describe its containers.
+
 The registry can also be extended from your own configuration, see [Adding Services](../services.md).
 
 If you want to add support for new services, feel free to create a PR. Contributions are wholeheartedly welcome!

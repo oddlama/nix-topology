@@ -19,6 +19,7 @@ in
         };
       };
   };
+  oci.repos = [ "searxng" ];
   test = {
     config = {
       services.searx = {

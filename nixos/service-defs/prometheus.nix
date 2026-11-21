@@ -9,6 +9,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "prometheus" ];
   test = {
     config = {
       services.prometheus = {

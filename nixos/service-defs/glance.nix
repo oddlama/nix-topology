@@ -15,6 +15,7 @@ in
         };
       };
   };
+  oci.repos = [ "glanceapp/glance" ];
   test = {
     config = {
       services.glance = {

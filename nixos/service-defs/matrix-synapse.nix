@@ -19,6 +19,10 @@ in
         };
       };
   };
+  oci.repos = [
+    "matrixdotorg/synapse"
+    "element-hq/synapse"
+  ];
   test = {
     config = {
       services.matrix-synapse = {

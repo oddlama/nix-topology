@@ -9,6 +9,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "tabbyml/tabby" ];
   test = {
     config = {
       services.tabby = {

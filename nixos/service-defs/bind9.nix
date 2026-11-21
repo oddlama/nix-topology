@@ -19,4 +19,5 @@ in
       };
     };
   };
+  oci.repos = [ "bind9" ];
 }

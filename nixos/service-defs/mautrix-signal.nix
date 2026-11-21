@@ -19,6 +19,7 @@ in
         };
       };
   };
+  oci.repos = [ "mautrix/signal" ];
   test = {
     config = {
       services.mautrix-signal = {

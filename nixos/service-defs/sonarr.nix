@@ -15,6 +15,10 @@ in
         };
       };
   };
+  oci.repos = [
+    "sonarr"
+    "arch-sonarr"
+  ];
   test = {
     config = {
       services.sonarr = {

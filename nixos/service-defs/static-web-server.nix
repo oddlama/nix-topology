@@ -12,6 +12,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "static-web-server" ];
   test = {
     minimalConfig = {
       services.static-web-server = {

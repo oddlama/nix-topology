@@ -9,6 +9,7 @@ _: {
       };
     };
   };
+  oci.repos = [ "libretranslate" ];
   test = {
     config = {
       services.libretranslate = {

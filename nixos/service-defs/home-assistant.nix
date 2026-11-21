@@ -30,6 +30,10 @@ in
           };
         };
   };
+  oci.repos = [
+    "home-assistant"
+    "homeassistant"
+  ];
   test = {
     config = {
       services.home-assistant = {

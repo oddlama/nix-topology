@@ -19,6 +19,7 @@ in
         };
       };
   };
+  oci.repos = [ "transmission" ];
   test = {
     config = {
       services.transmission = {
